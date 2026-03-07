@@ -35,7 +35,7 @@
   font-display: swap;
 }
 
-/* Base terminal styles */
+/* Base styles */
 @layer base {
   html {
     font-family: 'JetBrains Mono', monospace;
@@ -50,22 +50,10 @@
     overflow-x: hidden;
   }
 
-  ::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: #0a0a0a;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: #1a2332;
-    border-radius: 3px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: #4a5568;
-  }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0a0a0a; }
+  ::-webkit-scrollbar-thumb { background: #1a2332; border-radius: 0; }
+  ::-webkit-scrollbar-thumb:hover { background: #4a5568; }
 
   ::selection {
     background-color: #00ff41;
@@ -75,17 +63,17 @@
   a {
     color: #00d4ff;
     text-decoration: none;
-    transition: color 0.2s ease, text-shadow 0.2s ease;
+    transition: color 0.15s ease;
   }
 
   a:hover {
     color: #00ff41;
-    text-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
   }
 }
 
-/* Terminal utilities */
+/* TUI Components */
 @layer components {
+  /* Scanline overlay */
   .scanlines {
     position: fixed;
     top: 0;
@@ -96,78 +84,149 @@
     z-index: 9999;
     background: repeating-linear-gradient(
       0deg,
-      rgba(0, 0, 0, 0.03) 0px,
-      rgba(0, 0, 0, 0.03) 1px,
+      rgba(0, 0, 0, 0.02) 0px,
+      rgba(0, 0, 0, 0.02) 1px,
       transparent 1px,
       transparent 2px
     );
   }
 
-  .crt-flicker {
-    animation: flicker 0.15s infinite;
-  }
-
-  .text-glow-green {
-    text-shadow: 0 0 4px rgba(0, 255, 65, 0.6), 0 0 8px rgba(0, 255, 65, 0.3);
-  }
-
-  .text-glow-cyan {
-    text-shadow: 0 0 4px rgba(0, 212, 255, 0.6), 0 0 8px rgba(0, 212, 255, 0.3);
-  }
-
-  .text-glow-amber {
-    text-shadow: 0 0 4px rgba(255, 176, 0, 0.6), 0 0 8px rgba(255, 176, 0, 0.3);
-  }
-
-  .terminal-window {
-    border: 1px solid #1a2332;
-    border-radius: 6px;
-    overflow: hidden;
-    background-color: rgba(10, 10, 10, 0.95);
-  }
-
-  .terminal-titlebar {
+  /* Top status bar — tmux/vim tabline */
+  .tui-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
+    height: 2rem;
     background-color: #111318;
+    border-bottom: 1px solid #1a2332;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  /* Bottom status bar — vim statusline */
+  .tui-bottombar {
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    height: 1.75rem;
+    background-color: #111318;
+    border-top: 1px solid #1a2332;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+  }
+
+  /* Tab-style navigation items */
+  .tui-tab {
+    padding: 0.15rem 0.6rem;
+    color: #4a5568;
+    transition: color 0.15s, background-color 0.15s;
+    text-decoration: none;
+    font-size: 0.75rem;
+  }
+
+  .tui-tab:hover {
+    color: #00d4ff;
+    background-color: rgba(0, 212, 255, 0.05);
+  }
+
+  .tui-tab-active {
+    color: #00ff41;
+    background-color: rgba(0, 255, 65, 0.08);
+  }
+
+  /* Box-drawing bordered panel */
+  .tui-panel {
+    position: relative;
+    padding: 0.75rem 1rem;
+    margin: 0;
+  }
+
+  .tui-panel::before {
+    content: attr(data-title);
+    position: absolute;
+    top: -0.6em;
+    left: 1rem;
+    padding: 0 0.4rem;
+    background: #0a0a0a;
+    color: #00ff41;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  /* Box-drawing border using CSS (rendered as solid for reliability) */
+  .tui-border {
+    border: 1px solid #1a2332;
+    border-radius: 0;
+  }
+
+  /* Horizontal rule with box-drawing feel */
+  .tui-hr {
+    border: none;
+    border-top: 1px solid #1a2332;
+    margin: 0.75rem 0;
+  }
+
+  /* Box-drawing header */
+  .tui-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #1a2332;
+    margin-bottom: 0.75rem;
+  }
+
+  .tui-header::before {
+    content: '┌─';
+    color: #1a2332;
+  }
+
+  .tui-header::after {
+    content: '';
+    flex: 1;
     border-bottom: 1px solid #1a2332;
   }
 
-  .terminal-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
+  /* Section box with box-drawing characters */
+  .tui-box {
+    border: 1px solid #1a2332;
+    border-radius: 0;
+    position: relative;
   }
 
-  .terminal-dot-red { background-color: #ff3333; }
-  .terminal-dot-amber { background-color: #ffb000; }
-  .terminal-dot-green { background-color: #00ff41; }
-
-  .terminal-body {
-    padding: 1.5rem;
+  .tui-box-title {
+    position: absolute;
+    top: -0.65em;
+    left: 0.75rem;
+    padding: 0 0.4rem;
+    background: #0a0a0a;
+    font-size: 0.7rem;
+    font-weight: 700;
   }
 
-  .prompt::before {
-    content: '> ';
-    color: #00ff41;
+  /* Text glow effects */
+  .text-glow-green {
+    text-shadow: 0 0 4px rgba(0, 255, 65, 0.5), 0 0 8px rgba(0, 255, 65, 0.2);
   }
 
+  .text-glow-cyan {
+    text-shadow: 0 0 4px rgba(0, 212, 255, 0.5), 0 0 8px rgba(0, 212, 255, 0.2);
+  }
+
+  .text-glow-amber {
+    text-shadow: 0 0 4px rgba(255, 176, 0, 0.5), 0 0 8px rgba(255, 176, 0, 0.2);
+  }
+
+  /* Cursor blink */
   .cursor-blink::after {
     content: '█';
     animation: blink 1s step-end infinite;
     color: #00ff41;
   }
-}
-
-@keyframes flicker {
-  0% { opacity: 0.97; }
-  5% { opacity: 0.95; }
-  10% { opacity: 0.98; }
-  15% { opacity: 0.96; }
-  20% { opacity: 0.99; }
-  100% { opacity: 0.98; }
 }
 
 @keyframes blink {

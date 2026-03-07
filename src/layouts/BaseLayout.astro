@@ -5,23 +5,32 @@ interface Props {
   title: string;
   description?: string;
   ogImage?: string;
+  statusLeft?: string;
+  statusRight?: string;
 }
 
 const {
   title = 'Privacy Terminal',
   description = 'Open-source privacy tools and education. Test your browser fingerprint, detect leaks, and learn to protect your digital identity.',
   ogImage = '/og-default.png',
+  statusLeft = 'system ready',
+  statusRight = '',
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
 const navItems = [
-  { label: 'tools', href: '/tools' },
-  { label: 'guides', href: '/guides' },
-  { label: 'about', href: '/about' },
+  { label: 'home', href: '/', key: '0' },
+  { label: 'tools', href: '/tools', key: '1' },
+  { label: 'guides', href: '/guides', key: '2' },
+  { label: 'about', href: '/about', key: '3' },
 ];
 
 const currentPath = Astro.url.pathname;
+function isActive(href: string) {
+  if (href === '/') return currentPath === '/';
+  return currentPath.startsWith(href);
+}
 ---
 
 <!doctype html>
@@ -30,96 +39,74 @@ const currentPath = Astro.url.pathname;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
-
-    <!-- SEO -->
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
-
-    <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:site_name" content="Privacy Terminal" />
-
-    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-
-    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-
-    <!-- Self-hosted fonts - preload for performance -->
     <link rel="preload" href="/fonts/JetBrainsMono-Regular.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/JetBrainsMono-Bold.woff2" as="font" type="font/woff2" crossorigin />
-
-    <!-- Security -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
   </head>
-  <body class="bg-terminal-bg min-h-screen font-mono text-sm antialiased">
+  <body class="bg-terminal-bg min-h-screen font-mono text-sm antialiased flex flex-col">
     <!-- Scanline overlay -->
     <div class="scanlines" aria-hidden="true"></div>
 
-    <!-- Terminal window wrapper -->
-    <div class="max-w-6xl mx-auto my-4 md:my-8 px-4">
-      <div class="terminal-window">
-        <!-- Title bar -->
-        <div class="terminal-titlebar">
-          <div class="flex gap-2">
-            <div class="terminal-dot terminal-dot-red"></div>
-            <div class="terminal-dot terminal-dot-amber"></div>
-            <div class="terminal-dot terminal-dot-green"></div>
-          </div>
-          <span class="text-terminal-muted text-xs ml-2 select-none">
-            privacy-terminal — bash
-          </span>
+    <!-- TOP STATUS BAR (tmux/vim style) -->
+    <header class="tui-topbar">
+      <div class="flex items-center justify-between w-full px-2 md:px-4">
+        <!-- Left: site identity -->
+        <div class="flex items-center gap-1">
+          <span class="text-terminal-green font-bold">▸ PRIVACY TERMINAL</span>
+          <span class="text-terminal-muted text-xs hidden sm:inline">v0.1.0</span>
         </div>
 
-        <!-- Navigation bar -->
-        <nav class="flex items-center gap-1 px-4 py-2 border-b border-terminal-border bg-terminal-bg/50">
-          <a
-            href="/"
-            class="text-terminal-green font-bold text-glow-green hover:text-terminal-green mr-4 no-underline"
-          >
-            ~/privacy-terminal
-          </a>
-          <span class="text-terminal-muted select-none">|</span>
+        <!-- Right: navigation tabs -->
+        <nav class="flex items-center gap-0">
           {navItems.map((item) => (
             <a
               href={item.href}
               class:list={[
-                'px-3 py-1 rounded text-xs transition-colors no-underline',
-                currentPath.startsWith(item.href)
-                  ? 'text-terminal-green bg-terminal-green/10 text-glow-green'
-                  : 'text-terminal-muted hover:text-terminal-cyan',
+                'tui-tab',
+                isActive(item.href) ? 'tui-tab-active' : '',
               ]}
             >
-              ./{item.label}
+              <span class="text-terminal-muted">{item.key}:</span>{item.label}
             </a>
           ))}
         </nav>
-
-        <!-- Main content -->
-        <main class="terminal-body">
-          <slot />
-        </main>
-
-        <!-- Footer -->
-        <footer class="px-6 py-4 border-t border-terminal-border text-terminal-muted text-xs">
-          <div class="flex flex-col md:flex-row justify-between items-center gap-2">
-            <span>
-              <span class="text-terminal-green">$</span> Privacy Terminal — Open source privacy tools &amp; education
-            </span>
-            <span>
-              No tracking · No cookies · No external requests ·
-              <a href="/.well-known/security.txt" class="text-terminal-cyan hover:text-terminal-green">security.txt</a>
-            </span>
-          </div>
-        </footer>
       </div>
-    </div>
+    </header>
+
+    <!-- MAIN CONTENT (fills viewport between bars) -->
+    <main class="flex-1 overflow-y-auto px-2 md:px-4 py-3">
+      <slot />
+    </main>
+
+    <!-- BOTTOM STATUS BAR (vim statusline style) -->
+    <footer class="tui-bottombar">
+      <div class="flex items-center justify-between w-full px-2 md:px-4">
+        <span>
+          <span class="text-terminal-green">●</span>
+          <span class="text-terminal-muted ml-1">{statusLeft}</span>
+        </span>
+        <span class="flex items-center gap-3">
+          {statusRight && <span class="text-terminal-muted">{statusRight}</span>}
+          <span class="text-terminal-muted hidden sm:inline">no tracking</span>
+          <span class="text-terminal-muted hidden sm:inline">│</span>
+          <span class="text-terminal-muted hidden sm:inline">no cookies</span>
+          <span class="text-terminal-muted hidden sm:inline">│</span>
+          <a href="/.well-known/security.txt" class="text-terminal-muted hover:text-terminal-cyan hidden sm:inline">security.txt</a>
+        </span>
+      </div>
+    </footer>
   </body>
 </html>

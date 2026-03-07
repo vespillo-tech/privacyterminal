@@ -30,73 +30,54 @@ const categoryColors: Record<string, string> = {
 };
 ---
 
-<BaseLayout title={`${title} — Privacy Terminal`} description={description}>
-  <div class="flex flex-col lg:flex-row gap-8">
+<BaseLayout
+  title={`${title} — Privacy Terminal`}
+  description={description}
+  statusLeft={`guide: ${category}`}
+  statusRight={readingTime || ''}
+>
+  <div class="flex flex-col lg:flex-row gap-4">
     <!-- Sidebar / Table of Contents -->
-    <aside class="lg:w-56 shrink-0 order-2 lg:order-1">
-      <div class="lg:sticky lg:top-8">
+    <aside class="lg:w-48 shrink-0 order-2 lg:order-1">
+      <div class="lg:sticky lg:top-10">
         <!-- Guide metadata -->
-        <div class="mb-6 pb-4 border-b border-terminal-border">
-          <div class="text-xs space-y-1.5">
-            <div class="flex items-center gap-2">
-              <span class="text-terminal-muted">category:</span>
-              <span class={categoryColors[category] || 'text-terminal-muted'}>{category}</span>
-            </div>
-            {readingTime && (
-              <div class="flex items-center gap-2">
-                <span class="text-terminal-muted">reading:</span>
-                <span class="text-gray-300">{readingTime}</span>
-              </div>
-            )}
-            {publishedDate && (
-              <div class="flex items-center gap-2">
-                <span class="text-terminal-muted">published:</span>
-                <span class="text-gray-300">{publishedDate}</span>
-              </div>
-            )}
-            {updatedDate && (
-              <div class="flex items-center gap-2">
-                <span class="text-terminal-muted">updated:</span>
-                <span class="text-gray-300">{updatedDate}</span>
-              </div>
-            )}
+        <div class="tui-box p-3 mb-0">
+          <span class="tui-box-title text-terminal-muted">┤ META ├</span>
+          <div class="text-[10px] space-y-1 mt-1">
+            <div><span class="text-terminal-muted">cat:</span> <span class={categoryColors[category] || 'text-terminal-muted'}>{category}</span></div>
+            {readingTime && <div><span class="text-terminal-muted">time:</span> <span class="text-gray-400">{readingTime}</span></div>}
+            {publishedDate && <div><span class="text-terminal-muted">pub:</span> <span class="text-gray-400">{publishedDate}</span></div>}
+            {updatedDate && <div><span class="text-terminal-muted">upd:</span> <span class="text-gray-400">{updatedDate}</span></div>}
           </div>
         </div>
 
         <!-- Table of Contents -->
         {headings.length > 0 && (
-          <nav class="text-xs" aria-label="Table of contents">
-            <h3 class="text-terminal-amber text-glow-amber uppercase tracking-widest mb-3 text-[10px]">
-              > Contents
-            </h3>
-            <ul class="space-y-1.5">
-              {headings
-                .filter((h) => h.depth <= 3)
-                .map((heading) => (
-                  <li
-                    class:list={[
-                      heading.depth === 2 ? 'pl-0' : heading.depth === 3 ? 'pl-3' : 'pl-6',
-                    ]}
-                  >
-                    <a
-                      href={`#${heading.slug}`}
-                      class="text-terminal-muted hover:text-terminal-cyan transition-colors block py-0.5 no-underline"
-                      data-toc-link
-                    >
-                      <span class="text-terminal-green mr-1">{heading.depth === 2 ? '├─' : '│ └─'}</span>
-                      {heading.text}
-                    </a>
-                  </li>
-                ))}
-            </ul>
-          </nav>
+          <div class="tui-box p-3">
+            <span class="tui-box-title text-terminal-amber">┤ TOC ├</span>
+            <nav class="text-[10px] mt-1" aria-label="Table of contents">
+              <ul class="space-y-0.5">
+                {headings
+                  .filter((h) => h.depth <= 3)
+                  .map((heading) => (
+                    <li class:list={[heading.depth === 3 ? 'pl-2' : '']}>
+                      <a
+                        href={`#${heading.slug}`}
+                        class="text-terminal-muted hover:text-terminal-cyan transition-colors block py-0.5 no-underline truncate"
+                        data-toc-link
+                      >
+                        <span class="text-terminal-green mr-1">{heading.depth === 2 ? '├─' : '│└'}</span>{heading.text}
+                      </a>
+                    </li>
+                  ))}
+              </ul>
+            </nav>
+          </div>
         )}
 
-        <!-- Back to guides -->
-        <div class="mt-6 pt-4 border-t border-terminal-border">
-          <a href="/guides" class="text-xs text-terminal-muted hover:text-terminal-cyan no-underline">
-            ← cd ../guides
-          </a>
+        <!-- Back -->
+        <div class="py-2 px-3">
+          <a href="/guides" class="text-xs text-terminal-muted hover:text-terminal-cyan no-underline">← cd ../guides</a>
         </div>
       </div>
     </aside>
@@ -104,28 +85,23 @@ const categoryColors: Record<string, string> = {
     <!-- Main content -->
     <article class="flex-1 order-1 lg:order-2 min-w-0">
       <!-- Guide header -->
-      <header class="mb-8">
-        <div class="text-xs text-terminal-muted mb-2">
-          <a href="/guides" class="hover:text-terminal-cyan no-underline">~/guides</a>
-          <span class="mx-1">/</span>
-          <span class={categoryColors[category] || 'text-terminal-muted'}>{category}</span>
-          <span class="mx-1">/</span>
+      <header class="mb-4">
+        <div class="text-xs text-terminal-muted mb-1">
+          <a href="/guides" class="hover:text-terminal-cyan no-underline">~/guides</a>/<span class={categoryColors[category] || 'text-terminal-muted'}>{category}</span>/
         </div>
-        <h1 class="text-terminal-green text-glow-green text-xl font-bold leading-tight mb-3">
-          {title}
-        </h1>
-        {description && (
-          <p class="text-terminal-muted text-sm leading-relaxed">{description}</p>
-        )}
+        <h1 class="text-terminal-green text-glow-green text-lg font-bold leading-tight mb-2">{title}</h1>
+        {description && <p class="text-terminal-muted text-xs">{description}</p>}
       </header>
 
-      <!-- Guide body -->
-      <div class="guide-content">
+      <hr class="tui-hr" />
+
+      <!-- Guide body — readable width like a man page -->
+      <div class="guide-content max-w-[70ch]">
         <slot />
       </div>
 
-      <!-- Related tools/guides -->
-      <div class="mt-10" id="guide-related">
+      <!-- Related -->
+      <div class="mt-6" id="guide-related">
         <slot name="related" />
       </div>
     </article>
@@ -133,60 +109,53 @@ const categoryColors: Record<string, string> = {
 </BaseLayout>
 
 <style is:global>
-  /* Guide content typography */
   .guide-content h2 {
     color: #00ff41;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
-    margin-top: 2.5rem;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.35rem;
     border-bottom: 1px solid #1a2332;
   }
 
   .guide-content h3 {
     color: #00d4ff;
-    font-size: 0.95rem;
-    font-weight: 600;
-    margin-top: 2rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .guide-content h4 {
-    color: #ffb000;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 600;
     margin-top: 1.5rem;
     margin-bottom: 0.5rem;
   }
 
-  .guide-content p {
-    color: #d0d0d0;
-    font-size: 0.875rem;
-    line-height: 1.8;
-    margin-bottom: 1rem;
+  .guide-content h4 {
+    color: #ffb000;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 1.25rem;
+    margin-bottom: 0.4rem;
   }
 
-  .guide-content ul,
-  .guide-content ol {
-    margin-bottom: 1rem;
-    padding-left: 1.5rem;
+  .guide-content p {
+    color: #d0d0d0;
+    font-size: 0.8rem;
+    line-height: 1.75;
+    margin-bottom: 0.75rem;
+  }
+
+  .guide-content ul, .guide-content ol {
+    margin-bottom: 0.75rem;
+    padding-left: 1.25rem;
   }
 
   .guide-content li {
     color: #d0d0d0;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     line-height: 1.7;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.15rem;
   }
 
-  .guide-content ul li::marker {
-    color: #00ff41;
-  }
-
-  .guide-content ol li::marker {
-    color: #ffb000;
-  }
+  .guide-content ul li::marker { color: #00ff41; }
+  .guide-content ol li::marker { color: #ffb000; }
 
   .guide-content a {
     color: #00d4ff;
@@ -203,82 +172,70 @@ const categoryColors: Record<string, string> = {
   .guide-content code {
     background: rgba(26, 35, 50, 0.8);
     color: #00ff41;
-    padding: 0.15rem 0.4rem;
-    border-radius: 3px;
-    font-size: 0.8rem;
+    padding: 0.1rem 0.3rem;
+    font-size: 0.75rem;
   }
 
   .guide-content pre {
     background: #0d0d0d;
     border: 1px solid #1a2332;
-    border-radius: 6px;
-    padding: 1rem;
-    margin-bottom: 1rem;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
     overflow-x: auto;
   }
 
   .guide-content pre code {
     background: none;
     padding: 0;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: #c0c0c0;
   }
 
   .guide-content blockquote {
-    border-left: 3px solid #ffb000;
-    padding: 0.75rem 1rem;
-    margin: 1.5rem 0;
-    background: rgba(255, 176, 0, 0.05);
-    border-radius: 0 4px 4px 0;
+    border-left: 2px solid #ffb000;
+    padding: 0.5rem 0.75rem;
+    margin: 1rem 0;
+    background: rgba(255, 176, 0, 0.03);
   }
 
   .guide-content blockquote p {
-    color: #b0b0b0;
+    color: #a0a0a0;
     margin-bottom: 0;
   }
 
-  .guide-content strong {
-    color: #ffffff;
-    font-weight: 600;
-  }
-
-  .guide-content em {
-    color: #b0b0b0;
-    font-style: italic;
-  }
+  .guide-content strong { color: #ffffff; font-weight: 600; }
+  .guide-content em { color: #b0b0b0; }
 
   .guide-content hr {
     border: none;
     border-top: 1px solid #1a2332;
-    margin: 2rem 0;
+    margin: 1.5rem 0;
   }
 
   .guide-content table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 1rem;
-    font-size: 0.8rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.75rem;
   }
 
   .guide-content th {
     text-align: left;
     color: #00ff41;
-    padding: 0.5rem;
+    padding: 0.4rem;
     border-bottom: 1px solid #1a2332;
   }
 
   .guide-content td {
-    padding: 0.5rem;
+    padding: 0.4rem;
     border-bottom: 1px solid rgba(26, 35, 50, 0.5);
     color: #c0c0c0;
   }
 </style>
 
 <script>
-  // Active heading highlight in ToC
   const tocLinks = document.querySelectorAll('[data-toc-link]');
   const headings = document.querySelectorAll('.guide-content h2, .guide-content h3');
-
   if (tocLinks.length > 0 && headings.length > 0) {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -292,7 +249,6 @@ const categoryColors: Record<string, string> = {
       },
       { rootMargin: '-20% 0px -70% 0px' }
     );
-
     headings.forEach((heading) => observer.observe(heading));
   }
 </script>

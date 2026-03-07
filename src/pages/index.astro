@@ -1,12 +1,12 @@
 ---
-export const prerender = true;
 import BaseLayout from '../layouts/BaseLayout.astro';
+export const prerender = true;
 ---
 
-<BaseLayout title="Privacy Terminal — Open Source Privacy Tools & Education">
+<BaseLayout title="Privacy Terminal — Open Source Privacy Tools & Education" statusLeft="system ready" statusRight="6 tools │ 13 guides">
   <!-- ASCII Art Header -->
-  <div class="mb-8 overflow-x-auto">
-    <pre class="text-terminal-green text-glow-green text-xs md:text-sm leading-tight select-none" aria-label="Privacy Terminal ASCII art">
+  <div class="py-4 md:py-8 overflow-x-auto">
+    <pre class="text-terminal-green text-glow-green text-[0.5rem] sm:text-xs md:text-sm leading-tight select-none text-center" aria-label="Privacy Terminal ASCII art">
 {`
  ██████╗ ██████╗ ██╗██╗   ██╗ █████╗  ██████╗██╗   ██╗
  ██╔══██╗██╔══██╗██║██║   ██║██╔══██╗██╔════╝╚██╗ ██╔╝
@@ -14,7 +14,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
  ██╔═══╝ ██╔══██╗██║╚██╗ ██╔╝██╔══██║██║       ╚██╔╝
  ██║     ██║  ██║██║ ╚████╔╝ ██║  ██║╚██████╗   ██║
  ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝  ╚═╝  ╚═╝ ╚═════╝   ╚═╝
-
  ████████╗███████╗██████╗ ███╗   ███╗██╗███╗   ██╗ █████╗ ██╗
  ╚══██╔══╝██╔════╝██╔══██╗████╗ ████║██║████╗  ██║██╔══██╗██║
     ██║   █████╗  ██████╔╝██╔████╔██║██║██╔██╗ ██║███████║██║
@@ -25,158 +24,132 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   </div>
 
   <!-- Boot sequence -->
-  <div class="space-y-3 mb-10 text-sm">
-    <div class="text-terminal-muted">
-      <span class="text-terminal-green">[BOOT]</span> Privacy Terminal v0.1.0
+  <div class="space-y-1 mb-4 text-xs px-2">
+    <div class="text-terminal-muted"><span class="text-terminal-green">[BOOT]</span> Privacy Terminal v0.1.0</div>
+    <div class="text-terminal-muted"><span class="text-terminal-cyan">[INFO]</span> No tracking · No cookies · No external requests</div>
+    <div class="text-terminal-muted"><span class="text-terminal-green">[READY]</span> All tools run client-side. Your data never leaves your browser.</div>
+    <div class="mt-2"><span class="text-terminal-green">$</span> <span class="text-white">Welcome to Privacy Terminal</span><span class="cursor-blink"></span></div>
+  </div>
+
+  <hr class="tui-hr" />
+
+  <!-- Dual panel layout: TOOLS + GUIDES -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-0">
+
+    <!-- TOOLS PANEL -->
+    <div class="tui-box p-3 lg:border-r-0">
+      <span class="tui-box-title text-terminal-green">┤ TOOLS ├</span>
+      <div class="space-y-2 mt-2">
+        <a href="/tools/hash-generator" class="flex items-center justify-between py-1 px-2 hover:bg-terminal-green/5 transition-colors group">
+          <div class="flex items-center gap-2">
+            <span class="text-terminal-green">│</span>
+            <span class="text-gray-300 group-hover:text-terminal-green">Hash Generator & Verifier</span>
+          </div>
+          <span class="text-terminal-green text-xs">[READY]</span>
+        </a>
+        <div class="flex items-center justify-between py-1 px-2 opacity-60">
+          <div class="flex items-center gap-2">
+            <span class="text-terminal-muted">│</span>
+            <span class="text-terminal-muted">Browser Fingerprint Analyzer</span>
+          </div>
+          <span class="text-terminal-amber text-xs">[SOON]</span>
+        </div>
+        <div class="flex items-center justify-between py-1 px-2 opacity-60">
+          <div class="flex items-center gap-2">
+            <span class="text-terminal-muted">│</span>
+            <span class="text-terminal-muted">IP & DNS Leak Tester</span>
+          </div>
+          <span class="text-terminal-amber text-xs">[SOON]</span>
+        </div>
+        <div class="flex items-center justify-between py-1 px-2 opacity-60">
+          <div class="flex items-center gap-2">
+            <span class="text-terminal-muted">│</span>
+            <span class="text-terminal-muted">WebRTC Leak Detector</span>
+          </div>
+          <span class="text-terminal-amber text-xs">[SOON]</span>
+        </div>
+        <div class="flex items-center justify-between py-1 px-2 opacity-60">
+          <div class="flex items-center gap-2">
+            <span class="text-terminal-muted">│</span>
+            <span class="text-terminal-muted">Metadata Stripper</span>
+          </div>
+          <span class="text-terminal-amber text-xs">[SOON]</span>
+        </div>
+        <div class="flex items-center justify-between py-1 px-2 opacity-60">
+          <div class="flex items-center gap-2">
+            <span class="text-terminal-muted">│</span>
+            <span class="text-terminal-muted">Email Header Analyzer</span>
+          </div>
+          <span class="text-terminal-amber text-xs">[SOON]</span>
+        </div>
+        <div class="text-center py-2">
+          <a href="/tools" class="text-terminal-cyan text-xs hover:text-terminal-green">$ ls ./tools →</a>
+        </div>
+      </div>
     </div>
-    <div class="text-terminal-muted">
-      <span class="text-terminal-green">[INIT]</span> Loading privacy modules...
-    </div>
-    <div class="text-terminal-muted">
-      <span class="text-terminal-cyan">[INFO]</span> No tracking scripts detected
-    </div>
-    <div class="text-terminal-muted">
-      <span class="text-terminal-cyan">[INFO]</span> No cookies set
-    </div>
-    <div class="text-terminal-muted">
-      <span class="text-terminal-cyan">[INFO]</span> No external requests made
-    </div>
-    <div class="text-terminal-muted">
-      <span class="text-terminal-green">[READY]</span> System operational
-    </div>
-    <div class="mt-4">
-      <span class="text-terminal-green">$</span>
-      <span class="text-white ml-2">Welcome to Privacy Terminal</span>
-      <span class="cursor-blink"></span>
+
+    <!-- GUIDES PANEL -->
+    <div class="tui-box p-3">
+      <span class="tui-box-title text-terminal-cyan">┤ GUIDES ├</span>
+      <div class="space-y-3 mt-2">
+        <!-- Foundations -->
+        <div>
+          <div class="text-terminal-green text-xs font-bold mb-1 px-2">foundations/</div>
+          <a href="/guides/how-youre-being-tracked" class="flex items-center gap-2 py-0.5 px-2 hover:bg-terminal-green/5 transition-colors group">
+            <span class="text-terminal-green">├─</span>
+            <span class="text-gray-300 group-hover:text-terminal-green text-xs">How You're Being Tracked Right Now</span>
+          </a>
+          <a href="/guides/who-wants-your-data" class="flex items-center gap-2 py-0.5 px-2 hover:bg-terminal-green/5 transition-colors group">
+            <span class="text-terminal-green">├─</span>
+            <span class="text-gray-300 group-hover:text-terminal-green text-xs">Who Wants Your Data and Why</span>
+          </a>
+          <a href="/guides/the-5-minute-privacy-checkup" class="flex items-center gap-2 py-0.5 px-2 hover:bg-terminal-green/5 transition-colors group">
+            <span class="text-terminal-green">├─</span>
+            <span class="text-gray-300 group-hover:text-terminal-green text-xs">The 5-Minute Privacy Checkup</span>
+          </a>
+          <a href="/guides/browser-fingerprinting-explained" class="flex items-center gap-2 py-0.5 px-2 hover:bg-terminal-green/5 transition-colors group">
+            <span class="text-terminal-green">└─</span>
+            <span class="text-gray-300 group-hover:text-terminal-green text-xs">Browser Fingerprinting Explained</span>
+          </a>
+        </div>
+        <!-- Essentials -->
+        <div>
+          <div class="text-terminal-cyan text-xs font-bold mb-1 px-2">essentials/</div>
+          <div class="flex items-center gap-2 py-0.5 px-2 opacity-60">
+            <span class="text-terminal-muted">└─</span>
+            <span class="text-terminal-muted text-xs">3 guides planned</span>
+          </div>
+        </div>
+        <!-- Intermediate + Advanced -->
+        <div>
+          <div class="text-terminal-amber text-xs font-bold mb-1 px-2">intermediate/ + advanced/</div>
+          <div class="flex items-center gap-2 py-0.5 px-2 opacity-60">
+            <span class="text-terminal-muted">└─</span>
+            <span class="text-terminal-muted text-xs">5 guides planned</span>
+          </div>
+        </div>
+        <div class="text-center py-2">
+          <a href="/guides" class="text-terminal-cyan text-xs hover:text-terminal-green">$ ls ./guides →</a>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Description -->
-  <div class="border border-terminal-border rounded p-6 mb-10 bg-terminal-dim/20">
-    <p class="text-gray-300 leading-relaxed">
-      Privacy Terminal is an <span class="text-terminal-green">open-source</span> collection of
-      privacy tools and educational guides. Every tool runs
-      <span class="text-terminal-cyan">in your browser</span> — your data never leaves your machine.
-      No accounts. No tracking. No compromises.
-    </p>
-  </div>
+  <hr class="tui-hr" />
 
-  <!-- Tool cards -->
-  <div class="mb-10">
-    <h2 class="text-terminal-amber text-glow-amber text-xs uppercase tracking-widest mb-4">
-      > Available Modules
-    </h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <a href="/tools" class="group block border border-terminal-border rounded p-4 hover:border-terminal-green/50 transition-colors no-underline">
-        <div class="flex items-start gap-3">
-          <span class="text-terminal-green text-lg">⬡</span>
-          <div>
-            <h3 class="text-terminal-green group-hover:text-glow-green text-sm font-bold mb-1">Browser Fingerprint Analyzer</h3>
-            <p class="text-terminal-muted text-xs">See exactly how websites identify you. Tests 30+ tracking vectors including canvas, WebGL, audio, fonts, and hardware.</p>
-          </div>
-        </div>
-        <div class="text-terminal-muted text-xs mt-2 text-right">
-          <span class="text-terminal-amber">[COMING SOON]</span>
-        </div>
-      </a>
-
-      <a href="/tools" class="group block border border-terminal-border rounded p-4 hover:border-terminal-green/50 transition-colors no-underline">
-        <div class="flex items-start gap-3">
-          <span class="text-terminal-cyan text-lg">◈</span>
-          <div>
-            <h3 class="text-terminal-cyan group-hover:text-glow-cyan text-sm font-bold mb-1">IP & DNS Leak Tester</h3>
-            <p class="text-terminal-muted text-xs">Verify your VPN isn't leaking. Checks for IP exposure, DNS leaks, and WebRTC betrayal.</p>
-          </div>
-        </div>
-        <div class="text-terminal-muted text-xs mt-2 text-right">
-          <span class="text-terminal-amber">[COMING SOON]</span>
-        </div>
-      </a>
-
-      <a href="/tools" class="group block border border-terminal-border rounded p-4 hover:border-terminal-green/50 transition-colors no-underline">
-        <div class="flex items-start gap-3">
-          <span class="text-terminal-amber text-lg">◉</span>
-          <div>
-            <h3 class="text-terminal-amber group-hover:text-glow-amber text-sm font-bold mb-1">Metadata Stripper</h3>
-            <p class="text-terminal-muted text-xs">Remove hidden EXIF data, GPS coordinates, and device info from your photos before sharing.</p>
-          </div>
-        </div>
-        <div class="text-terminal-muted text-xs mt-2 text-right">
-          <span class="text-terminal-amber">[COMING SOON]</span>
-        </div>
-      </a>
-
-      <a href="/tools" class="group block border border-terminal-border rounded p-4 hover:border-terminal-green/50 transition-colors no-underline">
-        <div class="flex items-start gap-3">
-          <span class="text-terminal-red text-lg">⬢</span>
-          <div>
-            <h3 class="text-terminal-red text-sm font-bold mb-1">Hash Generator & Verifier</h3>
-            <p class="text-terminal-muted text-xs">Generate and verify cryptographic hashes. MD5, SHA-1, SHA-256, SHA-512 — all client-side.</p>
-          </div>
-        </div>
-        <div class="text-terminal-muted text-xs mt-2 text-right">
-          <span class="text-terminal-amber">[COMING SOON]</span>
-        </div>
-      </a>
+  <!-- Promise row -->
+  <div class="grid grid-cols-3 gap-0 text-xs text-center py-3">
+    <div class="px-2">
+      <div class="text-terminal-green font-bold mb-1">⊘ ZERO TRACKING</div>
+      <div class="text-terminal-muted">No analytics. No fingerprinting. No cookies.</div>
     </div>
-  </div>
-
-  <!-- Guides section -->
-  <div class="mb-10">
-    <h2 class="text-terminal-amber text-glow-amber text-xs uppercase tracking-widest mb-4">
-      > Education Modules
-    </h2>
-    <div class="border border-terminal-border rounded p-4">
-      <div class="space-y-2 text-sm">
-        <div class="flex items-center gap-2">
-          <span class="text-terminal-green">├──</span>
-          <span class="text-terminal-muted">foundations/</span>
-          <span class="text-terminal-amber text-xs">[5 guides planned]</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="text-terminal-green">├──</span>
-          <span class="text-terminal-muted">essentials/</span>
-          <span class="text-terminal-amber text-xs">[3 guides planned]</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="text-terminal-green">├──</span>
-          <span class="text-terminal-muted">intermediate/</span>
-          <span class="text-terminal-amber text-xs">[3 guides planned]</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="text-terminal-green">└──</span>
-          <span class="text-terminal-muted">advanced/</span>
-          <span class="text-terminal-amber text-xs">[2 guides planned]</span>
-        </div>
-      </div>
-      <p class="text-terminal-muted text-xs mt-4">
-        Comprehensive privacy education from basics to advanced operational security.
-        No prescriptions — we show you the full landscape and let you choose.
-      </p>
+    <div class="px-2 border-x border-terminal-border">
+      <div class="text-terminal-cyan font-bold mb-1">⊚ CLIENT-SIDE</div>
+      <div class="text-terminal-muted">Your data never leaves your browser.</div>
     </div>
-  </div>
-
-  <!-- Promise -->
-  <div class="border-t border-terminal-border pt-6 mb-4">
-    <h2 class="text-terminal-green text-glow-green text-xs uppercase tracking-widest mb-3">
-      > Our Promise
-    </h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-      <div class="text-center p-3">
-        <div class="text-terminal-green text-2xl mb-2">⊘</div>
-        <div class="text-white font-bold mb-1">Zero Tracking</div>
-        <div class="text-terminal-muted">No analytics. No fingerprinting. No cookies. We practice what we preach.</div>
-      </div>
-      <div class="text-center p-3">
-        <div class="text-terminal-cyan text-2xl mb-2">⊚</div>
-        <div class="text-white font-bold mb-1">Client-Side</div>
-        <div class="text-terminal-muted">Your data never leaves your browser. Every tool runs locally on your machine.</div>
-      </div>
-      <div class="text-center p-3">
-        <div class="text-terminal-amber text-2xl mb-2">⊡</div>
-        <div class="text-white font-bold mb-1">Open Source</div>
-        <div class="text-terminal-muted">Every line of code is public. Verify our claims. Trust but verify.</div>
-      </div>
+    <div class="px-2">
+      <div class="text-terminal-amber font-bold mb-1">⊡ OPEN SOURCE</div>
+      <div class="text-terminal-muted">Every line of code is public. Verify.</div>
     </div>
   </div>
 </BaseLayout>
