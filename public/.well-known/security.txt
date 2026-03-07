@@ -1,1 +1,13 @@
-§§include(/a0/usr/projects/edge_monetizer/workspace/sites/privacyterminal/public/.well-known/security.txt)
+# Privacy Terminal Security Policy
+# https://securitytxt.org/
+
+Contact: mailto:security@privacyterminal.com
+Expires: 2027-03-07T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://privacyterminal.com/.well-known/security.txt
+
+# Our commitment:
+# - All tools run client-side. Your data never reaches our servers.
+# - No tracking, no analytics, no cookies.
+# - Open source: verify our claims in our public repository.
+# - We practice what we preach.

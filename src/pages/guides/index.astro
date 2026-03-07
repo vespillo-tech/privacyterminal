@@ -1,1 +1,137 @@
-§§include(/a0/usr/projects/edge_monetizer/workspace/sites/privacyterminal/src/pages/guides/index.astro)
+---
+export const prerender = true;
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const allGuides = await getCollection('guides');
+const publishedGuides = allGuides.filter((g) => !g.data.draft);
+
+const categories = [
+  {
+    id: 'foundations',
+    label: 'Foundations',
+    color: 'terminal-green',
+    description: 'Start here. Understand what privacy means, who threatens it, and how to think about it.',
+    planned: ['How You\'re Being Tracked Right Now', 'Who Wants Your Data and Why', 'What Is a Threat Model?', 'Privacy Myths Debunked', 'The 5-Minute Privacy Checkup'],
+  },
+  {
+    id: 'essentials',
+    label: 'Essentials',
+    color: 'terminal-cyan',
+    description: 'Practical steps everyone should take. Browsers, passwords, email, and communication.',
+    planned: ['Choosing a Private Browser', 'Password Managers Compared', 'Encrypted Email Options'],
+  },
+  {
+    id: 'intermediate',
+    label: 'Intermediate',
+    color: 'terminal-amber',
+    description: 'Level up. VPNs, DNS, metadata, and understanding what your devices reveal.',
+    planned: ['VPN Reality Check', 'DNS Privacy Explained', 'Your Phone\'s Hidden Data Trail'],
+  },
+  {
+    id: 'advanced',
+    label: 'Advanced',
+    color: 'terminal-red',
+    description: 'For those who want maximum privacy. Operational security and advanced techniques.',
+    planned: ['Compartmentalization Strategies', 'Advanced Threat Modeling'],
+  },
+];
+---
+
+<BaseLayout title="Privacy Guides — Privacy Terminal" description="Comprehensive privacy education from basics to advanced operational security. No prescriptions — we show the full landscape and let you choose.">
+  <div class="mb-8">
+    <h1 class="text-terminal-green text-glow-green text-lg font-bold mb-2">
+      <span class="text-terminal-muted">~/</span>guides
+    </h1>
+    <p class="text-terminal-muted text-sm leading-relaxed">
+      Privacy education organized by depth. Start with Foundations and work your way up.
+      Every guide shows the full spectrum of options — we don't prescribe, we inform.
+    </p>
+  </div>
+
+  <!-- Boot sequence -->
+  <div class="space-y-1 mb-8 text-xs">
+    <div class="text-terminal-muted">
+      <span class="text-terminal-green">[LOAD]</span> Indexing guide database...
+    </div>
+    <div class="text-terminal-muted">
+      <span class="text-terminal-cyan">[INFO]</span> {publishedGuides.length} guides published, {allGuides.length - publishedGuides.length} in progress
+    </div>
+    <div class="text-terminal-muted">
+      <span class="text-terminal-green">[READY]</span> Guide index loaded
+    </div>
+  </div>
+
+  <!-- Category sections -->
+  <div class="space-y-8 mb-8">
+    {categories.map((cat) => {
+      const catGuides = publishedGuides
+        .filter((g) => g.data.category === cat.id)
+        .sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
+
+      return (
+        <div class="border border-terminal-border rounded p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <h2 class={`text-${cat.color} font-bold text-sm`}>
+              {cat.label}
+            </h2>
+            <span class="text-terminal-muted text-xs">
+              — {catGuides.length}/{cat.planned.length} guides
+            </span>
+          </div>
+          <p class="text-terminal-muted text-xs mb-4">{cat.description}</p>
+
+          {/* Published guides */}
+          {catGuides.length > 0 && (
+            <div class="space-y-2 mb-3">
+              {catGuides.map((guide) => (
+                <a
+                  href={`/guides/${guide.id}`}
+                  class="flex items-center gap-2 text-sm hover:text-terminal-green transition-colors no-underline group"
+                >
+                  <span class={`text-${cat.color}`}>├─</span>
+                  <span class="text-gray-300 group-hover:text-terminal-green">{guide.data.title}</span>
+                  {guide.data.readingTime && (
+                    <span class="text-terminal-muted text-xs">({guide.data.readingTime})</span>
+                  )}
+                </a>
+              ))}
+            </div>
+          )}
+
+          {/* Planned guides */}
+          {cat.planned.length > catGuides.length && (
+            <div class="space-y-1.5">
+              {cat.planned
+                .filter((title) => !catGuides.some((g) => g.data.title === title))
+                .map((title) => (
+                  <div class="flex items-center gap-2 text-xs">
+                    <span class="text-terminal-muted">├─</span>
+                    <span class="text-terminal-muted">{title}</span>
+                    <span class="text-terminal-amber text-[10px]">[planned]</span>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
+      );
+    })}
+  </div>
+
+  <!-- Methodology -->
+  <div class="border-t border-terminal-border pt-6">
+    <h3 class="text-terminal-amber text-glow-amber text-xs uppercase tracking-widest mb-3">
+      > Our Approach
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+      <div class="text-terminal-muted">
+        <span class="text-terminal-green font-bold">Landscape Principle:</span> Every guide presents the full spectrum
+        of options with honest trade-offs. We don't tell you what to use — we show you what exists.
+      </div>
+      <div class="text-terminal-muted">
+        <span class="text-terminal-green font-bold">Source Attribution:</span> Claims are backed by evidence.
+        We cite our sources and explain our methodology. Trust but verify.
+      </div>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,1 +1,179 @@
-§§include(/a0/usr/projects/edge_monetizer/workspace/sites/privacyterminal/src/layouts/ToolLayout.astro)
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  toolName: string;
+  toolVersion?: string;
+  status?: 'ready' | 'running' | 'complete' | 'error';
+}
+
+const {
+  title,
+  description = '',
+  toolName,
+  toolVersion = '1.0.0',
+  status = 'ready',
+} = Astro.props;
+
+const statusColors: Record<string, string> = {
+  ready: 'text-terminal-cyan',
+  running: 'text-terminal-amber',
+  complete: 'text-terminal-green',
+  error: 'text-terminal-red',
+};
+
+const statusLabels: Record<string, string> = {
+  ready: 'READY',
+  running: 'RUNNING',
+  complete: 'COMPLETE',
+  error: 'ERROR',
+};
+---
+
+<BaseLayout title={`${toolName} — Privacy Terminal`} description={description}>
+  <!-- Tool header -->
+  <div class="mb-6">
+    <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
+      <h1 class="text-terminal-green text-glow-green text-lg font-bold">
+        <span class="text-terminal-muted">~/tools/</span>{toolName}
+      </h1>
+      <div class="flex items-center gap-3 text-xs">
+        <span class="text-terminal-muted">v{toolVersion}</span>
+        <span class="flex items-center gap-1.5">
+          <span class={`inline-block w-2 h-2 rounded-full ${status === 'running' ? 'animate-pulse' : ''} ${status === 'ready' ? 'bg-terminal-cyan' : status === 'running' ? 'bg-terminal-amber' : status === 'complete' ? 'bg-terminal-green' : 'bg-terminal-red'}`}></span>
+          <span class={statusColors[status]} id="tool-status-label">{statusLabels[status]}</span>
+        </span>
+      </div>
+    </div>
+    {description && (
+      <p class="text-terminal-muted text-xs leading-relaxed">{description}</p>
+    )}
+  </div>
+
+  <!-- Tool terminal window -->
+  <div class="terminal-window mb-6" id="tool-container">
+    <div class="terminal-titlebar">
+      <div class="flex gap-2">
+        <div class="terminal-dot terminal-dot-red"></div>
+        <div class="terminal-dot terminal-dot-amber"></div>
+        <div class="terminal-dot terminal-dot-green"></div>
+      </div>
+      <span class="text-terminal-muted text-xs ml-2 select-none">
+        {toolName} — output
+      </span>
+    </div>
+    <div class="terminal-body min-h-[300px] max-h-[600px] overflow-y-auto" id="tool-output">
+      <!-- Tool output area - content fills via JS -->
+      <div id="tool-content">
+        <slot name="tool" />
+      </div>
+
+      <!-- Streaming output log -->
+      <div id="tool-log" class="space-y-1 text-xs">
+        <div class="text-terminal-muted">
+          <span class="text-terminal-green">[INIT]</span> {toolName} v{toolVersion} loaded
+        </div>
+        <div class="text-terminal-muted">
+          <span class="text-terminal-cyan">[INFO]</span> All processing runs in your browser
+        </div>
+        <div class="text-terminal-muted">
+          <span class="text-terminal-cyan">[INFO]</span> No data is transmitted to any server
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls area -->
+  <div class="mb-6" id="tool-controls">
+    <slot name="controls" />
+  </div>
+
+  <!-- Results area -->
+  <div class="mb-6" id="tool-results">
+    <slot name="results" />
+  </div>
+
+  <!-- Additional content (explanations, related guides) -->
+  <div id="tool-extra">
+    <slot />
+  </div>
+</BaseLayout>
+
+<style>
+  /* Auto-scroll tool output */
+  #tool-output {
+    scroll-behavior: smooth;
+  }
+
+  /* Streaming line animation */
+  #tool-log > div {
+    animation: fadeIn 0.15s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+<script>
+  // Helper: append a log line to the tool output
+  function appendLog(message: string, level: 'info' | 'warn' | 'error' | 'success' = 'info') {
+    const log = document.getElementById('tool-log');
+    if (!log) return;
+
+    const colors: Record<string, string> = {
+      info: 'text-terminal-cyan',
+      warn: 'text-terminal-amber',
+      error: 'text-terminal-red',
+      success: 'text-terminal-green',
+    };
+
+    const labels: Record<string, string> = {
+      info: 'INFO',
+      warn: 'WARN',
+      error: 'ERROR',
+      success: 'DONE',
+    };
+
+    const div = document.createElement('div');
+    div.className = 'text-terminal-muted';
+    div.innerHTML = `<span class="${colors[level]}">[${labels[level]}]</span> ${message}`;
+    log.appendChild(div);
+
+    // Auto-scroll
+    const output = document.getElementById('tool-output');
+    if (output) output.scrollTop = output.scrollHeight;
+  }
+
+  // Helper: update status indicator
+  function setToolStatus(status: 'ready' | 'running' | 'complete' | 'error') {
+    const label = document.getElementById('tool-status-label');
+    if (!label) return;
+
+    const colors: Record<string, string> = {
+      ready: 'text-terminal-cyan',
+      running: 'text-terminal-amber',
+      complete: 'text-terminal-green',
+      error: 'text-terminal-red',
+    };
+
+    const labels: Record<string, string> = {
+      ready: 'READY',
+      running: 'RUNNING',
+      complete: 'COMPLETE',
+      error: 'ERROR',
+    };
+
+    label.className = colors[status];
+    label.textContent = labels[status];
+  }
+
+  // Expose helpers globally for tool scripts
+  (window as any).privacyTerminal = {
+    appendLog,
+    setToolStatus,
+  };
+</script>

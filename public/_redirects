@@ -1,1 +1,2 @@
-§§include(/a0/usr/projects/edge_monetizer/workspace/sites/privacyterminal/public/_redirects)
+# Redirects for Privacy Terminal
+# Format: /from /to [status]

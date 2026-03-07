@@ -1,1 +1,29 @@
-§§include(/a0/usr/projects/edge_monetizer/workspace/sites/privacyterminal/src/pages/guides/[id].astro)
+---
+import { getCollection, render } from 'astro:content';
+import GuideLayout from '../../layouts/GuideLayout.astro';
+
+export async function getStaticPaths() {
+  const guides = await getCollection('guides');
+  return guides
+    .filter((guide) => !guide.data.draft)
+    .map((guide) => ({
+      params: { id: guide.id },
+      props: { guide },
+    }));
+}
+
+const { guide } = Astro.props;
+const { Content, headings } = await render(guide);
+---
+
+<GuideLayout
+  title={guide.data.title}
+  description={guide.data.description}
+  category={guide.data.category}
+  readingTime={guide.data.readingTime}
+  publishedDate={guide.data.publishedDate}
+  updatedDate={guide.data.updatedDate}
+  headings={headings}
+>
+  <Content />
+</GuideLayout>

@@ -1,1 +1,143 @@
-§§include(/a0/usr/projects/edge_monetizer/workspace/sites/privacyterminal/src/pages/about.astro)
+---
+export const prerender = true;
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="About — Privacy Terminal" description="What Privacy Terminal is, why it exists, and how it works. Full transparency about our tools, methods, and principles.">
+  <div class="mb-8">
+    <h1 class="text-terminal-green text-glow-green text-lg font-bold mb-2">
+      <span class="text-terminal-muted">~/</span>about
+    </h1>
+  </div>
+
+  <div class="space-y-8">
+    <!-- What is this -->
+    <section>
+      <h2 class="text-terminal-green text-sm font-bold mb-3 pb-2 border-b border-terminal-border">
+        ## What is Privacy Terminal?
+      </h2>
+      <p class="text-gray-300 text-sm leading-relaxed mb-3">
+        Privacy Terminal is an open-source collection of browser-based privacy tools and
+        educational guides. We help you understand your digital footprint and take practical
+        steps to reduce it.
+      </p>
+      <p class="text-gray-300 text-sm leading-relaxed">
+        Every tool runs entirely in your browser. Your data never touches our servers.
+        Every guide presents the full landscape of options without pushing a single solution.
+        Every line of code is publicly auditable.
+      </p>
+    </section>
+
+    <!-- Principles -->
+    <section>
+      <h2 class="text-terminal-green text-sm font-bold mb-3 pb-2 border-b border-terminal-border">
+        ## Principles
+      </h2>
+      <div class="space-y-4">
+        <div class="border border-terminal-border rounded p-4">
+          <h3 class="text-terminal-cyan text-xs font-bold mb-2">Privacy by Architecture</h3>
+          <p class="text-terminal-muted text-xs leading-relaxed">
+            We don't ask you to trust us with your data — we've built the system so we never
+            see it. Tools run client-side. No server processing. No database. No logs.
+            This isn't a policy choice, it's an architectural one.
+          </p>
+        </div>
+        <div class="border border-terminal-border rounded p-4">
+          <h3 class="text-terminal-cyan text-xs font-bold mb-2">The Landscape Principle</h3>
+          <p class="text-terminal-muted text-xs leading-relaxed">
+            Every guide shows you the full spectrum of options with honest trade-offs.
+            We don't tell you "use X" — we show you what exists, what each option costs
+            (in money, convenience, and complexity), and let you decide what fits your
+            threat model.
+          </p>
+        </div>
+        <div class="border border-terminal-border rounded p-4">
+          <h3 class="text-terminal-cyan text-xs font-bold mb-2">Verify, Don't Trust</h3>
+          <p class="text-terminal-muted text-xs leading-relaxed">
+            Our source code is public. Our tools run in your browser where you can inspect
+            them with DevTools. We cite our sources. We explain our methodology.
+            If you can't verify a privacy claim, it's not worth making.
+          </p>
+        </div>
+        <div class="border border-terminal-border rounded p-4">
+          <h3 class="text-terminal-cyan text-xs font-bold mb-2">Education Over Products</h3>
+          <p class="text-terminal-muted text-xs leading-relaxed">
+            We believe privacy tools without privacy education create a false sense of security.
+            Understanding <em>why</em> something matters is more durable than knowing
+            <em>which app</em> to install.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Transparency -->
+    <section>
+      <h2 class="text-terminal-green text-sm font-bold mb-3 pb-2 border-b border-terminal-border">
+        ## Transparency Report
+      </h2>
+      <div class="terminal-window">
+        <div class="terminal-titlebar">
+          <div class="flex gap-2">
+            <div class="terminal-dot terminal-dot-red"></div>
+            <div class="terminal-dot terminal-dot-amber"></div>
+            <div class="terminal-dot terminal-dot-green"></div>
+          </div>
+          <span class="text-terminal-muted text-xs ml-2 select-none">transparency.log</span>
+        </div>
+        <div class="terminal-body text-xs space-y-2">
+          <div><span class="text-terminal-green">tracking_scripts:</span> <span class="text-terminal-red">none</span></div>
+          <div><span class="text-terminal-green">cookies_set:</span> <span class="text-terminal-red">none</span></div>
+          <div><span class="text-terminal-green">external_requests:</span> <span class="text-terminal-red">none</span></div>
+          <div><span class="text-terminal-green">third_party_js:</span> <span class="text-terminal-red">none</span></div>
+          <div><span class="text-terminal-green">user_accounts:</span> <span class="text-terminal-red">none</span></div>
+          <div><span class="text-terminal-green">data_collected:</span> <span class="text-terminal-red">none</span></div>
+          <div><span class="text-terminal-green">server_logs:</span> <span class="text-gray-400">Cloudflare standard (IP addresses not stored by us)</span></div>
+          <div><span class="text-terminal-green">source_code:</span> <a href="https://github.com/vespillo-tech/privacyterminal" class="text-terminal-cyan">github.com/vespillo-tech/privacyterminal</a></div>
+          <div><span class="text-terminal-green">security_contact:</span> <a href="/.well-known/security.txt" class="text-terminal-cyan">/.well-known/security.txt</a></div>
+          <div><span class="text-terminal-green">hosting:</span> <span class="text-gray-400">Cloudflare Pages (static)</span></div>
+          <div><span class="text-terminal-green">monetization:</span> <span class="text-gray-400">none currently — trust-first approach</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How to verify -->
+    <section>
+      <h2 class="text-terminal-green text-sm font-bold mb-3 pb-2 border-b border-terminal-border">
+        ## How to Verify Our Claims
+      </h2>
+      <div class="text-sm text-gray-300 space-y-3">
+        <div class="flex gap-3">
+          <span class="text-terminal-green shrink-0">1.</span>
+          <p>Open your browser's <strong class="text-white">DevTools → Network tab</strong> while using any tool. You'll see zero requests to external servers.</p>
+        </div>
+        <div class="flex gap-3">
+          <span class="text-terminal-green shrink-0">2.</span>
+          <p>Inspect the <a href="https://github.com/vespillo-tech/privacyterminal" class="text-terminal-cyan">source code</a>. Every tool's logic is in plain JavaScript — no obfuscation, no minification of tool logic.</p>
+        </div>
+        <div class="flex gap-3">
+          <span class="text-terminal-green shrink-0">3.</span>
+          <p>Check our <strong class="text-white">Content Security Policy</strong> headers — they block external scripts and connections by default.</p>
+        </div>
+        <div class="flex gap-3">
+          <span class="text-terminal-green shrink-0">4.</span>
+          <p>Use browser extensions like <strong class="text-white">uBlock Origin</strong> or <strong class="text-white">NoScript</strong> to verify no hidden requests occur.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tech stack -->
+    <section class="border-t border-terminal-border pt-6">
+      <h2 class="text-terminal-amber text-glow-amber text-xs uppercase tracking-widest mb-3">
+        > Tech Stack
+      </h2>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+        <div class="text-terminal-muted"><span class="text-terminal-green">framework:</span> Astro</div>
+        <div class="text-terminal-muted"><span class="text-terminal-green">styling:</span> Tailwind CSS</div>
+        <div class="text-terminal-muted"><span class="text-terminal-green">hosting:</span> Cloudflare Pages</div>
+        <div class="text-terminal-muted"><span class="text-terminal-green">fonts:</span> JetBrains Mono (self-hosted)</div>
+        <div class="text-terminal-muted"><span class="text-terminal-green">crypto:</span> Web Crypto API</div>
+        <div class="text-terminal-muted"><span class="text-terminal-green">tools:</span> Client-side JS</div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
