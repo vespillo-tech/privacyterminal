@@ -1,17 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2106 862" role="img" aria-label="Privacy Terminal">
   <defs>
-    <!-- Phosphor glow: layered bloom for authentic CRT look -->
-    <filter id="glow" x="-15%" y="-15%" width="130%" height="130%">
-      <!-- Inner sharp glow -->
-      <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="innerBlur"/>
-      <!-- Mid glow -->
-      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="midBlur"/>
-      <!-- Outer soft bloom -->
-      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="outerBlur"/>
+    <!-- Subtle phosphor glow -->
+    <filter id="glow" x="-5%" y="-5%" width="110%" height="110%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="0.8" result="softBlur"/>
       <feMerge>
-        <feMergeNode in="outerBlur"/>
-        <feMergeNode in="midBlur"/>
-        <feMergeNode in="innerBlur"/>
+        <feMergeNode in="softBlur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
@@ -22,15 +15,7 @@
       <rect y="2" width="100%" height="2" fill="rgba(0,0,0,0.08)" />
     </pattern>
 
-    <!-- Phosphor color: slightly boosted green -->
-    <filter id="phosphor" x="0" y="0" width="100%" height="100%">
-      <feColorMatrix type="matrix" values="
-        0.9 0 0 0 0
-        0 1.1 0 0 0.02
-        0 0 0.9 0 0
-        0 0 0 1 0
-      "/>
-    </filter>
+
   </defs>
   <g transform="translate(0.000000,862.000000) scale(0.100000,-0.100000)"
 fill="#00ff41" stroke="none" filter="url(#glow)">
