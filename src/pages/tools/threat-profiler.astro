@@ -1,0 +1,610 @@
+---
+export const prerender = true;
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Threat Model Calculator | Privacy Terminal" description="Build your personalized privacy threat profile. 28-category threat analysis. 100% client-side — zero data leaves your browser.">
+  <div class="max-w-4xl mx-auto" id="threat-app">
+    <div id="boot-screen" class="tui-box mb-8">
+      <div class="tui-box-title">[ THREAT ANALYSIS ENGINE v3.1.0 ]</div>
+      <div class="p-6 font-mono text-sm" id="boot-log">
+        <div class="text-terminal-green">&gt; Initializing threat analysis engine...</div>
+      </div>
+    </div>
+    <div id="wizard-container" style="display:none">
+      <div class="tui-box mb-6">
+        <div class="tui-box-title" id="step-title">[ STEP 1/10 ]</div>
+        <div class="p-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-terminal-cyan text-sm" id="step-label">IDENTITY &amp; PROFILE</span>
+            <span class="text-terminal-muted text-xs" id="step-counter">1 / 10</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:10%"></div></div>
+          <div class="text-terminal-muted text-xs mt-2 font-mono" id="progress-blocks">&#x2588;&#x2588;&#x2591;&#x2591;&#x2591;&#x2591;&#x2591;&#x2591;&#x2591;&#x2591;&#x2591;&#x2591;&#x2591;&#x2591;&#x2591;&#x2591;&#x2591;&#x2591;&#x2591;&#x2591;</div>
+        </div>
+      </div>
+      <div class="tui-box mb-6">
+        <div class="tui-box-title" id="questions-box-title">[ ID &mdash; IDENTITY &amp; PROFILE ]</div>
+        <div class="p-6" id="questions-container"></div>
+      </div>
+      <div class="flex justify-between items-center mb-8">
+        <button class="btn-terminal" id="btn-back" onclick="wizardBack()" style="display:none">&larr; BACK</button>
+        <div></div>
+        <button class="btn-terminal" id="btn-next" onclick="wizardNext()">NEXT &rarr;</button>
+      </div>
+    </div>
+    <div id="results-container" style="display:none"></div>
+  </div>
+</BaseLayout>
+
+<script>
+const THREATS=[
+{id:'mass_surveillance',label:'Mass Surveillance',desc:'Government bulk data collection programs',color:'red'},
+{id:'corporate_tracking',label:'Corporate Tracking',desc:'Ad-tech, data brokers, behavioral profiling',color:'amber'},
+{id:'targeted_surveillance',label:'Targeted Surveillance',desc:'Directed monitoring by state or corporate actors',color:'red'},
+{id:'financial_fraud',label:'Financial Fraud',desc:'Identity theft, account takeover, SIM swap',color:'amber'},
+{id:'location_tracking',label:'Location Tracking',desc:'Physical movement monitoring',color:'amber'},
+{id:'doxxing_harassment',label:'Doxxing and Harassment',desc:'Personal info exposure, coordinated attacks',color:'red'},
+{id:'stalking_domestic',label:'Stalking and Domestic',desc:'Interpersonal surveillance, device monitoring',color:'red'},
+{id:'social_engineering',label:'Social Engineering',desc:'Phishing, pretexting, manipulation attacks',color:'amber'},
+{id:'device_compromise',label:'Device Compromise',desc:'Malware, physical access, device theft',color:'amber'},
+{id:'network_attacks',label:'Network Attacks',desc:'MITM, rogue WiFi, DNS hijacking',color:'amber'},
+{id:'algorithmic_disc',label:'Algorithmic Discrimination',desc:'Insurance, credit, employment profiling',color:'amber'},
+{id:'data_broker',label:'Data Broker Profiling',desc:'People-search sites, background check companies',color:'amber'},
+{id:'border_travel',label:'Border and Travel',desc:'Device searches, forced decryption at borders',color:'amber'},
+{id:'employer_monitoring',label:'Employer Monitoring',desc:'Workplace surveillance, BYOD, productivity scoring',color:'amber'},
+{id:'legal_subpoena',label:'Legal and Subpoena',desc:'Data requests, compelled disclosure',color:'amber'},
+{id:'ai_deepfakes',label:'AI Deepfakes',desc:'AI impersonation, voice cloning, synthetic media',color:'amber'},
+{id:'genetic_dna',label:'Genetic and DNA Data',desc:'Permanent biometric exposure, bankruptcy data sale',color:'red'},
+{id:'health_reproductive',label:'Health and Reproductive',desc:'Health app data weaponization, wearable sharing',color:'red'},
+{id:'connected_vehicle',label:'Connected Vehicle',desc:'Car tracking, driving behavior, cabin audio',color:'amber'},
+{id:'smart_home_iot',label:'Smart Home and IoT',desc:'Voice assistants, smart TVs, ambient surveillance',color:'amber'},
+{id:'data_misuse_creep',label:'Data Purpose Creep',desc:'Data used beyond original consent',color:'amber'},
+{id:'ai_training_harvest',label:'AI Training Harvest',desc:'Content scraped for AI training without consent',color:'amber'},
+{id:'children_footprint',label:'Children Digital Footprint',desc:'Parental oversharing, school surveillance tech',color:'red'},
+{id:'digital_estate',label:'Digital Estate Bankruptcy',desc:'Company dies, your data sold to highest bidder',color:'amber'},
+{id:'biometric_creep',label:'Biometric Creep',desc:'Facial recognition, voiceprint, gait analysis',color:'red'},
+{id:'data_aggregation',label:'Data Aggregation Inference',desc:'Combining datasets to infer sensitive attributes',color:'amber'},
+{id:'wireless_proximity',label:'Wireless Proximity',desc:'Bluetooth beacons, WiFi probes, Stingrays',color:'amber'},
+{id:'supply_chain',label:'Third-Party Supply Chain',desc:'Vendor data sharing with weaker security',color:'amber'},
+];
+const STEPS=[
+{id:'identity',label:'Identity and Profile',icon:'ID'},
+{id:'location',label:'Location and Travel',icon:'GEO'},
+{id:'digital',label:'Digital Life',icon:'NET'},
+{id:'devices',label:'Devices and Home',icon:'DEV'},
+{id:'financial',label:'Financial',icon:'FIN'},
+{id:'professional',label:'Professional',icon:'PRO'},
+{id:'family',label:'Relationships and Family',icon:'FAM'},
+{id:'political',label:'Political and Speech',icon:'POL'},
+{id:'health',label:'Health and Biology',icon:'BIO'},
+{id:'defenses',label:'History and Defenses',icon:'DEF'},
+];
+const QUESTIONS=[
+{id:'q_real_name',step:'identity',text:'Do you use your real name online?',type:'radio',options:[
+ {label:'Yes - real name everywhere',weights:{mass_surveillance:1,corporate_tracking:2,targeted_surveillance:2,doxxing_harassment:3,data_broker:2,ai_deepfakes:2,biometric_creep:1,data_aggregation:2}},
+ {label:'Real name on professional profiles only',weights:{corporate_tracking:1,targeted_surveillance:1,doxxing_harassment:1,data_broker:1,ai_deepfakes:1,data_aggregation:1}},
+ {label:'Pseudonym mostly, real name professionally',weights:{doxxing_harassment:1,data_broker:1,ai_deepfakes:1}},
+ {label:'Strict pseudonymity - no real name online',weights:{}},
+]},
+{id:'q_public_figure',step:'identity',text:'What is your public profile level?',type:'radio',options:[
+ {label:'Very public - journalist, activist, influencer, politician',weights:{targeted_surveillance:3,doxxing_harassment:3,ai_deepfakes:3,biometric_creep:2,mass_surveillance:2,data_aggregation:2}},
+ {label:'Moderately public - local business, academic, professional',weights:{targeted_surveillance:1,doxxing_harassment:2,ai_deepfakes:1,data_aggregation:1}},
+ {label:'Semi-private - visible but not notable',weights:{doxxing_harassment:1,corporate_tracking:1}},
+ {label:'Private - minimal online presence',weights:{}},
+]},
+{id:'q_following',step:'identity',text:'What is your largest social media following?',type:'radio',options:[
+ {label:'100K+ followers',weights:{targeted_surveillance:2,doxxing_harassment:3,ai_deepfakes:3,biometric_creep:2,mass_surveillance:1}},
+ {label:'1K-100K followers',weights:{doxxing_harassment:2,ai_deepfakes:2,targeted_surveillance:1}},
+ {label:'Under 1K or friends only',weights:{doxxing_harassment:1}},
+ {label:'No social media or private accounts',weights:{}},
+]},
+{id:'q_photos',step:'identity',text:'How many photos of your face exist publicly online?',type:'radio',options:[
+ {label:'Many - regularly post, easily searchable',weights:{biometric_creep:3,ai_deepfakes:3,doxxing_harassment:2,targeted_surveillance:1,data_aggregation:2}},
+ {label:'Some - profile pics, occasional posts',weights:{biometric_creep:2,ai_deepfakes:2,doxxing_harassment:1}},
+ {label:'Very few - rarely post, private groups only',weights:{biometric_creep:1,ai_deepfakes:1}},
+ {label:'None - no face photos online',weights:{}},
+]},
+{id:'q_voice',step:'identity',text:'Have you published significant audio or video of your voice publicly?',type:'radio',options:[
+ {label:'Yes - podcast, YouTube, interviews, public speeches',weights:{ai_deepfakes:3,targeted_surveillance:1}},
+ {label:'Some - a few videos or audio clips',weights:{ai_deepfakes:2}},
+ {label:'Minimal - brief clips only',weights:{ai_deepfakes:1}},
+ {label:'No public audio or video',weights:{}},
+]},
+{id:'q_country',step:'location',text:'What region or jurisdiction are you primarily in?',type:'radio',options:[
+ {label:'Five Eyes country (US, UK, Canada, Australia, NZ)',weights:{mass_surveillance:3,legal_subpoena:3,targeted_surveillance:2,border_travel:2}},
+ {label:'EU or EEA (GDPR coverage)',weights:{mass_surveillance:2,legal_subpoena:2,targeted_surveillance:1,border_travel:1}},
+ {label:'Other democratic country',weights:{mass_surveillance:1,legal_subpoena:1,targeted_surveillance:1,border_travel:1}},
+ {label:'Authoritarian or high-surveillance regime',weights:{mass_surveillance:3,targeted_surveillance:3,legal_subpoena:3,border_travel:3,doxxing_harassment:2}},
+]},
+{id:'q_intl_travel',step:'location',text:'How often do you cross international borders?',type:'radio',options:[
+ {label:'Frequently - multiple times per year',weights:{border_travel:3,mass_surveillance:2,targeted_surveillance:1,wireless_proximity:1}},
+ {label:'Occasionally - once or twice a year',weights:{border_travel:2,mass_surveillance:1}},
+ {label:'Rarely - less than once a year',weights:{border_travel:1}},
+ {label:'Never',weights:{}},
+]},
+{id:'q_border_risk',step:'location',text:'Do you travel through countries with aggressive device inspection?',type:'radio',options:[
+ {label:'Yes - regularly',weights:{border_travel:3,targeted_surveillance:2,mass_surveillance:2,device_compromise:2}},
+ {label:'Yes - occasionally',weights:{border_travel:2,targeted_surveillance:1,mass_surveillance:1}},
+ {label:'No',weights:{}},
+]},
+{id:'q_location_sharing',step:'location',text:'How much do you share your real-time or historical location?',type:'radio',options:[
+ {label:'Location always on, share with many apps and contacts',weights:{location_tracking:3,corporate_tracking:2,stalking_domestic:2,data_aggregation:2,connected_vehicle:1}},
+ {label:'Location on but only selected apps',weights:{location_tracking:2,corporate_tracking:1,stalking_domestic:1,data_aggregation:1}},
+ {label:'Location off most of the time',weights:{location_tracking:1}},
+ {label:'Location strictly disabled',weights:{}},
+]},
+{id:'q_social_platforms',step:'digital',text:'Which social media platforms do you use with your real identity? (select all)',type:'multi',options:[
+ {label:'Facebook',weights:{corporate_tracking:2,data_broker:2,algorithmic_disc:1,data_aggregation:2,ai_training_harvest:1}},
+ {label:'Instagram',weights:{corporate_tracking:2,biometric_creep:1,data_aggregation:1,ai_training_harvest:1}},
+ {label:'LinkedIn',weights:{corporate_tracking:1,data_broker:1,employer_monitoring:1,targeted_surveillance:1}},
+ {label:'TikTok',weights:{corporate_tracking:2,biometric_creep:2,mass_surveillance:1,data_aggregation:2,ai_training_harvest:2}},
+ {label:'X / Twitter',weights:{corporate_tracking:1,doxxing_harassment:1,targeted_surveillance:1,ai_training_harvest:1}},
+ {label:'YouTube public channel',weights:{corporate_tracking:1,ai_training_harvest:2,biometric_creep:1,ai_deepfakes:1}},
+ {label:'None or only pseudonymous accounts',weights:{}},
+]},
+{id:'q_email',step:'digital',text:'What is your primary email provider?',type:'radio',options:[
+ {label:'Gmail or Google Workspace',weights:{corporate_tracking:3,data_aggregation:2,algorithmic_disc:1,ai_training_harvest:2}},
+ {label:'Outlook or Hotmail or Microsoft',weights:{corporate_tracking:2,data_aggregation:2,mass_surveillance:1}},
+ {label:'Yahoo or AOL or other ad-supported',weights:{corporate_tracking:2,data_aggregation:2}},
+ {label:'ISP-provided email',weights:{corporate_tracking:1,mass_surveillance:1}},
+ {label:'ProtonMail or Tutanota or Fastmail',weights:{corporate_tracking:1}},
+ {label:'Self-hosted email server',weights:{}},
+]},
+{id:'q_cloud',step:'digital',text:'How do you handle cloud storage and backup?',type:'radio',options:[
+ {label:'Heavy use - Google Drive, iCloud, or Dropbox unencrypted',weights:{corporate_tracking:2,mass_surveillance:2,data_aggregation:2,digital_estate:2,supply_chain:1}},
+ {label:'Some cloud but selective',weights:{corporate_tracking:1,mass_surveillance:1,digital_estate:1}},
+ {label:'E2E-encrypted cloud (Proton Drive, Tresorit)',weights:{digital_estate:1}},
+ {label:'Local only or self-hosted',weights:{}},
+]},
+{id:'q_accounts',step:'digital',text:'Roughly how many online accounts do you have?',type:'radio',options:[
+ {label:'100+ accounts',weights:{data_broker:2,digital_estate:2,supply_chain:2,data_misuse_creep:2,financial_fraud:1}},
+ {label:'20-100 accounts',weights:{data_broker:1,digital_estate:1,supply_chain:1,data_misuse_creep:1}},
+ {label:'Under 20 accounts',weights:{digital_estate:1}},
+ {label:'Minimal - only essential services',weights:{}},
+]},
+{id:'q_posting',step:'digital',text:'How frequently do you post content publicly online?',type:'radio',options:[
+ {label:'Daily - multiple posts, frequent engagement',weights:{corporate_tracking:2,ai_training_harvest:2,doxxing_harassment:1,data_aggregation:2,biometric_creep:1}},
+ {label:'Weekly - occasional posts',weights:{corporate_tracking:1,ai_training_harvest:1,data_aggregation:1}},
+ {label:'Rarely - mostly lurk',weights:{ai_training_harvest:1}},
+ {label:'Never post publicly',weights:{}},
+]},
+{id:'q_phone_os',step:'devices',text:'What is your primary smartphone OS?',type:'radio',options:[
+ {label:'Android - stock Google Pixel',weights:{corporate_tracking:3,mass_surveillance:2,location_tracking:2,data_aggregation:2}},
+ {label:'Android - Samsung or other vendor',weights:{corporate_tracking:3,mass_surveillance:2,location_tracking:2,data_aggregation:2,supply_chain:1}},
+ {label:'iOS - default settings',weights:{corporate_tracking:2,mass_surveillance:1,location_tracking:2,biometric_creep:1}},
+ {label:'iOS - hardened (Siri off, permissions restricted)',weights:{corporate_tracking:1,location_tracking:1}},
+ {label:'De-Googled Android (GrapheneOS, CalyxOS)',weights:{location_tracking:1}},
+ {label:'Feature phone or no smartphone',weights:{wireless_proximity:1}},
+]},
+{id:'q_computer_os',step:'devices',text:'What OS do you use on your computer?',type:'radio',options:[
+ {label:'Windows default settings',weights:{corporate_tracking:2,mass_surveillance:1,data_aggregation:1,supply_chain:1}},
+ {label:'macOS default settings',weights:{corporate_tracking:2,data_aggregation:1}},
+ {label:'Linux mainstream (Ubuntu, Mint)',weights:{corporate_tracking:1}},
+ {label:'Linux hardened (Debian, Arch, NixOS)',weights:{}},
+ {label:'Qubes OS or Tails or Whonix',weights:{}},
+]},
+{id:'q_smart_home',step:'devices',text:'Do you use smart home or voice assistant devices?',type:'radio',options:[
+ {label:'Yes - Alexa, Google Home, multiple smart devices',weights:{smart_home_iot:3,mass_surveillance:1,corporate_tracking:2,data_aggregation:2,supply_chain:1}},
+ {label:'A few smart devices or one assistant',weights:{smart_home_iot:2,corporate_tracking:1,data_aggregation:1}},
+ {label:'Smart TV only',weights:{smart_home_iot:1,corporate_tracking:1}},
+ {label:'No smart home devices',weights:{}},
+]},
+{id:'q_car',step:'devices',text:'Do you have a connected vehicle (2015 or newer)?',type:'radio',options:[
+ {label:'Yes - actively use connected features (GPS, CarPlay, app)',weights:{connected_vehicle:3,location_tracking:2,data_aggregation:2,corporate_tracking:1}},
+ {label:'Yes - connected car but rarely use features',weights:{connected_vehicle:2,location_tracking:1}},
+ {label:'Older vehicle with no smart features',weights:{}},
+ {label:'No car',weights:{}},
+]},
+{id:'q_wearables',step:'devices',text:'Do you use wearables or fitness trackers?',type:'radio',options:[
+ {label:'Yes - smartwatch with health data sync to cloud',weights:{health_reproductive:2,corporate_tracking:1,data_aggregation:2,biometric_creep:1}},
+ {label:'Basic step counter, no health metrics',weights:{corporate_tracking:1,data_aggregation:1}},
+ {label:'No wearables',weights:{}},
+]},
+{id:'q_iot',step:'devices',text:'Do you have IoT devices at home (cameras, locks, appliances)?',type:'radio',options:[
+ {label:'Many - smart cameras, locks, appliances',weights:{smart_home_iot:3,network_attacks:2,supply_chain:2,data_aggregation:1}},
+ {label:'A few IoT devices',weights:{smart_home_iot:1,supply_chain:1}},
+ {label:'None beyond phone and computer',weights:{}},
+]},
+{id:'q_banking',step:'financial',text:'How do you manage your finances online?',type:'radio',options:[
+ {label:'Everything online - bank, invest, crypto, all digital',weights:{financial_fraud:3,network_attacks:2,social_engineering:2,device_compromise:2,algorithmic_disc:1}},
+ {label:'Mostly online with some in-person',weights:{financial_fraud:2,network_attacks:1,social_engineering:1}},
+ {label:'Minimal online, mostly in-person',weights:{financial_fraud:1}},
+ {label:'Primarily cash, no online banking',weights:{}},
+]},
+{id:'q_crypto',step:'financial',text:'Do you hold cryptocurrency or significant digital assets?',type:'radio',options:[
+ {label:'Yes - significant holdings over $10K',weights:{financial_fraud:3,targeted_surveillance:2,social_engineering:3,device_compromise:2}},
+ {label:'Yes - small amounts',weights:{financial_fraud:2,social_engineering:1}},
+ {label:'No crypto holdings',weights:{}},
+]},
+{id:'q_shopping',step:'financial',text:'How frequently do you shop online?',type:'radio',options:[
+ {label:'Very frequently - multiple purchases per week',weights:{corporate_tracking:2,financial_fraud:1,data_aggregation:2,algorithmic_disc:1,supply_chain:1}},
+ {label:'Regularly - a few times per month',weights:{corporate_tracking:1,data_aggregation:1}},
+ {label:'Rarely',weights:{}},
+]},
+{id:'q_assets',step:'financial',text:'Which best describes your financial asset level?',type:'radio',options:[
+ {label:'High net worth - significant savings, investments, property',weights:{targeted_surveillance:2,financial_fraud:3,social_engineering:2,algorithmic_disc:2}},
+ {label:'Middle income - moderate savings and assets',weights:{financial_fraud:2,algorithmic_disc:1}},
+ {label:'Lower income or student',weights:{financial_fraud:1,algorithmic_disc:2}},
+]},
+{id:'q_breach',step:'financial',text:'Have your credentials appeared in a known data breach?',type:'radio',options:[
+ {label:'Yes - multiple breaches confirmed',weights:{financial_fraud:3,social_engineering:2,data_broker:2,data_aggregation:2}},
+ {label:'Yes - one breach confirmed',weights:{financial_fraud:2,social_engineering:1,data_broker:1}},
+ {label:'Not that I know of',weights:{financial_fraud:1}},
+ {label:'Regularly check - none found',weights:{}},
+]},
+{id:'q_occupation',step:'professional',text:'What best describes your occupation?',type:'radio',options:[
+ {label:'Journalist, investigative reporter, documentarian',weights:{targeted_surveillance:3,mass_surveillance:3,legal_subpoena:3,doxxing_harassment:3,device_compromise:2,border_travel:2}},
+ {label:'Human rights activist, NGO worker, dissident',weights:{targeted_surveillance:3,mass_surveillance:2,legal_subpoena:2,doxxing_harassment:3,border_travel:2}},
+ {label:'Attorney or legal professional',weights:{targeted_surveillance:2,legal_subpoena:3,mass_surveillance:1,data_misuse_creep:2}},
+ {label:'Healthcare or medical professional',weights:{health_reproductive:2,legal_subpoena:2,supply_chain:2,employer_monitoring:1}},
+ {label:'Executive, C-suite, or business owner',weights:{targeted_surveillance:2,financial_fraud:2,social_engineering:2,employer_monitoring:1}},
+ {label:'Government, law enforcement, or military',weights:{targeted_surveillance:2,mass_surveillance:2,legal_subpoena:2,border_travel:2}},
+ {label:'Software developer, security researcher, or IT',weights:{targeted_surveillance:1,data_aggregation:1}},
+ {label:'Student, general professional, or other',weights:{}},
+]},
+{id:'q_sensitive_data',step:'professional',text:'Do you handle sensitive client, patient, or classified data?',type:'radio',options:[
+ {label:'Yes - classified, privileged, or regulated data daily',weights:{targeted_surveillance:2,legal_subpoena:3,supply_chain:2,data_misuse_creep:2,employer_monitoring:1}},
+ {label:'Yes - sensitive but not classified',weights:{legal_subpoena:2,supply_chain:1,data_misuse_creep:1}},
+ {label:'No sensitive professional data',weights:{}},
+]},
+{id:'q_remote',step:'professional',text:'Do you work remotely using employer devices or networks?',type:'radio',options:[
+ {label:'Yes - company device with MDM or monitoring software',weights:{employer_monitoring:3,data_misuse_creep:2,supply_chain:1}},
+ {label:'Yes - personal device accessing company systems BYOD',weights:{employer_monitoring:2,data_misuse_creep:1,device_compromise:1}},
+ {label:'Mostly in-person, no remote work',weights:{employer_monitoring:1}},
+ {label:'Self-employed or freelancer',weights:{}},
+]},
+{id:'q_employer_spy',step:'professional',text:'Does your employer monitor your digital activity?',type:'radio',options:[
+ {label:'Yes - activity monitoring, keystroke logging, or screen capture',weights:{employer_monitoring:3,data_misuse_creep:2}},
+ {label:'Likely - IT audits, email scanning',weights:{employer_monitoring:2,data_misuse_creep:1}},
+ {label:'Minimal or unknown',weights:{employer_monitoring:1}},
+ {label:'No or self-employed',weights:{}},
+]},
+{id:'q_shared_devices',step:'family',text:'Do you share devices with household members?',type:'radio',options:[
+ {label:'Yes - share phone or computer regularly',weights:{stalking_domestic:2,device_compromise:1,data_misuse_creep:1}},
+ {label:'Shared household computer only',weights:{stalking_domestic:1,data_misuse_creep:1}},
+ {label:'No - all devices are personal and private',weights:{}},
+]},
+{id:'q_children',step:'family',text:'Do you have children with a significant online presence?',type:'radio',options:[
+ {label:'Yes - post about children publicly, they use social media',weights:{children_footprint:3,doxxing_harassment:2,biometric_creep:2,data_aggregation:1}},
+ {label:'Some - occasional photos, limited social media',weights:{children_footprint:2,biometric_creep:1}},
+ {label:'Minimal - private only',weights:{children_footprint:1}},
+ {label:'No children or children are adults',weights:{}},
+]},
+{id:'q_domestic',step:'family',text:'Do you have concerns about domestic surveillance or stalking?',type:'radio',options:[
+ {label:'Yes - active concern, separation, or custody dispute',weights:{stalking_domestic:3,device_compromise:2,location_tracking:3,doxxing_harassment:2,social_engineering:1}},
+ {label:'Past concern (resolved)',weights:{stalking_domestic:2,device_compromise:1}},
+ {label:'No concern',weights:{}},
+]},
+{id:'q_family_public',step:'family',text:'Do any immediate family members have high public profiles?',type:'radio',options:[
+ {label:'Yes - politician, journalist, executive, or activist',weights:{targeted_surveillance:2,doxxing_harassment:2,social_engineering:2}},
+ {label:'Somewhat - modestly public professional',weights:{targeted_surveillance:1,doxxing_harassment:1}},
+ {label:'No public figures in immediate family',weights:{}},
+]},
+{id:'q_political_online',step:'political',text:'How politically active are you online?',type:'radio',options:[
+ {label:'Very active - public political posts, organizing, campaigning',weights:{targeted_surveillance:3,mass_surveillance:2,doxxing_harassment:3,legal_subpoena:2,algorithmic_disc:1}},
+ {label:'Moderately active - share views, engage in debates',weights:{targeted_surveillance:2,mass_surveillance:1,doxxing_harassment:2,legal_subpoena:1}},
+ {label:'Occasionally share political views',weights:{targeted_surveillance:1,doxxing_harassment:1}},
+ {label:'Avoid political content online',weights:{}},
+]},
+{id:'q_protest',step:'political',text:'Do you attend protests or public demonstrations?',type:'radio',options:[
+ {label:'Yes - regularly, have been photographed or arrested',weights:{targeted_surveillance:3,mass_surveillance:2,biometric_creep:3,location_tracking:2,legal_subpoena:2,wireless_proximity:2}},
+ {label:'Yes - occasionally',weights:{targeted_surveillance:2,mass_surveillance:1,biometric_creep:2,location_tracking:1,wireless_proximity:1}},
+ {label:'Rarely or never',weights:{}},
+]},
+{id:'q_speech',step:'political',text:'Do you regularly publish controversial or power-critical content?',type:'radio',options:[
+ {label:'Yes - regularly challenge power, publish sensitive investigations',weights:{targeted_surveillance:3,doxxing_harassment:3,legal_subpoena:2,mass_surveillance:1}},
+ {label:'Sometimes - occasionally controversial topics',weights:{doxxing_harassment:2,targeted_surveillance:1,legal_subpoena:1}},
+ {label:'No - avoid controversy',weights:{}},
+]},
+{id:'q_organizing',step:'political',text:'Do you organize or coordinate groups or campaigns?',type:'radio',options:[
+ {label:'Yes - lead significant organizing efforts',weights:{targeted_surveillance:3,legal_subpoena:2,mass_surveillance:2,device_compromise:1,social_engineering:1}},
+ {label:'Participate but do not lead',weights:{targeted_surveillance:1,mass_surveillance:1}},
+ {label:'No organizing activities',weights:{}},
+]},
+{id:'q_health_apps',step:'health',text:'Do you use health or fitness tracking apps?',type:'radio',options:[
+ {label:'Yes - comprehensive (Apple Health, Fitbit, Oura, period tracking)',weights:{health_reproductive:3,corporate_tracking:2,data_aggregation:2,algorithmic_disc:2,supply_chain:1}},
+ {label:'Basic fitness tracking only',weights:{health_reproductive:1,corporate_tracking:1,data_aggregation:1}},
+ {label:'No health or fitness apps',weights:{}},
+]},
+{id:'q_dna',step:'health',text:'Have you done consumer DNA testing (23andMe, AncestryDNA)?',type:'radio',options:[
+ {label:'Yes - opted into research sharing and relative matching',weights:{genetic_dna:3,data_misuse_creep:3,digital_estate:3,algorithmic_disc:2,supply_chain:2}},
+ {label:'Yes - kept settings restricted',weights:{genetic_dna:2,digital_estate:2,data_misuse_creep:2}},
+ {label:'No DNA testing',weights:{}},
+]},
+{id:'q_repro_tracking',step:'health',text:'Do you use apps for reproductive or menstrual health tracking?',type:'radio',options:[
+ {label:'Yes - cloud-synced period, fertility, or pregnancy app',weights:{health_reproductive:3,corporate_tracking:2,algorithmic_disc:2,legal_subpoena:2,data_misuse_creep:2}},
+ {label:'Yes - local or offline tracking only',weights:{health_reproductive:1}},
+ {label:'No',weights:{}},
+]},
+{id:'q_health_sharing',step:'health',text:'Have you shared health data with third-party apps or employers?',type:'radio',options:[
+ {label:'Yes - synced to employer wellness program or insurer',weights:{health_reproductive:3,algorithmic_disc:3,employer_monitoring:2,data_misuse_creep:2}},
+ {label:'Shared with providers but not employers or apps',weights:{health_reproductive:1,supply_chain:1}},
+ {label:'No health data sharing beyond my doctor',weights:{}},
+]},
+{id:'q_incidents',step:'defenses',text:'Have you previously experienced any of these? (select all)',type:'multi',options:[
+ {label:'Been hacked or had accounts compromised',weights:{financial_fraud:2,social_engineering:1,device_compromise:2,data_broker:1}},
+ {label:'Been doxxed - personal info exposed online',weights:{doxxing_harassment:3,targeted_surveillance:1,stalking_domestic:1}},
+ {label:'Been stalked or harassed online or offline',weights:{stalking_domestic:3,doxxing_harassment:2,location_tracking:1}},
+ {label:'Received targeted phishing or spear-phishing',weights:{social_engineering:2,targeted_surveillance:1,financial_fraud:1}},
+ {label:'Had a device compromised by malware or physical access',weights:{device_compromise:3,targeted_surveillance:1,stalking_domestic:1}},
+ {label:'None of the above',weights:{}},
+]},
+{id:'q_vpn',step:'defenses',text:'Do you use a VPN?',type:'radio',options:[
+ {label:'Yes - trusted paid VPN (Mullvad, ProtonVPN, IVPN)',weights:{}},
+ {label:'Yes - free or less-trusted VPN',weights:{mass_surveillance:1,corporate_tracking:1}},
+ {label:'No VPN',weights:{mass_surveillance:2,network_attacks:2,corporate_tracking:1}},
+ {label:'Use Tor instead of or alongside VPN',weights:{}},
+]},
+{id:'q_passwords',step:'defenses',text:'Do you use a password manager?',type:'radio',options:[
+ {label:'Yes - trusted password manager (Bitwarden, 1Password, KeePass)',weights:{}},
+ {label:'Browser built-in password saving',weights:{financial_fraud:1,device_compromise:1}},
+ {label:'Reuse passwords across sites',weights:{financial_fraud:3,social_engineering:2,device_compromise:2,data_broker:1}},
+ {label:'Write passwords down or no system',weights:{financial_fraud:2,device_compromise:2}},
+]},
+{id:'q_2fa',step:'defenses',text:'Do you use two-factor authentication?',type:'radio',options:[
+ {label:'Yes - hardware key (YubiKey) on critical accounts',weights:{}},
+ {label:'Yes - authenticator app (TOTP) on most accounts',weights:{financial_fraud:1}},
+ {label:'Yes - SMS-based 2FA only',weights:{financial_fraud:2,social_engineering:1}},
+ {label:'No 2FA',weights:{financial_fraud:3,social_engineering:2,device_compromise:1}},
+]},
+{id:'q_messaging',step:'defenses',text:'What messaging do you use for sensitive communications?',type:'radio',options:[
+ {label:'Signal with disappearing messages enabled',weights:{}},
+ {label:'Signal or other E2E without disappearing messages',weights:{legal_subpoena:1,targeted_surveillance:1}},
+ {label:'WhatsApp (E2E but metadata retained)',weights:{mass_surveillance:1,corporate_tracking:1,targeted_surveillance:1}},
+ {label:'iMessage, Telegram, or standard SMS',weights:{mass_surveillance:2,targeted_surveillance:2,legal_subpoena:2,corporate_tracking:1}},
+]},
+{id:'q_browser',step:'defenses',text:'What browser do you primarily use?',type:'radio',options:[
+ {label:'Tor Browser',weights:{}},
+ {label:'Firefox with uBlock Origin and hardened settings',weights:{corporate_tracking:1}},
+ {label:'Brave Browser',weights:{corporate_tracking:1,data_aggregation:1}},
+ {label:'Firefox default settings',weights:{corporate_tracking:1,data_aggregation:1}},
+ {label:'Safari default settings',weights:{corporate_tracking:2,data_aggregation:1}},
+ {label:'Chrome, Edge, or Chromium default settings',weights:{corporate_tracking:3,data_aggregation:3,mass_surveillance:1,ai_training_harvest:1}},
+]},
+];
+const RECS={
+ mass_surveillance:'Use a no-log VPN (Mullvad, ProtonVPN), encrypted DNS-over-HTTPS, Tor Browser for sensitive research.',
+ corporate_tracking:'Switch to Firefox + uBlock Origin, use DuckDuckGo or Brave Search, opt out of ad tracking.',
+ targeted_surveillance:'Use Tor Browser, compartmentalize identities, encrypt all devices, consider GrapheneOS, Signal with disappearing messages.',
+ financial_fraud:'Use a password manager, hardware 2FA (YubiKey), virtual card numbers, freeze your credit reports.',
+ location_tracking:'Disable location for most apps, use a VPN, turn off WiFi and Bluetooth when not needed.',
+ doxxing_harassment:'Remove yourself from data broker sites, lock down social media, use a PO box, separate identities.',
+ stalking_domestic:'Factory reset suspected compromised devices, new accounts on new hardware, contact techsafety.org.',
+ social_engineering:'Verify unusual requests via a separate known channel. Use phishing-resistant 2FA. Skeptical of urgency.',
+ device_compromise:'Enable full-disk encryption, keep OS updated, use remote wipe, avoid public USB charging.',
+ network_attacks:'Use a trusted VPN on public WiFi, encrypted DNS, verify HTTPS. Avoid sensitive actions on untrusted networks.',
+ algorithmic_disc:'Limit health and financial data sharing, use cash, opt out of employer wellness data collection.',
+ data_broker:'Use a removal service or opt out from LexisNexis, Spokeo, BeenVerified, and Whitepages.',
+ border_travel:'Travel with a clean device or burner. Enable full-disk encryption. Know your rights at any border.',
+ employer_monitoring:'Never use company devices for personal activity. Assume all work traffic is logged.',
+ legal_subpoena:'Use zero-knowledge providers with warrant canaries. Minimize retained data.',
+ ai_deepfakes:'Establish a personal verification codeword with contacts. Limit high-quality face and voice content online.',
+ genetic_dna:'DNA data is permanent. Consider deleting from consumer DNA services. Review bankruptcy data sale policies.',
+ health_reproductive:'Use offline period tracking apps (Drip). Avoid syncing health data to cloud.',
+ connected_vehicle:'Opt out of connected car data sharing in vehicle settings. Use OsmAnd instead of built-in GPS.',
+ smart_home_iot:'Segment IoT on a separate VLAN. Mute smart speakers when not in use.',
+ data_misuse_creep:'Review app permissions quarterly. Use ToS;DR to understand privacy policies. Delete unused accounts.',
+ ai_training_harvest:'Use Spawning AI opt-out tools. Watermark creative work.',
+ children_footprint:'Stop posting photos of children publicly. Review school surveillance tech policies.',
+ digital_estate:'Download your data from major platforms regularly. Prefer services with clear data-on-death policies.',
+ biometric_creep:'Minimize face photos online. Wear hats near surveillance cameras.',
+ data_aggregation:'Use compartmentalized identities. Use Firefox Multi-Account Containers. Avoid linking accounts.',
+ wireless_proximity:'Disable Bluetooth and WiFi when not in use. At protests use airplane mode.',
+ supply_chain:'Audit third-party integrations. Review privacy policies after any service acquisition.',
+};
+const state={currentStep:0,answers:{}};
+function el(id){return document.getElementById(id);}
+function lvlStyle(l){
+if(l==='CRITICAL')return{t:'#ff4444',b:'#ff4444',bd:'border-color:#ff4444;color:#ff4444'};
+if(l==='HIGH')return{t:'#ffb000',b:'#ffb000',bd:'border-color:#ffb000;color:#ffb000'};
+if(l==='MODERATE')return{t:'#fde047',b:'#fde047',bd:'border-color:#fde047;color:#fde047'};
+return{t:'#00ff41',b:'#00ff41',bd:'border-color:#1a2e1a;color:#00ff41'};
+}
+function computeScores(){
+const raw={},maxP={};
+THREATS.forEach(t=>{raw[t.id]=0;maxP[t.id]=0;});
+QUESTIONS.forEach(q=>{
+THREATS.forEach(t=>{
+if(q.type==='radio'){maxP[t.id]+=q.options.reduce((m,o)=>Math.max(m,o.weights[t.id]||0),0);}
+else{maxP[t.id]+=q.options.reduce((s,o)=>s+(o.weights[t.id]||0),0);}
+});
+});
+QUESTIONS.forEach(q=>{
+const ans=state.answers[q.id];
+if(ans==null)return;
+if(q.type==='radio'){const o=q.options[ans];if(o)THREATS.forEach(t=>{raw[t.id]+=(o.weights[t.id]||0);});}
+else{(Array.isArray(ans)?ans:[]).forEach(i=>{const o=q.options[i];if(o)THREATS.forEach(t=>{raw[t.id]+=(o.weights[t.id]||0);});});}
+});
+const sc={};
+THREATS.forEach(t=>{
+const max=maxP[t.id]||1;
+const pct=Math.min(100,Math.round((raw[t.id]/max)*100));
+sc[t.id]={pct,level:pct>=75?'CRITICAL':pct>=50?'HIGH':pct>=25?'MODERATE':'LOW'};
+});
+return sc;
+}
+function updateProgress(){
+const s=state.currentStep,total=STEPS.length;
+const pct=Math.round(((s+1)/total)*100);
+const f=Math.round((s+1)/total*20);
+el('step-title').textContent='[ STEP '+(s+1)+'/'+total+' - '+STEPS[s].label.toUpperCase()+' ]';
+el('step-label').textContent=STEPS[s].label;
+el('step-counter').textContent=(s+1)+' / '+total;
+el('progress-fill').style.width=pct+'%';
+el('progress-blocks').textContent='\u2588'.repeat(f)+'\u2591'.repeat(20-f);
+el('questions-box-title').textContent='[ '+STEPS[s].icon+' - '+STEPS[s].label.toUpperCase()+' ]';
+el('btn-back').style.display=s>0?'inline-block':'none';
+el('btn-next').innerHTML=s===total-1?'ANALYZE THREATS &rarr;':'NEXT &rarr;';
+}
+function renderStep(){
+const stepId=STEPS[state.currentStep].id;
+const qs=QUESTIONS.filter(q=>q.step===stepId);
+const con=el('questions-container');
+con.innerHTML='';
+qs.forEach((q,qi)=>{
+const d=document.createElement('div');
+d.className='mb-8';
+const t=document.createElement('div');
+t.className='text-terminal-green font-bold mb-3';
+t.textContent='> '+q.text;
+d.appendChild(t);
+if(q.type==='radio'){
+const saved=state.answers[q.id];
+q.options.forEach((opt,oi)=>{
+const row=mkRow('r',q.id,oi,opt.label,saved===oi,false);
+row.addEventListener('click',()=>selRadio(q.id,oi,q.options.length));
+d.appendChild(row);
+});
+}else{
+const saved=Array.isArray(state.answers[q.id])?state.answers[q.id]:[];
+q.options.forEach((opt,oi)=>{
+const row=mkRow('c',q.id,oi,opt.label,saved.includes(oi),true);
+row.addEventListener('click',()=>togMulti(q.id,oi,q.options.length));
+d.appendChild(row);
+});
+const h=document.createElement('div');
+h.className='text-terminal-muted text-xs mt-2 italic';
+h.textContent='  (select all that apply)';
+d.appendChild(h);
+}
+con.appendChild(d);
+if(qi<qs.length-1){const hr=document.createElement('hr');hr.className='tui-hr';con.appendChild(hr);}
+});
+}
+function mkRow(px,qId,oi,label,sel,multi){
+const row=document.createElement('div');
+row.className='flex items-start gap-3 mb-2 cursor-pointer group';
+const ic=document.createElement('span');
+ic.className='text-terminal-cyan font-mono select-none mt-0.5 shrink-0 w-6';
+ic.id=px+'_'+qId+'_'+oi;
+ic.textContent=multi?(sel?'[\u25A0]':'[ ]'):(sel?'[\u25CF]':'[ ]');
+const lb=document.createElement('span');
+lb.className='text-terminal-muted group-hover:text-terminal-green transition-colors text-sm leading-relaxed';
+lb.textContent=label;
+row.appendChild(ic);row.appendChild(lb);
+return row;
+}
+function selRadio(qId,oi,n){
+state.answers[qId]=oi;
+for(let i=0;i<n;i++){const e=document.getElementById('r_'+qId+'_'+i);if(e)e.textContent=i===oi?'[\u25CF]':'[ ]';}
+}
+function togMulti(qId,oi,n){
+if(!Array.isArray(state.answers[qId]))state.answers[qId]=[];
+const a=state.answers[qId],p=a.indexOf(oi);
+if(p>=0)a.splice(p,1);else a.push(oi);
+for(let i=0;i<n;i++){const e=document.getElementById('c_'+qId+'_'+i);if(e)e.textContent=a.includes(i)?'[\u25A0]':'[ ]';}
+}
+function wizardNext(){if(state.currentStep<STEPS.length-1){state.currentStep++;updateProgress();renderStep();window.scrollTo(0,0);}else{showResults();}}
+function wizardBack(){if(state.currentStep>0){state.currentStep--;updateProgress();renderStep();window.scrollTo(0,0);}}
+function exportText(){
+const sc=computeScores();
+const sorted=[...THREATS].sort((a,b)=>sc[b.id].pct-sc[a.id].pct);
+let txt='PRIVACY TERMINAL - THREAT PROFILE\nGenerated: '+new Date().toISOString()+'\n\n';
+sorted.forEach(t=>{const s=sc[t.id];txt+=s.level.padEnd(10)+t.label+' ('+s.pct+'%)\n';});
+txt+='\nRECOMMENDATIONS:\n';
+sorted.filter(t=>sc[t.id].level==='HIGH'||sc[t.id].level==='CRITICAL').forEach(t=>{
+txt+='\n['+t.label+']\n'+(RECS[t.id]||'Review privacy controls.')+'\n';
+});
+navigator.clipboard.writeText(txt).then(()=>{if(el('export-msg'))el('export-msg').textContent='> Copied.';}).catch(()=>{if(el('export-msg'))el('export-msg').textContent='> Copy failed.';});
+}
+function exportJSON(){
+const sc=computeScores();
+const data={generated:new Date().toISOString(),source:'Privacy Terminal Threat Model Calculator',threats:Object.fromEntries(THREATS.map(t=>[t.id,sc[t.id]])),answers:state.answers};
+const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='threat-profile-'+Date.now()+'.json';a.click();
+if(el('export-msg'))el('export-msg').textContent='> JSON downloaded.';
+}
+function resetWizard(){
+state.currentStep=0;state.answers={};
+el('results-container').style.display='none';
+el('wizard-container').style.display='block';
+updateProgress();renderStep();window.scrollTo(0,0);
+}
+function showResults(){
+el('wizard-container').style.display='none';
+const sc=computeScores();
+const sorted=[...THREATS].sort((a,b)=>sc[b.id].pct-sc[a.id].pct);
+const top5=sorted.slice(0,5);
+const avg=Math.round(sorted.reduce((s,t)=>s+sc[t.id].pct,0)/THREATS.length);
+const ol=avg>=60?'CRITICAL':avg>=40?'HIGH':avg>=20?'MODERATE':'LOW';
+const os=lvlStyle(ol);
+const rc=el('results-container');
+rc.style.display='block';
+let h='';
+h+='<div class="tui-box mb-6"><div class="tui-box-title">[ THREAT PROFILE COMPLETE ]</div><div class="p-6">';
+h+='<div class="text-terminal-green font-bold text-lg mb-2">&gt; ANALYSIS COMPLETE</div>';
+h+='<div class="text-terminal-muted text-sm mb-4">Personalized threat profile generated locally. Zero data transmitted. Zero logging.</div>';
+h+='<div class="flex items-center gap-6 flex-wrap">';
+h+='<div><div class="text-terminal-muted text-xs mb-1">OVERALL RISK POSTURE</div>';
+h+='<div class="text-4xl font-bold" style="color:'+os.t+'">'+ol+'</div></div>';
+h+='<div class="flex-1 min-w-32"><div class="text-terminal-muted text-xs mb-1">AGGREGATE EXPOSURE: '+avg+'%</div>';
+h+='<div class="progress-bar" style="height:12px"><div style="width:'+avg+'%;height:12px;background:'+os.b+';transition:width 0.8s ease"></div></div></div>';
+h+='</div></div></div>';
+h+='<div class="tui-box mb-6"><div class="tui-box-title">[ TOP 5 THREATS ]</div><div class="p-6">';
+top5.forEach((t,i)=>{
+const s=sc[t.id],st=lvlStyle(s.level);
+if(i>0)h+='<hr class="tui-hr">';
+h+='<div class="mb-4">';
+h+='<div class="flex items-center justify-between mb-1">';
+h+='<div class="font-bold" style="color:'+st.t+'">#'+(i+1)+' &gt; '+t.label+'</div>';
+h+='<span class="text-xs font-mono px-2 py-0.5 border" style="'+st.bd+'">'+s.level+'</span></div>';
+h+='<div class="text-terminal-muted text-xs mb-2">'+t.desc+'</div>';
+h+='<div class="progress-bar" style="height:6px"><div style="width:'+s.pct+'%;height:6px;background:'+st.b+'"></div></div>';
+h+='<div class="text-terminal-muted text-xs mt-1">'+s.pct+'% exposure</div>';
+const rec=RECS[t.id];
+if(rec)h+='<div class="mt-2 p-2 text-xs leading-relaxed" style="border-left:2px solid '+st.b+';color:'+st.t+'">&rarr; '+rec+'</div>';
+h+='</div>';
+});
+h+='</div></div>';
+h+='<div class="tui-box mb-6"><div class="tui-box-title">[ ALL 28 THREAT CATEGORIES ]</div><div class="p-4">';
+sorted.forEach(t=>{
+const s=sc[t.id],st=lvlStyle(s.level);
+h+='<div class="mb-3"><div class="flex items-center justify-between mb-1">';
+h+='<span class="text-sm" style="color:'+st.t+'">'+t.label+'</span>';
+h+='<div class="flex items-center gap-2"><span class="text-xs font-mono" style="color:'+st.t+'">'+s.pct+'%</span>';
+h+='<span class="font-mono px-1 border" style="'+st.bd+';font-size:10px">'+s.level+'</span></div></div>';
+h+='<div class="progress-bar" style="height:4px"><div style="width:'+s.pct+'%;height:4px;background:'+st.b+'"></div></div>';
+h+='<div class="text-terminal-muted" style="font-size:10px;margin-top:2px">'+t.desc+'</div></div>';
+});
+h+='</div></div>';
+const hi=sorted.filter(t=>sc[t.id].level==='HIGH'||sc[t.id].level==='CRITICAL');
+if(hi.length>0){
+h+='<div class="tui-box mb-6"><div class="tui-box-title">[ RECOMMENDED ACTIONS ]</div><div class="p-6">';
+h+='<div class="text-terminal-muted text-xs mb-4">Prioritized actions for your HIGH and CRITICAL risk categories:</div>';
+hi.forEach(t=>{
+const s=sc[t.id],st=lvlStyle(s.level),rec=RECS[t.id];
+h+='<div class="mb-4 p-3" style="border-left:3px solid '+st.b+';background:#050805">';
+h+='<div class="font-bold text-sm mb-1" style="color:'+st.t+'">&gt; '+t.label+' ['+s.level+']</div>';
+h+='<div class="text-terminal-muted text-xs leading-relaxed">'+(rec||'Review relevant privacy controls.')+'</div></div>';
+});
+h+='</div></div>';
+}
+h+='<div class="tui-box mb-6"><div class="tui-box-title">[ EXPORT RESULTS ]</div><div class="p-6">';
+h+='<div class="flex gap-3 flex-wrap">';
+h+='<button class="btn-terminal" onclick="exportText()">COPY AS TEXT</button>';
+h+='<button class="btn-terminal" onclick="exportJSON()">DOWNLOAD JSON</button>';
+h+='<button class="btn-terminal btn-terminal-amber" onclick="resetWizard()">START OVER</button>';
+h+='</div><div id="export-msg" class="text-terminal-green text-xs mt-3"></div></div></div>';
+h+='<div class="tui-box mb-8"><div class="tui-box-title">[ IMPORTANT NOTE ]</div><div class="p-4 text-terminal-muted text-xs leading-relaxed">';
+h+='<span class="text-terminal-green">&gt;</span> This assessment is a starting point, not a comprehensive audit.<br>';
+h+='<span class="text-terminal-green">&gt;</span> No data from this calculator was transmitted, stored, or logged anywhere.<br>';
+h+='<span class="text-terminal-green">&gt;</span> For high-risk individuals: consult ssd.eff.org and Access Now Digital Security Helpline.';
+h+='</div></div>';
+rc.innerHTML=h;
+window.scrollTo(0,0);
+}
+const BOOT=['> Initializing threat analysis engine v3.1.0...','> Loading 28 threat category definitions...','> Compiling '+QUESTIONS.length+' assessment vectors...','> Calibrating weight matrices...','> Establishing local scoring sandbox...','> Verifying zero-network-transmission mode: [OK]','> All data confined to browser memory: [OK]','> Ready. Beginning threat assessment protocol.'];
+function runBoot(){
+const log=el('boot-log');log.innerHTML='';
+let i=0;
+function next(){
+if(i>=BOOT.length){setTimeout(()=>{el('boot-screen').style.display='none';el('wizard-container').style.display='block';updateProgress();renderStep();},400);return;}
+const d=document.createElement('div');d.className='text-terminal-green text-sm mb-1';d.textContent=BOOT[i];log.appendChild(d);i++;setTimeout(next,i===1?600:180);
+}
+next();
+}
+document.addEventListener('DOMContentLoaded',()=>runBoot());
+window.wizardNext=wizardNext;window.wizardBack=wizardBack;
+window.exportText=exportText;window.exportJSON=exportJSON;window.resetWizard=resetWizard;
+</script>

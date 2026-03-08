@@ -3,7 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 export const prerender = true;
 ---
 
-<BaseLayout title="Privacy Terminal — Open Source Privacy Tools & Education" statusLeft="system ready" statusRight="6 tools │ 13 guides">
+<BaseLayout title="Privacy Terminal — Open Source Privacy Tools & Education" statusLeft="system ready" statusRight="7 tools │ 13 guides">
   <!-- SVG Logo with terminal CRT effects -->
   <div class="logo-container py-4 md:py-8 flex justify-center px-4">
     <div class="logo-wrapper">
@@ -104,6 +104,13 @@ export const prerender = true;
     <div class="tui-box p-3 lg:border-r-0">
       <span class="tui-box-title text-terminal-green">┤ TOOLS ├</span>
       <div class="space-y-2 mt-2">
+        <a href="/tools/threat-profiler" class="flex items-center justify-between py-1 px-2 hover:bg-terminal-green/5 transition-colors group">
+          <div class="flex items-center gap-2">
+            <span class="text-terminal-green">│</span>
+            <span class="text-gray-300 group-hover:text-terminal-green">Threat Model Profiler</span>
+          </div>
+          <span class="text-terminal-green text-xs">[READY]</span>
+        </a>
         <a href="/tools/hash-generator" class="flex items-center justify-between py-1 px-2 hover:bg-terminal-green/5 transition-colors group">
           <div class="flex items-center gap-2">
             <span class="text-terminal-green">│</span>
