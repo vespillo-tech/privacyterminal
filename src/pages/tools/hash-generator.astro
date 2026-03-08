@@ -6,51 +6,36 @@ export const prerender = true;
 <ToolLayout
   title="Hash Generator & Verifier"
   toolName="hash-generator"
-  toolVersion="1.0.0"
-  description="Generate and verify cryptographic hashes. SHA-1, SHA-256, SHA-384, SHA-512, and MD5 — all computed client-side using the Web Crypto API. Your data never leaves your browser."
+  toolVersion="2.0.0"
+  description="Generate and verify cryptographic hashes — all algorithms at once, real-time results, built-in verification. 100% client-side via Web Crypto API."
 >
-  <!-- Tool controls -->
+  <!-- Controls -->
   <Fragment slot="controls">
     <div class="space-y-4">
-      <!-- Mode selector -->
-      <div class="flex gap-2 text-xs">
-        <button id="mode-text" class="px-3 py-1.5 rounded border border-terminal-green bg-terminal-green/10 text-terminal-green transition-colors" data-mode="text">
-          > text input
-        </button>
-        <button id="mode-file" class="px-3 py-1.5 rounded border border-terminal-border text-terminal-muted hover:border-terminal-cyan hover:text-terminal-cyan transition-colors" data-mode="file">
-          > file input
-        </button>
-        <button id="mode-verify" class="px-3 py-1.5 rounded border border-terminal-border text-terminal-muted hover:border-terminal-amber hover:text-terminal-amber transition-colors" data-mode="verify">
-          > verify hash
-        </button>
-      </div>
 
-      <!-- Algorithm selector -->
-      <div class="flex flex-wrap gap-2 text-xs">
-        <span class="text-terminal-muted py-1">algorithm:</span>
-        <button class="algo-btn px-2 py-1 rounded border border-terminal-green bg-terminal-green/10 text-terminal-green" data-algo="SHA-256">SHA-256</button>
-        <button class="algo-btn px-2 py-1 rounded border border-terminal-border text-terminal-muted hover:text-terminal-cyan" data-algo="SHA-512">SHA-512</button>
-        <button class="algo-btn px-2 py-1 rounded border border-terminal-border text-terminal-muted hover:text-terminal-cyan" data-algo="SHA-384">SHA-384</button>
-        <button class="algo-btn px-2 py-1 rounded border border-terminal-border text-terminal-muted hover:text-terminal-cyan" data-algo="SHA-1">SHA-1</button>
-        <button class="algo-btn px-2 py-1 rounded border border-terminal-border text-terminal-muted hover:text-terminal-cyan" data-algo="MD5">MD5</button>
+      <!-- Input source toggle -->
+      <div class="flex items-center gap-2">
+        <span class="text-terminal-muted text-xs">input:</span>
+        <button id="src-text" class="src-btn px-3 py-1 rounded text-xs border border-terminal-green bg-terminal-green/10 text-terminal-green transition-colors" data-src="text">
+          text
+        </button>
+        <button id="src-file" class="src-btn px-3 py-1 rounded text-xs border border-terminal-border text-terminal-muted hover:border-terminal-cyan hover:text-terminal-cyan transition-colors" data-src="file">
+          file
+        </button>
       </div>
 
       <!-- Text input panel -->
-      <div id="panel-text" class="">
+      <div id="panel-text">
         <textarea
           id="text-input"
-          class="w-full bg-terminal-bg border border-terminal-border rounded p-3 text-sm text-gray-300 font-mono placeholder-terminal-muted focus:outline-none focus:border-terminal-green/50 resize-y min-h-[100px]"
-          placeholder="Enter text to hash..."
+          class="w-full bg-terminal-bg border border-terminal-border rounded p-3 text-sm text-gray-300 font-mono placeholder-terminal-muted focus:outline-none focus:border-terminal-green/50 resize-y"
+          placeholder="Type or paste text to hash..."
           rows="4"
+          spellcheck="false"
         ></textarea>
-        <div class="flex items-center gap-3 mt-2">
-          <button id="btn-hash-text" class="px-4 py-2 rounded border border-terminal-green text-terminal-green text-xs font-bold hover:bg-terminal-green/10 transition-colors">
-            $ generate hash
-          </button>
-          <button id="btn-clear" class="px-3 py-1.5 rounded border border-terminal-border text-terminal-muted text-xs hover:text-terminal-red hover:border-terminal-red transition-colors">
-            clear
-          </button>
-          <span id="text-size" class="text-terminal-muted text-xs ml-auto">0 bytes</span>
+        <div class="flex items-center justify-between mt-1.5">
+          <span id="byte-count" class="text-terminal-muted text-[10px]">0 bytes</span>
+          <button id="btn-clear-text" class="text-terminal-muted text-[10px] hover:text-terminal-red transition-colors">clear</button>
         </div>
       </div>
 
@@ -58,70 +43,107 @@ export const prerender = true;
       <div id="panel-file" class="hidden">
         <div
           id="drop-zone"
-          class="border-2 border-dashed border-terminal-border rounded-lg p-8 text-center cursor-pointer hover:border-terminal-cyan/50 transition-colors"
+          class="border-2 border-dashed border-terminal-border rounded-lg p-6 text-center cursor-pointer hover:border-terminal-cyan/50 transition-colors"
         >
-          <div class="text-terminal-cyan text-2xl mb-2">◈</div>
-          <p class="text-terminal-muted text-sm">Drop a file here or click to select</p>
-          <p class="text-terminal-muted text-xs mt-1">Any file type — processed entirely in your browser</p>
-          <input type="file" id="file-input" class="hidden" />
+          <div class="text-terminal-cyan text-xl mb-1">&#9670;</div>
+          <p class="text-terminal-muted text-xs">Drop a file here or click to select</p>
+          <p class="text-terminal-muted text-[10px] mt-0.5">Any file type &mdash; processed entirely in your browser</p>
+          <input type="file" id="file-picker" class="hidden" />
         </div>
-        <div id="file-info" class="hidden mt-2 text-xs text-terminal-muted">
-          <span id="file-name"></span> — <span id="file-size-display"></span>
+        <div id="file-info" class="hidden mt-2 flex items-center justify-between">
+          <span class="text-terminal-cyan text-xs">
+            <span id="file-name"></span> &mdash; <span id="file-size"></span>
+          </span>
+          <button id="btn-clear-file" class="text-terminal-muted text-[10px] hover:text-terminal-red transition-colors">remove</button>
         </div>
       </div>
 
-      <!-- Verify panel -->
-      <div id="panel-verify" class="hidden space-y-3">
-        <textarea
-          id="verify-input"
-          class="w-full bg-terminal-bg border border-terminal-border rounded p-3 text-sm text-gray-300 font-mono placeholder-terminal-muted focus:outline-none focus:border-terminal-green/50 resize-y min-h-[80px]"
-          placeholder="Enter text to hash and verify..."
-          rows="3"
-        ></textarea>
-        <div>
-          <label class="text-terminal-muted text-xs block mb-1">expected hash (hex):</label>
-          <input
-            id="verify-expected"
-            type="text"
-            class="w-full bg-terminal-bg border border-terminal-border rounded p-2 text-sm text-gray-300 font-mono placeholder-terminal-muted focus:outline-none focus:border-terminal-amber/50"
-            placeholder="Paste expected hash value..."
-          />
-        </div>
-        <button id="btn-verify" class="px-4 py-2 rounded border border-terminal-amber text-terminal-amber text-xs font-bold hover:bg-terminal-amber/10 transition-colors">
-          $ verify hash
+      <!-- Algorithm chips -->
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-terminal-muted text-xs">algorithms:</span>
+        <button class="algo-chip px-2 py-0.5 rounded text-[10px] border border-terminal-green bg-terminal-green/10 text-terminal-green" data-algo="SHA-256" data-active="true" data-security="secure">
+          SHA-256
+        </button>
+        <button class="algo-chip px-2 py-0.5 rounded text-[10px] border border-terminal-green bg-terminal-green/10 text-terminal-green" data-algo="SHA-512" data-active="true" data-security="secure">
+          SHA-512
+        </button>
+        <button class="algo-chip px-2 py-0.5 rounded text-[10px] border border-terminal-green bg-terminal-green/10 text-terminal-green" data-algo="SHA-384" data-active="true" data-security="secure">
+          SHA-384
+        </button>
+        <button class="algo-chip px-2 py-0.5 rounded text-[10px] border border-terminal-amber bg-terminal-amber/10 text-terminal-amber" data-algo="SHA-1" data-active="true" data-security="legacy">
+          SHA-1 <span class="opacity-60">legacy</span>
+        </button>
+        <button class="algo-chip px-2 py-0.5 rounded text-[10px] border border-terminal-red bg-terminal-red/10 text-terminal-red" data-algo="MD5" data-active="true" data-security="broken">
+          MD5 <span class="opacity-60">broken</span>
         </button>
       </div>
+
+      <!-- Action row -->
+      <div class="flex items-center gap-3 flex-wrap">
+        <button id="btn-hash" class="px-4 py-2 rounded border border-terminal-green text-terminal-green text-xs font-bold hover:bg-terminal-green/10 transition-colors">
+          &#9654; Generate Hashes
+        </button>
+        <label class="flex items-center gap-1.5 text-[10px] text-terminal-muted cursor-pointer select-none">
+          <input type="checkbox" id="auto-hash" class="accent-green-500 w-3 h-3" />
+          auto-hash on type
+        </label>
+        <div class="flex items-center gap-1.5 ml-auto">
+          <span class="text-terminal-muted text-[10px]">format:</span>
+          <button id="fmt-hex" class="fmt-btn px-2 py-0.5 rounded text-[10px] border border-terminal-green bg-terminal-green/10 text-terminal-green" data-fmt="hex">hex</button>
+          <button id="fmt-b64" class="fmt-btn px-2 py-0.5 rounded text-[10px] border border-terminal-border text-terminal-muted hover:text-terminal-cyan" data-fmt="base64">base64</button>
+        </div>
+      </div>
+
     </div>
   </Fragment>
 
-  <!-- Results area -->
+  <!-- Results -->
   <Fragment slot="results">
-    <div id="results-container" class="hidden">
-      <h3 class="text-terminal-amber text-glow-amber text-xs uppercase tracking-widest mb-3">
-        > Results
-      </h3>
-      <div id="results-list" class="space-y-3"></div>
+    <div id="results-area" class="hidden space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-terminal-amber text-glow-amber text-xs uppercase tracking-widest">&gt; Results</h3>
+        <button id="btn-clear-results" class="text-terminal-muted text-[10px] hover:text-terminal-red transition-colors">clear results</button>
+      </div>
+
+      <!-- All-algorithm results grid -->
+      <div id="results-grid" class="space-y-2"></div>
+
+      <!-- Inline verify -->
+      <div class="border-t border-terminal-border pt-3 mt-3">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-terminal-muted text-xs">verify:</span>
+          <span id="verify-status" class="text-[10px] font-bold hidden"></span>
+        </div>
+        <div class="flex gap-2">
+          <input
+            id="verify-input"
+            type="text"
+            class="flex-1 bg-terminal-bg border border-terminal-border rounded px-3 py-1.5 text-xs text-gray-300 font-mono placeholder-terminal-muted focus:outline-none focus:border-terminal-amber/50"
+            placeholder="Paste an expected hash to compare against results above..."
+            spellcheck="false"
+          />
+          <button id="btn-verify-clear" class="text-terminal-muted text-[10px] hover:text-terminal-red px-2">clear</button>
+        </div>
+      </div>
     </div>
   </Fragment>
 
-  <!-- Related content -->
+  <!-- Educational content -->
   <div class="border-t border-terminal-border pt-6 mt-8">
-    <h3 class="text-terminal-amber text-glow-amber text-xs uppercase tracking-widest mb-3">
-      > About Cryptographic Hashes
-    </h3>
+    <h3 class="text-terminal-amber text-glow-amber text-xs uppercase tracking-widest mb-3">&gt; About Cryptographic Hashes</h3>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-terminal-muted">
       <div>
-        <p class="mb-2"><strong class="text-white">What is a hash?</strong> A cryptographic hash function takes any input and produces a fixed-size string of characters. The same input always produces the same hash, but even a tiny change in input produces a completely different hash.</p>
-        <p><strong class="text-white">SHA-256</strong> is the gold standard — used in Bitcoin, TLS certificates, and file integrity verification. <strong class="text-white">SHA-512</strong> provides a longer hash for additional security.</p>
+        <p class="mb-2"><strong class="text-white">What is a hash?</strong> A cryptographic hash function takes any input and produces a fixed-size string. The same input always produces the same hash, but even a tiny change produces a completely different output.</p>
+        <p><strong class="text-white">Why does it matter?</strong> Hashes verify file integrity, secure passwords, and detect tampering. If a downloaded file's hash matches the publisher's hash, you know it hasn't been modified.</p>
       </div>
       <div>
-        <p class="mb-2"><strong class="text-white">When to use each:</strong></p>
+        <p class="mb-2"><strong class="text-white">Which algorithm should I use?</strong></p>
         <ul class="space-y-1 ml-3">
-          <li><span class="text-terminal-green">SHA-256</span> — General purpose, file verification, checksums</li>
-          <li><span class="text-terminal-green">SHA-512</span> — When you need maximum hash length</li>
-          <li><span class="text-terminal-green">SHA-384</span> — Truncated SHA-512, used in some TLS suites</li>
-          <li><span class="text-terminal-amber">SHA-1</span> — Legacy only, known vulnerabilities</li>
-          <li><span class="text-terminal-red">MD5</span> — Broken for security, still used for non-security checksums</li>
+          <li><span class="text-terminal-green">SHA-256</span> &mdash; Gold standard for checksums and security.</li>
+          <li><span class="text-terminal-green">SHA-512</span> &mdash; Longer output, slightly stronger.</li>
+          <li><span class="text-terminal-green">SHA-384</span> &mdash; Truncated SHA-512, used in TLS.</li>
+          <li><span class="text-terminal-amber">SHA-1</span> &mdash; Legacy only. Collision attacks known.</li>
+          <li><span class="text-terminal-red">MD5</span> &mdash; Broken. Only for non-security checksums.</li>
         </ul>
       </div>
     </div>
@@ -129,83 +151,70 @@ export const prerender = true;
 </ToolLayout>
 
 <script>
-  // === MD5 Implementation (pure JS, not in Web Crypto API) ===
+  // ============================================================
+  // MD5 Implementation (not available in Web Crypto API)
+  // ============================================================
   function md5(input: Uint8Array): string {
     function safeAdd(x: number, y: number): number {
       const lsw = (x & 0xffff) + (y & 0xffff);
-      const msw = (x >> 16) + (y >> 16) + (lsw >> 16);
-      return (msw << 16) | (lsw & 0xffff);
+      return ((x >> 16) + (y >> 16) + (lsw >> 16)) << 16 | (lsw & 0xffff);
     }
-    function bitRotateLeft(num: number, cnt: number): number {
-      return (num << cnt) | (num >>> (32 - cnt));
+    function rol(n: number, c: number): number { return (n << c) | (n >>> (32 - c)); }
+    function cmn(q: number, a: number, b: number, x: number, s: number, t: number): number {
+      return safeAdd(rol(safeAdd(safeAdd(a, q), safeAdd(x, t)), s), b);
     }
-    function md5cmn(q: number, a: number, b: number, x: number, s: number, t: number): number {
-      return safeAdd(bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s), b);
-    }
-    function md5ff(a: number, b: number, c: number, d: number, x: number, s: number, t: number): number {
-      return md5cmn((b & c) | (~b & d), a, b, x, s, t);
-    }
-    function md5gg(a: number, b: number, c: number, d: number, x: number, s: number, t: number): number {
-      return md5cmn((b & d) | (c & ~d), a, b, x, s, t);
-    }
-    function md5hh(a: number, b: number, c: number, d: number, x: number, s: number, t: number): number {
-      return md5cmn(b ^ c ^ d, a, b, x, s, t);
-    }
-    function md5ii(a: number, b: number, c: number, d: number, x: number, s: number, t: number): number {
-      return md5cmn(c ^ (b | ~d), a, b, x, s, t);
-    }
+    function ff(a: number, b: number, c: number, d: number, x: number, s: number, t: number) { return cmn((b & c) | (~b & d), a, b, x, s, t); }
+    function gg(a: number, b: number, c: number, d: number, x: number, s: number, t: number) { return cmn((b & d) | (c & ~d), a, b, x, s, t); }
+    function hh(a: number, b: number, c: number, d: number, x: number, s: number, t: number) { return cmn(b ^ c ^ d, a, b, x, s, t); }
+    function ii(a: number, b: number, c: number, d: number, x: number, s: number, t: number) { return cmn(c ^ (b | ~d), a, b, x, s, t); }
 
-    // Pre-processing: add padding
     const len = input.length;
-    const bitLen = len * 8;
     const padLen = ((len + 8) >>> 6 << 4) + 16;
     const padded = new Uint8Array(padLen * 4);
     padded.set(input);
     padded[len] = 0x80;
-    // Length in bits as 64-bit little-endian
     const view = new DataView(padded.buffer);
-    view.setUint32((padLen - 2) * 4, bitLen >>> 0, true);
+    view.setUint32((padLen - 2) * 4, (len * 8) >>> 0, true);
     view.setUint32((padLen - 1) * 4, 0, true);
 
-    // Process blocks
-    const words = new Uint32Array(padded.buffer);
+    const w = new Uint32Array(padded.buffer);
     let a = 1732584193, b = -271733879, c = -1732584194, d = 271733878;
 
-    for (let i = 0; i < words.length; i += 16) {
-      const olda = a, oldb = b, oldc = c, oldd = d;
-      a = md5ff(a,b,c,d,words[i],7,-680876936);d = md5ff(d,a,b,c,words[i+1],12,-389564586);
-      c = md5ff(c,d,a,b,words[i+2],17,606105819);b = md5ff(b,c,d,a,words[i+3],22,-1044525330);
-      a = md5ff(a,b,c,d,words[i+4],7,-176418897);d = md5ff(d,a,b,c,words[i+5],12,1200080426);
-      c = md5ff(c,d,a,b,words[i+6],17,-1473231341);b = md5ff(b,c,d,a,words[i+7],22,-45705983);
-      a = md5ff(a,b,c,d,words[i+8],7,1770035416);d = md5ff(d,a,b,c,words[i+9],12,-1958414417);
-      c = md5ff(c,d,a,b,words[i+10],17,-42063);b = md5ff(b,c,d,a,words[i+11],22,-1990404162);
-      a = md5ff(a,b,c,d,words[i+12],7,1804603682);d = md5ff(d,a,b,c,words[i+13],12,-40341101);
-      c = md5ff(c,d,a,b,words[i+14],17,-1502002290);b = md5ff(b,c,d,a,words[i+15],22,1236535329);
-      a = md5gg(a,b,c,d,words[i+1],5,-165796510);d = md5gg(d,a,b,c,words[i+6],9,-1069501632);
-      c = md5gg(c,d,a,b,words[i+11],14,643717713);b = md5gg(b,c,d,a,words[i],20,-373897302);
-      a = md5gg(a,b,c,d,words[i+5],5,-701558691);d = md5gg(d,a,b,c,words[i+10],9,38016083);
-      c = md5gg(c,d,a,b,words[i+15],14,-660478335);b = md5gg(b,c,d,a,words[i+4],20,-405537848);
-      a = md5gg(a,b,c,d,words[i+9],5,568446438);d = md5gg(d,a,b,c,words[i+14],9,-1019803690);
-      c = md5gg(c,d,a,b,words[i+3],14,-187363961);b = md5gg(b,c,d,a,words[i+8],20,1163531501);
-      a = md5gg(a,b,c,d,words[i+13],5,-1444681467);d = md5gg(d,a,b,c,words[i+2],9,-51403784);
-      c = md5gg(c,d,a,b,words[i+7],14,1735328473);b = md5gg(b,c,d,a,words[i+12],20,-1926607734);
-      a = md5hh(a,b,c,d,words[i+5],4,-378558);d = md5hh(d,a,b,c,words[i+8],11,-2022574463);
-      c = md5hh(c,d,a,b,words[i+11],16,1839030562);b = md5hh(b,c,d,a,words[i+14],23,-35309556);
-      a = md5hh(a,b,c,d,words[i+1],4,-1530992060);d = md5hh(d,a,b,c,words[i+4],11,1272893353);
-      c = md5hh(c,d,a,b,words[i+7],16,-155497632);b = md5hh(b,c,d,a,words[i+10],23,-1094730640);
-      a = md5hh(a,b,c,d,words[i+13],4,681279174);d = md5hh(d,a,b,c,words[i],11,-358537222);
-      c = md5hh(c,d,a,b,words[i+3],16,-722521979);b = md5hh(b,c,d,a,words[i+6],23,76029189);
-      a = md5hh(a,b,c,d,words[i+9],4,-640364487);d = md5hh(d,a,b,c,words[i+12],11,-421815835);
-      c = md5hh(c,d,a,b,words[i+15],16,530742520);b = md5hh(b,c,d,a,words[i+2],23,-995338651);
-      a = md5ii(a,b,c,d,words[i],6,-198630844);d = md5ii(d,a,b,c,words[i+7],10,1126891415);
-      c = md5ii(c,d,a,b,words[i+14],15,-1416354905);b = md5ii(b,c,d,a,words[i+5],21,-57434055);
-      a = md5ii(a,b,c,d,words[i+12],6,1700485571);d = md5ii(d,a,b,c,words[i+3],10,-1894986606);
-      c = md5ii(c,d,a,b,words[i+10],15,-1051523);b = md5ii(b,c,d,a,words[i+1],21,-2054922799);
-      a = md5ii(a,b,c,d,words[i+8],6,1873313359);d = md5ii(d,a,b,c,words[i+15],10,-30611744);
-      c = md5ii(c,d,a,b,words[i+6],15,-1560198380);b = md5ii(b,c,d,a,words[i+13],21,1309151649);
-      a = md5ii(a,b,c,d,words[i+4],6,-145523070);d = md5ii(d,a,b,c,words[i+11],10,-1120210379);
-      c = md5ii(c,d,a,b,words[i+2],15,718787259);b = md5ii(b,c,d,a,words[i+9],21,-343485551);
-      a = safeAdd(a,olda);b = safeAdd(b,oldb);c = safeAdd(c,oldc);d = safeAdd(d,oldd);
+    for (let i = 0; i < w.length; i += 16) {
+      const oa = a, ob = b, oc = c, od = d;
+      a=ff(a,b,c,d,w[i],7,-680876936);d=ff(d,a,b,c,w[i+1],12,-389564586);
+      c=ff(c,d,a,b,w[i+2],17,606105819);b=ff(b,c,d,a,w[i+3],22,-1044525330);
+      a=ff(a,b,c,d,w[i+4],7,-176418897);d=ff(d,a,b,c,w[i+5],12,1200080426);
+      c=ff(c,d,a,b,w[i+6],17,-1473231341);b=ff(b,c,d,a,w[i+7],22,-45705983);
+      a=ff(a,b,c,d,w[i+8],7,1770035416);d=ff(d,a,b,c,w[i+9],12,-1958414417);
+      c=ff(c,d,a,b,w[i+10],17,-42063);b=ff(b,c,d,a,w[i+11],22,-1990404162);
+      a=ff(a,b,c,d,w[i+12],7,1804603682);d=ff(d,a,b,c,w[i+13],12,-40341101);
+      c=ff(c,d,a,b,w[i+14],17,-1502002290);b=ff(b,c,d,a,w[i+15],22,1236535329);
+      a=gg(a,b,c,d,w[i+1],5,-165796510);d=gg(d,a,b,c,w[i+6],9,-1069501632);
+      c=gg(c,d,a,b,w[i+11],14,643717713);b=gg(b,c,d,a,w[i],20,-373897302);
+      a=gg(a,b,c,d,w[i+5],5,-701558691);d=gg(d,a,b,c,w[i+10],9,38016083);
+      c=gg(c,d,a,b,w[i+15],14,-660478335);b=gg(b,c,d,a,w[i+4],20,-405537848);
+      a=gg(a,b,c,d,w[i+9],5,568446438);d=gg(d,a,b,c,w[i+14],9,-1019803690);
+      c=gg(c,d,a,b,w[i+3],14,-187363961);b=gg(b,c,d,a,w[i+8],20,1163531501);
+      a=gg(a,b,c,d,w[i+13],5,-1444681467);d=gg(d,a,b,c,w[i+2],9,-51403784);
+      c=gg(c,d,a,b,w[i+7],14,1735328473);b=gg(b,c,d,a,w[i+12],20,-1926607734);
+      a=hh(a,b,c,d,w[i+5],4,-378558);d=hh(d,a,b,c,w[i+8],11,-2022574463);
+      c=hh(c,d,a,b,w[i+11],16,1839030562);b=hh(b,c,d,a,w[i+14],23,-35309556);
+      a=hh(a,b,c,d,w[i+1],4,-1530992060);d=hh(d,a,b,c,w[i+4],11,1272893353);
+      c=hh(c,d,a,b,w[i+7],16,-155497632);b=hh(b,c,d,a,w[i+10],23,-1094730640);
+      a=hh(a,b,c,d,w[i+13],4,681279174);d=hh(d,a,b,c,w[i],11,-358537222);
+      c=hh(c,d,a,b,w[i+3],16,-722521979);b=hh(b,c,d,a,w[i+6],23,76029189);
+      a=hh(a,b,c,d,w[i+9],4,-640364487);d=hh(d,a,b,c,w[i+12],11,-421815835);
+      c=hh(c,d,a,b,w[i+15],16,530742520);b=hh(b,c,d,a,w[i+2],23,-995338651);
+      a=ii(a,b,c,d,w[i],6,-198630844);d=ii(d,a,b,c,w[i+7],10,1126891415);
+      c=ii(c,d,a,b,w[i+14],15,-1416354905);b=ii(b,c,d,a,w[i+5],21,-57434055);
+      a=ii(a,b,c,d,w[i+12],6,1700485571);d=ii(d,a,b,c,w[i+3],10,-1894986606);
+      c=ii(c,d,a,b,w[i+10],15,-1051523);b=ii(b,c,d,a,w[i+1],21,-2054922799);
+      a=ii(a,b,c,d,w[i+8],6,1873313359);d=ii(d,a,b,c,w[i+15],10,-30611744);
+      c=ii(c,d,a,b,w[i+6],15,-1560198380);b=ii(b,c,d,a,w[i+13],21,1309151649);
+      a=ii(a,b,c,d,w[i+4],6,-145523070);d=ii(d,a,b,c,w[i+11],10,-1120210379);
+      c=ii(c,d,a,b,w[i+2],15,718787259);b=ii(b,c,d,a,w[i+9],21,-343485551);
+      a=safeAdd(a,oa);b=safeAdd(b,ob);c=safeAdd(c,oc);d=safeAdd(d,od);
     }
 
     const hex = '0123456789abcdef';
@@ -218,15 +227,16 @@ export const prerender = true;
     return result;
   }
 
-  // === Helpers ===
+  // ============================================================
+  // Helpers
+  // ============================================================
   const PT = (window as any).privacyTerminal;
 
-  function formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  function formatBytes(n: number): string {
+    if (n === 0) return '0 B';
+    const k = 1024, s = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(n) / Math.log(k));
+    return parseFloat((n / Math.pow(k, i)).toFixed(2)) + ' ' + s[i];
   }
 
   function bufToHex(buf: ArrayBuffer): string {
@@ -239,266 +249,362 @@ export const prerender = true;
   }
 
   async function computeHash(algo: string, data: Uint8Array): Promise<string> {
-    if (algo === 'MD5') {
-      return md5(data);
-    }
+    if (algo === 'MD5') return md5(data);
     const buf = await crypto.subtle.digest(algo, data);
     return bufToHex(buf);
   }
 
-  function createResultCard(algo: string, hex: string, timeMs: number): HTMLElement {
-    const b64 = hexToBase64(hex);
-    const card = document.createElement('div');
-    card.className = 'border border-terminal-border rounded p-4 bg-terminal-bg/50';
-    card.innerHTML = `
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-terminal-green text-xs font-bold">${algo}</span>
-        <span class="text-terminal-muted text-[10px]">${timeMs.toFixed(1)}ms</span>
-      </div>
-      <div class="space-y-2">
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-terminal-muted text-[10px] uppercase">hex</span>
-            <button class="copy-btn text-terminal-cyan text-[10px] hover:text-terminal-green transition-colors" data-value="${hex}">copy</button>
-          </div>
-          <div class="bg-black/40 rounded p-2 text-xs text-gray-300 font-mono break-all select-all">${hex}</div>
-        </div>
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-terminal-muted text-[10px] uppercase">base64</span>
-            <button class="copy-btn text-terminal-cyan text-[10px] hover:text-terminal-green transition-colors" data-value="${b64}">copy</button>
-          </div>
-          <div class="bg-black/40 rounded p-2 text-xs text-gray-300 font-mono break-all select-all">${b64}</div>
-        </div>
-      </div>
-    `;
-    // Copy button handlers
-    card.querySelectorAll('.copy-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const val = (btn as HTMLElement).dataset.value || '';
-        await navigator.clipboard.writeText(val);
-        const orig = btn.textContent;
-        btn.textContent = 'copied!';
-        btn.classList.remove('text-terminal-cyan');
-        btn.classList.add('text-terminal-green');
-        setTimeout(() => {
-          btn.textContent = orig;
-          btn.classList.remove('text-terminal-green');
-          btn.classList.add('text-terminal-cyan');
-        }, 1500);
-      });
-    });
-    return card;
+  // ============================================================
+  // State
+  // ============================================================
+  type HashResult = { algo: string; hex: string; ms: number };
+
+  let currentSource: 'text' | 'file' = 'text';
+  let outputFormat: 'hex' | 'base64' = 'hex';
+  let fileData: Uint8Array | null = null;
+  let lastResults: HashResult[] = [];
+  let hashTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  function getActiveAlgos(): string[] {
+    return Array.from(document.querySelectorAll('.algo-chip[data-active="true"]'))
+      .map(el => (el as HTMLElement).dataset.algo!);
   }
 
-  // === State ===
-  let currentMode = 'text';
-  let currentAlgo = 'SHA-256';
-  let fileData: Uint8Array | null = null;
+  // ============================================================
+  // DOM refs
+  // ============================================================
+  const textInput = document.getElementById('text-input') as HTMLTextAreaElement;
+  const byteCount = document.getElementById('byte-count')!;
+  const panelText = document.getElementById('panel-text')!;
+  const panelFile = document.getElementById('panel-file')!;
+  const dropZone = document.getElementById('drop-zone')!;
+  const filePicker = document.getElementById('file-picker') as HTMLInputElement;
+  const fileInfo = document.getElementById('file-info')!;
+  const fileNameEl = document.getElementById('file-name')!;
+  const fileSizeEl = document.getElementById('file-size')!;
+  const resultsArea = document.getElementById('results-area')!;
+  const resultsGrid = document.getElementById('results-grid')!;
+  const verifyInput = document.getElementById('verify-input') as HTMLInputElement;
+  const verifyStatus = document.getElementById('verify-status')!;
+  const autoHashCheckbox = document.getElementById('auto-hash') as HTMLInputElement;
 
-  // === Mode switching ===
-  const modeButtons = document.querySelectorAll('[data-mode]');
-  const panels = {
-    text: document.getElementById('panel-text')!,
-    file: document.getElementById('panel-file')!,
-    verify: document.getElementById('panel-verify')!,
-  };
-
-  modeButtons.forEach(btn => {
+  // ============================================================
+  // Source switching (text / file)
+  // ============================================================
+  document.querySelectorAll('.src-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      currentMode = (btn as HTMLElement).dataset.mode!;
-      modeButtons.forEach(b => {
+      currentSource = (btn as HTMLElement).dataset.src as 'text' | 'file';
+      document.querySelectorAll('.src-btn').forEach(b => {
         b.classList.remove('border-terminal-green', 'bg-terminal-green/10', 'text-terminal-green',
-          'border-terminal-cyan', 'bg-terminal-cyan/10', 'text-terminal-cyan',
-          'border-terminal-amber', 'bg-terminal-amber/10', 'text-terminal-amber');
+          'border-terminal-cyan', 'bg-terminal-cyan/10', 'text-terminal-cyan');
         b.classList.add('border-terminal-border', 'text-terminal-muted');
       });
-      const colors: Record<string, string[]> = {
-        text: ['border-terminal-green', 'bg-terminal-green/10', 'text-terminal-green'],
-        file: ['border-terminal-cyan', 'bg-terminal-cyan/10', 'text-terminal-cyan'],
-        verify: ['border-terminal-amber', 'bg-terminal-amber/10', 'text-terminal-amber'],
-      };
+      const colors = currentSource === 'text'
+        ? ['border-terminal-green', 'bg-terminal-green/10', 'text-terminal-green']
+        : ['border-terminal-cyan', 'bg-terminal-cyan/10', 'text-terminal-cyan'];
       btn.classList.remove('border-terminal-border', 'text-terminal-muted');
-      btn.classList.add(...colors[currentMode]);
-      Object.values(panels).forEach(p => p.classList.add('hidden'));
-      panels[currentMode as keyof typeof panels].classList.remove('hidden');
-      PT?.appendLog(`Switched to ${currentMode} mode`, 'info');
+      btn.classList.add(...colors);
+      panelText.classList.toggle('hidden', currentSource !== 'text');
+      panelFile.classList.toggle('hidden', currentSource !== 'file');
+      PT?.appendLog('Input source: ' + currentSource, 'info');
     });
   });
 
-  // === Algorithm switching ===
-  const algoButtons = document.querySelectorAll('.algo-btn');
-  algoButtons.forEach(btn => {
+  // ============================================================
+  // Algorithm chip toggling
+  // ============================================================
+  document.querySelectorAll('.algo-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const el = chip as HTMLElement;
+      const isActive = el.dataset.active === 'true';
+      const security = el.dataset.security || 'secure';
+
+      if (isActive) {
+        // Deactivate
+        el.dataset.active = 'false';
+        el.classList.remove(
+          'border-terminal-green', 'bg-terminal-green/10', 'text-terminal-green',
+          'border-terminal-amber', 'bg-terminal-amber/10', 'text-terminal-amber',
+          'border-terminal-red', 'bg-terminal-red/10', 'text-terminal-red'
+        );
+        el.classList.add('border-terminal-border', 'text-terminal-muted', 'opacity-50');
+      } else {
+        // Activate
+        el.dataset.active = 'true';
+        el.classList.remove('border-terminal-border', 'text-terminal-muted', 'opacity-50');
+        const colorMap: Record<string, string[]> = {
+          secure: ['border-terminal-green', 'bg-terminal-green/10', 'text-terminal-green'],
+          legacy: ['border-terminal-amber', 'bg-terminal-amber/10', 'text-terminal-amber'],
+          broken: ['border-terminal-red', 'bg-terminal-red/10', 'text-terminal-red'],
+        };
+        el.classList.add(...(colorMap[security] || colorMap.secure));
+      }
+      PT?.appendLog('Active algorithms: ' + getActiveAlgos().join(', '), 'info');
+    });
+  });
+
+  // ============================================================
+  // Output format switching
+  // ============================================================
+  document.querySelectorAll('.fmt-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      currentAlgo = (btn as HTMLElement).dataset.algo!;
-      algoButtons.forEach(b => {
+      outputFormat = (btn as HTMLElement).dataset.fmt as 'hex' | 'base64';
+      document.querySelectorAll('.fmt-btn').forEach(b => {
         b.classList.remove('border-terminal-green', 'bg-terminal-green/10', 'text-terminal-green');
         b.classList.add('border-terminal-border', 'text-terminal-muted');
       });
       btn.classList.remove('border-terminal-border', 'text-terminal-muted');
       btn.classList.add('border-terminal-green', 'bg-terminal-green/10', 'text-terminal-green');
-      PT?.appendLog(`Algorithm set to ${currentAlgo}`, 'info');
+      // Re-render results without recomputing
+      if (lastResults.length > 0) renderResults();
     });
   });
 
-  // === Text input ===
-  const textInput = document.getElementById('text-input') as HTMLTextAreaElement;
-  const textSize = document.getElementById('text-size')!;
-  textInput.addEventListener('input', () => {
-    const bytes = new TextEncoder().encode(textInput.value).length;
-    textSize.textContent = formatBytes(bytes);
-  });
-
-  // === File handling ===
-  const dropZone = document.getElementById('drop-zone')!;
-  const fileInput = document.getElementById('file-input') as HTMLInputElement;
-  const fileInfo = document.getElementById('file-info')!;
-  const fileName = document.getElementById('file-name')!;
-  const fileSizeDisplay = document.getElementById('file-size-display')!;
-
-  dropZone.addEventListener('click', () => fileInput.click());
-  dropZone.addEventListener('dragover', (e) => {
+  // ============================================================
+  // File handling
+  // ============================================================
+  dropZone.addEventListener('click', () => filePicker.click());
+  dropZone.addEventListener('dragover', e => {
     e.preventDefault();
     dropZone.classList.add('border-terminal-cyan', 'bg-terminal-cyan/5');
   });
   dropZone.addEventListener('dragleave', () => {
     dropZone.classList.remove('border-terminal-cyan', 'bg-terminal-cyan/5');
   });
-  dropZone.addEventListener('drop', (e) => {
+  dropZone.addEventListener('drop', e => {
     e.preventDefault();
     dropZone.classList.remove('border-terminal-cyan', 'bg-terminal-cyan/5');
     const file = e.dataTransfer?.files[0];
-    if (file) loadFile(file);
+    if (file) handleFile(file);
   });
-  fileInput.addEventListener('change', () => {
-    const file = fileInput.files?.[0];
-    if (file) loadFile(file);
+  filePicker.addEventListener('change', () => {
+    const file = filePicker.files?.[0];
+    if (file) handleFile(file);
   });
 
-  function loadFile(file: File) {
-    PT?.appendLog(`Loading file: ${file.name} (${formatBytes(file.size)})`, 'info');
-    fileName.textContent = file.name;
-    fileSizeDisplay.textContent = formatBytes(file.size);
+  function handleFile(file: File) {
+    PT?.appendLog('Loading file: ' + file.name + ' (' + formatBytes(file.size) + ')', 'info');
+    fileNameEl.textContent = file.name;
+    fileSizeEl.textContent = formatBytes(file.size);
     fileInfo.classList.remove('hidden');
     const reader = new FileReader();
     reader.onload = () => {
       fileData = new Uint8Array(reader.result as ArrayBuffer);
-      PT?.appendLog(`File loaded: ${formatBytes(fileData.length)} ready to hash`, 'success');
+      PT?.appendLog('File ready: ' + formatBytes(fileData.length), 'success');
     };
     reader.readAsArrayBuffer(file);
   }
 
-  // === Hash text ===
-  document.getElementById('btn-hash-text')!.addEventListener('click', async () => {
-    const text = textInput.value;
-    if (!text) { PT?.appendLog('No input text provided', 'warn'); return; }
-    await hashAndDisplay(new TextEncoder().encode(text), `text (${formatBytes(new TextEncoder().encode(text).length)})`);
+  // ============================================================
+  // Text input: byte counter + auto-hash
+  // ============================================================
+  textInput.addEventListener('input', () => {
+    const bytes = new TextEncoder().encode(textInput.value).length;
+    byteCount.textContent = formatBytes(bytes);
+    if (autoHashCheckbox.checked && textInput.value.length > 0) {
+      if (hashTimeout) clearTimeout(hashTimeout);
+      hashTimeout = setTimeout(() => runHash(), 300);
+    }
   });
 
-  // === Hash file (auto-trigger when in file mode) ===
-  // Add a hash button for file mode
-  const filePanel = document.getElementById('panel-file')!;
-  const fileHashBtn = document.createElement('button');
-  fileHashBtn.id = 'btn-hash-file';
-  fileHashBtn.className = 'mt-3 px-4 py-2 rounded border border-terminal-cyan text-terminal-cyan text-xs font-bold hover:bg-terminal-cyan/10 transition-colors hidden';
-  fileHashBtn.textContent = '$ generate hash';
-  filePanel.appendChild(fileHashBtn);
-
-  // Show file hash button when file is loaded
-  const origLoadFile = loadFile;
-  const fileHashBtnEl = document.getElementById('btn-hash-file')!;
-  new MutationObserver(() => {
-    if (!fileInfo.classList.contains('hidden')) fileHashBtnEl.classList.remove('hidden');
-  }).observe(fileInfo, { attributes: true, attributeFilter: ['class'] });
-
-  fileHashBtnEl.addEventListener('click', async () => {
-    if (!fileData) { PT?.appendLog('No file loaded', 'warn'); return; }
-    await hashAndDisplay(fileData, `file (${formatBytes(fileData.length)})`);
+  // ============================================================
+  // Clear buttons
+  // ============================================================
+  document.getElementById('btn-clear-text')!.addEventListener('click', () => {
+    textInput.value = '';
+    byteCount.textContent = '0 bytes';
+    clearResults();
+    PT?.appendLog('Text input cleared', 'info');
+    PT?.setToolStatus('ready');
   });
 
-  // === Verify ===
-  document.getElementById('btn-verify')!.addEventListener('click', async () => {
-    const text = (document.getElementById('verify-input') as HTMLTextAreaElement).value;
-    const expected = (document.getElementById('verify-expected') as HTMLInputElement).value.trim().toLowerCase();
-    if (!text) { PT?.appendLog('No input text provided', 'warn'); return; }
-    if (!expected) { PT?.appendLog('No expected hash provided', 'warn'); return; }
+  document.getElementById('btn-clear-file')!.addEventListener('click', () => {
+    fileData = null;
+    filePicker.value = '';
+    fileInfo.classList.add('hidden');
+    clearResults();
+    PT?.appendLog('File removed', 'info');
+    PT?.setToolStatus('ready');
+  });
+
+  document.getElementById('btn-clear-results')!.addEventListener('click', clearResults);
+
+  function clearResults() {
+    lastResults = [];
+    resultsGrid.innerHTML = '';
+    resultsArea.classList.add('hidden');
+    verifyInput.value = '';
+    verifyStatus.classList.add('hidden');
+  }
+
+  // ============================================================
+  // Core: Run hash on all active algorithms
+  // ============================================================
+  async function runHash() {
+    const algos = getActiveAlgos();
+    if (algos.length === 0) {
+      PT?.appendLog('No algorithms selected', 'warn');
+      return;
+    }
+
+    let data: Uint8Array | null = null;
+    let label = '';
+
+    if (currentSource === 'text') {
+      const text = textInput.value;
+      if (!text) {
+        PT?.appendLog('No input text provided', 'warn');
+        return;
+      }
+      data = new TextEncoder().encode(text);
+      label = 'text (' + formatBytes(data.length) + ')';
+    } else {
+      if (!fileData) {
+        PT?.appendLog('No file loaded', 'warn');
+        return;
+      }
+      data = fileData;
+      label = 'file (' + formatBytes(data.length) + ')';
+    }
 
     PT?.setToolStatus('running');
-    PT?.appendLog(`Verifying ${currentAlgo} hash...`, 'info');
+    PT?.appendLog('Hashing ' + label + ' with ' + algos.join(', ') + '...', 'info');
 
-    const data = new TextEncoder().encode(text);
-    const start = performance.now();
-    const hex = await computeHash(currentAlgo, data);
-    const elapsed = performance.now() - start;
+    lastResults = [];
 
-    const match = hex === expected;
-    const resultsContainer = document.getElementById('results-container')!;
-    const resultsList = document.getElementById('results-list')!;
-    resultsContainer.classList.remove('hidden');
+    for (const algo of algos) {
+      try {
+        const start = performance.now();
+        const hex = await computeHash(algo, data);
+        const ms = performance.now() - start;
+        lastResults.push({ algo, hex, ms });
+      } catch (err) {
+        PT?.appendLog('Error computing ' + algo + ': ' + err, 'error');
+      }
+    }
 
-    const card = document.createElement('div');
-    card.className = `border rounded p-4 ${match ? 'border-terminal-green bg-terminal-green/5' : 'border-terminal-red bg-terminal-red/5'}`;
-    card.innerHTML = `
-      <div class="flex items-center gap-2 mb-3">
-        <span class="text-xl">${match ? '✓' : '✗'}</span>
-        <span class="${match ? 'text-terminal-green text-glow-green' : 'text-terminal-red'} text-sm font-bold">
-          ${match ? 'HASH MATCH' : 'HASH MISMATCH'}
-        </span>
-        <span class="text-terminal-muted text-[10px] ml-auto">${currentAlgo} · ${elapsed.toFixed(1)}ms</span>
-      </div>
-      <div class="space-y-2 text-xs">
-        <div>
-          <span class="text-terminal-muted">computed:</span>
-          <div class="bg-black/40 rounded p-2 font-mono break-all mt-1 ${match ? 'text-terminal-green' : 'text-gray-300'}">${hex}</div>
-        </div>
-        <div>
-          <span class="text-terminal-muted">expected:</span>
-          <div class="bg-black/40 rounded p-2 font-mono break-all mt-1 ${match ? 'text-terminal-green' : 'text-terminal-red'}">${expected}</div>
-        </div>
-      </div>
-    `;
-    resultsList.prepend(card);
+    renderResults();
+    runVerify();
 
-    PT?.appendLog(
-      match ? `${currentAlgo} hash MATCHES expected value` : `${currentAlgo} hash DOES NOT MATCH expected value`,
-      match ? 'success' : 'error'
-    );
-    PT?.setToolStatus(match ? 'complete' : 'error');
-  });
+    const totalMs = lastResults.reduce((sum, r) => sum + r.ms, 0);
+    PT?.appendLog('Completed ' + lastResults.length + ' hashes in ' + totalMs.toFixed(1) + 'ms', 'success');
+    PT?.setToolStatus('complete');
+  }
 
-  // === Core hash + display ===
-  async function hashAndDisplay(data: Uint8Array, label: string) {
-    PT?.setToolStatus('running');
-    PT?.appendLog(`Hashing ${label} with ${currentAlgo}...`, 'info');
+  // ============================================================
+  // Render results grid
+  // ============================================================
+  function renderResults() {
+    resultsGrid.innerHTML = '';
+    resultsArea.classList.remove('hidden');
 
-    const resultsContainer = document.getElementById('results-container')!;
-    const resultsList = document.getElementById('results-list')!;
-    resultsContainer.classList.remove('hidden');
+    for (const r of lastResults) {
+      const displayValue = outputFormat === 'hex' ? r.hex : hexToBase64(r.hex);
+      const security = getAlgoSecurity(r.algo);
+      const card = document.createElement('div');
+      card.className = 'border border-terminal-border rounded p-3 bg-terminal-bg/50';
+      card.dataset.algo = r.algo;
+      card.dataset.hex = r.hex;
 
-    const start = performance.now();
-    try {
-      const hex = await computeHash(currentAlgo, data);
-      const elapsed = performance.now() - start;
+      const secBadge = security === 'secure'
+        ? '<span class="text-terminal-green text-[9px] border border-terminal-green/30 rounded px-1">secure</span>'
+        : security === 'legacy'
+        ? '<span class="text-terminal-amber text-[9px] border border-terminal-amber/30 rounded px-1">legacy</span>'
+        : '<span class="text-terminal-red text-[9px] border border-terminal-red/30 rounded px-1">broken</span>';
 
-      const card = createResultCard(currentAlgo, hex, elapsed);
-      resultsList.prepend(card);
+      card.innerHTML =
+        '<div class="flex items-center justify-between mb-2">'
+        + '<div class="flex items-center gap-2">'
+        + '<span class="text-terminal-green text-xs font-bold">' + r.algo + '</span>'
+        + secBadge
+        + '</div>'
+        + '<span class="text-terminal-muted text-[10px]">' + r.ms.toFixed(1) + 'ms</span>'
+        + '</div>'
+        + '<div class="flex items-center gap-2">'
+        + '<div class="hash-value flex-1 bg-black/40 rounded p-2 text-xs text-gray-300 font-mono break-all select-all cursor-text">' + displayValue + '</div>'
+        + '<button class="copy-btn flex-shrink-0 text-terminal-cyan text-[10px] hover:text-terminal-green transition-colors px-1" title="Copy to clipboard">copy</button>'
+        + '</div>';
 
-      PT?.appendLog(`${currentAlgo}: ${hex.substring(0, 32)}...`, 'success');
-      PT?.setToolStatus('complete');
-    } catch (err) {
-      PT?.appendLog(`Error: ${err}`, 'error');
-      PT?.setToolStatus('error');
+      // Copy handler
+      card.querySelector('.copy-btn')!.addEventListener('click', async () => {
+        const btn = card.querySelector('.copy-btn')!;
+        await navigator.clipboard.writeText(displayValue);
+        btn.textContent = 'copied!';
+        btn.classList.remove('text-terminal-cyan');
+        btn.classList.add('text-terminal-green');
+        setTimeout(() => {
+          btn.textContent = 'copy';
+          btn.classList.remove('text-terminal-green');
+          btn.classList.add('text-terminal-cyan');
+        }, 1500);
+      });
+
+      resultsGrid.appendChild(card);
     }
   }
 
-  // === Clear ===
-  document.getElementById('btn-clear')!.addEventListener('click', () => {
-    textInput.value = '';
-    textSize.textContent = '0 bytes';
-    const resultsList = document.getElementById('results-list')!;
-    resultsList.innerHTML = '';
-    document.getElementById('results-container')!.classList.add('hidden');
-    PT?.appendLog('Cleared input and results', 'info');
-    PT?.setToolStatus('ready');
+  function getAlgoSecurity(algo: string): string {
+    if (algo === 'MD5') return 'broken';
+    if (algo === 'SHA-1') return 'legacy';
+    return 'secure';
+  }
+
+  // ============================================================
+  // Verify: compare pasted hash against results
+  // ============================================================
+  function runVerify() {
+    const expected = verifyInput.value.trim().toLowerCase();
+    if (!expected || lastResults.length === 0) {
+      verifyStatus.classList.add('hidden');
+      // Reset card borders
+      resultsGrid.querySelectorAll('[data-algo]').forEach(card => {
+        (card as HTMLElement).classList.remove('border-terminal-green', 'bg-terminal-green/5', 'border-terminal-red', 'bg-terminal-red/5');
+        (card as HTMLElement).classList.add('border-terminal-border');
+      });
+      return;
+    }
+
+    let matchFound = false;
+    resultsGrid.querySelectorAll('[data-algo]').forEach(card => {
+      const el = card as HTMLElement;
+      const hex = el.dataset.hex || '';
+      const b64 = hexToBase64(hex);
+      const isMatch = hex === expected || b64 === expected;
+
+      el.classList.remove('border-terminal-border', 'border-terminal-green', 'bg-terminal-green/5', 'border-terminal-red', 'bg-terminal-red/5');
+
+      if (isMatch) {
+        el.classList.add('border-terminal-green', 'bg-terminal-green/5');
+        matchFound = true;
+      } else {
+        el.classList.add('border-terminal-red', 'bg-terminal-red/5');
+      }
+    });
+
+    verifyStatus.classList.remove('hidden');
+    if (matchFound) {
+      verifyStatus.textContent = '✓ MATCH FOUND';
+      verifyStatus.className = 'text-[10px] font-bold text-terminal-green';
+      PT?.appendLog('Verification: MATCH found', 'success');
+    } else {
+      verifyStatus.textContent = '✗ NO MATCH';
+      verifyStatus.className = 'text-[10px] font-bold text-terminal-red';
+      PT?.appendLog('Verification: No match against any algorithm', 'warn');
+    }
+  }
+
+  // Verify on input change (live comparison)
+  verifyInput.addEventListener('input', runVerify);
+
+  // Clear verify
+  document.getElementById('btn-verify-clear')!.addEventListener('click', () => {
+    verifyInput.value = '';
+    runVerify();
   });
+
+  // ============================================================
+  // Generate hash button
+  // ============================================================
+  document.getElementById('btn-hash')!.addEventListener('click', runHash);
+
 </script>
