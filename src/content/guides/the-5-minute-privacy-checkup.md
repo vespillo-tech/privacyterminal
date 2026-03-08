@@ -11,7 +11,7 @@ draft: false
 
 # The 5-Minute Privacy Checkup
 
-You have read about [how tracking works](/guides/how-youre-being-tracked). You have learned [who wants your data](/guides/who-wants-your-data). You have thought about [your own threat model](/guides/what-is-a-threat-model). Now it is time to do something.
+You have read about [how tracking works](/guides/how-youre-being-tracked). You have learned [who wants your data](/guides/who-wants-your-data). You have thought about [your own threat model](/tools/threat-profiler). Now it is time to do something.
 
 This guide is designed to be completed in five minutes using only the settings already on your devices. No new software to install. No accounts to create. No technical expertise required. Just five changes that immediately reduce how much data companies collect about you.
 
@@ -96,7 +96,7 @@ Chrome is built by an advertising company. Its defaults favor data collection. T
 2. Set **Enhanced Tracking Protection** to **Strict**
 3. Enable **HTTPS-Only Mode** in all windows
 
-**A note on browser choice:** These settings improve your current browser. If you want *significantly* better privacy, switching browsers entirely is the most impactful single change. But that is a bigger decision covered in [Choosing a Browser for Privacy](/guides/choosing-a-browser-for-privacy). For now, these settings reduce tracking within whatever browser you already use.
+**A note on browser choice:** These settings improve your current browser. If you want *significantly* better privacy, switching browsers entirely is the most impactful single change. But that is a bigger decision covered in [Choosing a Browser for Privacy](/guides) (coming soon). For now, these settings reduce tracking within whatever browser you already use.
 
 **What this does:** Blocks or limits the most common cross-site tracking mechanisms that advertising networks use to follow you from website to website.
 
@@ -164,9 +164,9 @@ None of these steps cost money. None of them broke anything. None of them requir
 
 Want to see what trackers can still see? Use our tools to check:
 
-- **[Browser Fingerprint Analyzer](/tools/fingerprint)** — See how identifiable your browser is after your changes
-- **[DNS Leak Test](/tools/dns-leak)** — Check if your DNS queries are being exposed
-- **[WebRTC Leak Detector](/tools/webrtc)** — Check if your real IP is leaking through your browser
+- **[Browser Fingerprint Analyzer](/tools) (coming soon)** — See how identifiable your browser is after your changes
+- **[DNS Leak Test](/tools) (coming soon)** — Check if your DNS queries are being exposed
+- **[WebRTC Leak Detector](/tools) (coming soon)** — Check if your real IP is leaking through your browser
 
 These tools run entirely in your browser — no data leaves your device.
 
@@ -178,11 +178,11 @@ This checkup addressed the lowest-hanging fruit. If you want to go further, the 
 
 | If you want to... | Read this next |
 |---|---|
-| Choose a more private browser | [Choosing a Browser for Privacy](/guides/choosing-a-browser-for-privacy) |
-| Understand what a VPN does (and does not do) | [VPNs: What They Actually Protect](/guides/vpns-what-they-actually-protect) |
-| Switch to encrypted messaging | [Encrypted Messaging: Your Options](/guides/encrypted-messaging) |
+| Choose a more private browser | [Choosing a Browser for Privacy](/guides) (coming soon) |
+| Understand what a VPN does (and does not do) | [VPNs: What They Actually Protect](/guides) (coming soon) |
+| Switch to encrypted messaging | [Encrypted Messaging: Your Options](/guides) (coming soon) |
 | Understand your browser\'s fingerprint | [Browser Fingerprinting Explained](/guides/browser-fingerprinting-explained) |
-| Remove yourself from data broker sites | [Data Broker Opt-Out Guide](/guides/data-broker-opt-out) |
+| Remove yourself from data broker sites | [Data Broker Opt-Out Guide](/guides) (coming soon) |
 
 Remember: privacy is not a single action but an ongoing practice. Set a calendar reminder to repeat this checkup in 90 days. Settings reset, apps update defaults, and new permissions creep in. A quarterly review takes five minutes and keeps your baseline intact.
 

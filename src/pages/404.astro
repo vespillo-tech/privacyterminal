@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+export const prerender = true;
+---
+
+<BaseLayout title="404 — Privacy Terminal" statusLeft="error" statusRight="page not found">
+  <div class="flex flex-col items-center justify-center py-16">
+    <div class="text-terminal-red text-6xl font-bold mb-4">404</div>
+    <div class="text-terminal-muted text-sm mb-2">bash: page not found</div>
+    <div class="tui-box p-6 max-w-md w-full mt-6">
+      <span class="tui-box-title text-terminal-red">&boxH; ERROR &boxH;</span>
+      <div class="mt-2 text-xs space-y-2">
+        <div class="text-terminal-muted"><span class="text-terminal-red">[ERR]</span> The requested path does not exist.</div>
+        <div class="text-terminal-muted"><span class="text-terminal-cyan">[TIP]</span> Try one of these:</div>
+        <div class="ml-4 space-y-1">
+          <a href="/" class="block text-terminal-green hover:text-glow-green">$ cd ~/home</a>
+          <a href="/tools" class="block text-terminal-green hover:text-glow-green">$ cd ~/tools</a>
+          <a href="/guides" class="block text-terminal-green hover:text-glow-green">$ cd ~/guides</a>
+          <a href="/terminal" class="block text-terminal-green hover:text-glow-green">$ cd ~/terminal</a>
+          <a href="/about" class="block text-terminal-green hover:text-glow-green">$ cd ~/about</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

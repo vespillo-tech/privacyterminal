@@ -176,7 +176,7 @@ There is no single solution to fingerprinting. But there is a spectrum of approa
 
 ## See Your Own Fingerprint
 
-The best way to understand fingerprinting is to see what your browser reveals. Our **[Browser Fingerprint Analyzer](/tools/fingerprint)** tests your browser against every major fingerprinting vector and shows you:
+The best way to understand fingerprinting is to see what your browser reveals. Our **[Browser Fingerprint Analyzer](/tools) (coming soon)** tests your browser against every major fingerprinting vector and shows you:
 
 - Your canvas, WebGL, and AudioContext fingerprints
 - Your screen and hardware attributes
