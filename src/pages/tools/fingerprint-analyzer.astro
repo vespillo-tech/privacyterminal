@@ -1,0 +1,460 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+export const prerender = true;
+---
+
+<ToolLayout
+  title="Browser Fingerprint Analyzer"
+  toolName="fingerprint-analyzer"
+  toolVersion="1.0.0"
+  description="See exactly how websites identify you. Tests 30+ tracking vectors including canvas, WebGL, audio, fonts, screen, timezone, and hardware. The most comprehensive browser fingerprint test available."
+>
+  <Fragment slot="controls">
+    <div class="space-y-3">
+      <button id="btn-scan" class="px-4 py-2 border border-terminal-green text-terminal-green text-xs font-bold hover:bg-terminal-green/10 transition-colors">
+        $ run fingerprint scan
+      </button>
+      <button id="btn-export" class="hidden px-3 py-1.5 border border-terminal-cyan text-terminal-cyan text-xs hover:bg-terminal-cyan/10 transition-colors">
+        export results
+      </button>
+    </div>
+  </Fragment>
+
+  <Fragment slot="results">
+    <div id="results-container" class="hidden">
+      <!-- Uniqueness summary -->
+      <div id="summary-panel" class="tui-box p-4 mb-3">
+        <span class="tui-box-title text-terminal-green">┤ FINGERPRINT SUMMARY ├</span>
+        <div class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+          <div>
+            <div id="total-signals" class="text-terminal-green text-xl font-bold text-glow-green">0</div>
+            <div class="text-terminal-muted text-[10px]">SIGNALS COLLECTED</div>
+          </div>
+          <div>
+            <div id="entropy-bits" class="text-terminal-amber text-xl font-bold text-glow-amber">0</div>
+            <div class="text-terminal-muted text-[10px]">ENTROPY BITS</div>
+          </div>
+          <div>
+            <div id="uniqueness-pct" class="text-terminal-cyan text-xl font-bold text-glow-cyan">—</div>
+            <div class="text-terminal-muted text-[10px]">EST. UNIQUENESS</div>
+          </div>
+          <div>
+            <div id="fp-hash" class="text-gray-400 text-xs font-mono break-all">—</div>
+            <div class="text-terminal-muted text-[10px]">FINGERPRINT HASH</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category results -->
+      <div id="categories" class="space-y-0"></div>
+    </div>
+  </Fragment>
+
+  <!-- Educational section -->
+  <div class="mt-6">
+    <hr class="tui-hr" />
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-terminal-muted py-3">
+      <div>
+        <span class="text-terminal-green font-bold">What is browser fingerprinting?</span>
+        <p class="mt-1">Your browser reveals dozens of technical details every time it loads a page — screen size, installed fonts, GPU model, timezone, language. Combined, these create a profile so specific it can identify you among millions of users.</p>
+      </div>
+      <div>
+        <span class="text-terminal-green font-bold">How unique am I?</span>
+        <p class="mt-1">Research shows ~33% of desktop fingerprints are completely unique. More entropy bits = more identifiable. Our test collects the same signals trackers use, so you can see exactly what you're exposing.</p>
+        <p class="mt-1"><a href="/guides/browser-fingerprinting-explained" class="text-terminal-cyan hover:text-terminal-green">Read: Browser Fingerprinting Explained →</a></p>
+      </div>
+    </div>
+  </div>
+</ToolLayout>
+
+<script>
+const PT = (window as any).privacyTerminal;
+
+// ===== FINGERPRINT TEST CATEGORIES =====
+
+interface Signal {
+  name: string;
+  value: string;
+  entropy: number; // estimated bits of entropy
+  risk: 'low' | 'medium' | 'high';
+}
+
+interface Category {
+  id: string;
+  label: string;
+  color: string;
+  signals: Signal[];
+}
+
+function riskColor(risk: string): string {
+  return risk === 'high' ? 'text-terminal-red' : risk === 'medium' ? 'text-terminal-amber' : 'text-terminal-green';
+}
+
+function riskLabel(risk: string): string {
+  return risk === 'high' ? 'HIGH' : risk === 'medium' ? 'MED' : 'LOW';
+}
+
+function truncate(s: string, n: number): string {
+  return s.length > n ? s.substring(0, n) + '…' : s;
+}
+
+// ===== CANVAS FINGERPRINT =====
+function getCanvasFingerprint(): string {
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = 200; canvas.height = 50;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return 'unavailable';
+    ctx.textBaseline = 'top';
+    ctx.font = '14px Arial';
+    ctx.fillStyle = '#f60';
+    ctx.fillRect(125, 1, 62, 20);
+    ctx.fillStyle = '#069';
+    ctx.fillText('Privacy Terminal 🔒', 2, 15);
+    ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+    ctx.fillText('Canvas FP Test', 4, 35);
+    ctx.strokeStyle = '#aa0';
+    ctx.arc(50, 25, 20, 0, Math.PI * 2);
+    ctx.stroke();
+    return canvas.toDataURL().slice(-32);
+  } catch { return 'blocked'; }
+}
+
+// ===== WEBGL FINGERPRINT =====
+function getWebGLInfo(): Record<string, string> {
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    if (!gl) return { renderer: 'unavailable', vendor: 'unavailable' };
+    const g = gl as WebGLRenderingContext;
+    const dbg = g.getExtension('WEBGL_debug_renderer_info');
+    return {
+      renderer: dbg ? g.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : 'hidden',
+      vendor: dbg ? g.getParameter(dbg.UNMASKED_VENDOR_WEBGL) : 'hidden',
+      version: g.getParameter(g.VERSION) || 'unknown',
+      shadingLang: g.getParameter(g.SHADING_LANGUAGE_VERSION) || 'unknown',
+      maxTexSize: String(g.getParameter(g.MAX_TEXTURE_SIZE)),
+      maxVertexAttribs: String(g.getParameter(g.MAX_VERTEX_ATTRIBS)),
+      extensions: String(g.getSupportedExtensions()?.length || 0) + ' extensions',
+    };
+  } catch { return { renderer: 'blocked' }; }
+}
+
+// ===== AUDIO FINGERPRINT =====
+async function getAudioFingerprint(): Promise<string> {
+  try {
+    const ctx = new OfflineAudioContext(1, 44100, 44100);
+    const osc = ctx.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(10000, ctx.currentTime);
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.setValueAtTime(-50, ctx.currentTime);
+    comp.knee.setValueAtTime(40, ctx.currentTime);
+    comp.ratio.setValueAtTime(12, ctx.currentTime);
+    comp.attack.setValueAtTime(0, ctx.currentTime);
+    comp.release.setValueAtTime(0.25, ctx.currentTime);
+    osc.connect(comp);
+    comp.connect(ctx.destination);
+    osc.start(0);
+    const buf = await ctx.startRendering();
+    const data = buf.getChannelData(0);
+    let sum = 0;
+    for (let i = 4500; i < 5000; i++) sum += Math.abs(data[i]);
+    return sum.toFixed(6);
+  } catch { return 'unavailable'; }
+}
+
+// ===== FONT DETECTION =====
+function detectFonts(): string[] {
+  const baseFonts = ['monospace', 'sans-serif', 'serif'];
+  const testFonts = [
+    'Arial', 'Arial Black', 'Courier New', 'Georgia', 'Helvetica', 'Impact',
+    'Lucida Console', 'Monaco', 'Palatino Linotype', 'Tahoma', 'Times New Roman',
+    'Trebuchet MS', 'Verdana', 'Comic Sans MS', 'Calibri', 'Cambria', 'Consolas',
+    'Segoe UI', 'Ubuntu', 'Cantarell', 'Droid Sans', 'Roboto', 'Noto Sans',
+    'Fira Code', 'JetBrains Mono', 'Source Code Pro', 'Liberation Mono',
+    'DejaVu Sans', 'Menlo', 'SF Mono', 'Cascadia Code', 'Inconsolata',
+  ];
+  const span = document.createElement('span');
+  span.style.cssText = 'position:absolute;left:-9999px;font-size:72px;visibility:hidden';
+  span.textContent = 'mmmmmmmmmmlli';
+  document.body.appendChild(span);
+  const baseWidths: Record<string, number> = {};
+  for (const base of baseFonts) {
+    span.style.fontFamily = base;
+    baseWidths[base] = span.offsetWidth;
+  }
+  const detected: string[] = [];
+  for (const font of testFonts) {
+    for (const base of baseFonts) {
+      span.style.fontFamily = `"${font}", ${base}`;
+      if (span.offsetWidth !== baseWidths[base]) {
+        detected.push(font);
+        break;
+      }
+    }
+  }
+  document.body.removeChild(span);
+  return detected;
+}
+
+// ===== CSS MEDIA QUERIES =====
+function getCSSFeatures(): Record<string, string> {
+  const results: Record<string, string> = {};
+  const queries: Record<string, string> = {
+    'prefers-color-scheme: dark': '(prefers-color-scheme: dark)',
+    'prefers-color-scheme: light': '(prefers-color-scheme: light)',
+    'prefers-reduced-motion': '(prefers-reduced-motion: reduce)',
+    'prefers-contrast: more': '(prefers-contrast: more)',
+    'inverted-colors': '(inverted-colors: inverted)',
+    'forced-colors': '(forced-colors: active)',
+    'hover: hover': '(hover: hover)',
+    'pointer: fine': '(pointer: fine)',
+    'pointer: coarse': '(pointer: coarse)',
+    'display-mode: standalone': '(display-mode: standalone)',
+  };
+  for (const [label, query] of Object.entries(queries)) {
+    results[label] = window.matchMedia(query).matches ? 'true' : 'false';
+  }
+  return results;
+}
+
+// ===== MATH PRECISION =====
+function getMathFingerprint(): string {
+  const tests = [
+    Math.tan(-1e300),
+    Math.acos(0.123456789),
+    Math.sinh(1),
+    Math.expm1(1),
+    Math.atanh(0.5),
+    Math.cbrt(2),
+    Math.log1p(0.5),
+  ];
+  return tests.map(v => v.toString().slice(-6)).join(',');
+}
+
+// ===== HASH UTILITY =====
+async function hashString(str: string): Promise<string> {
+  const data = new TextEncoder().encode(str);
+  const buf = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ===== MAIN SCAN =====
+async function runScan() {
+  const categories: Category[] = [];
+  PT?.setToolStatus('running');
+  PT?.appendLog('Starting comprehensive fingerprint scan...', 'info');
+
+  // 1. SCREEN & DISPLAY
+  PT?.appendLog('Scanning screen & display...', 'info');
+  const screenSignals: Signal[] = [
+    { name: 'Screen Resolution', value: `${screen.width}×${screen.height}`, entropy: 4.5, risk: 'medium' },
+    { name: 'Available Screen', value: `${screen.availWidth}×${screen.availHeight}`, entropy: 3.2, risk: 'medium' },
+    { name: 'Color Depth', value: `${screen.colorDepth}-bit`, entropy: 1.5, risk: 'low' },
+    { name: 'Pixel Ratio', value: String(window.devicePixelRatio), entropy: 2.8, risk: 'medium' },
+    { name: 'Viewport Size', value: `${window.innerWidth}×${window.innerHeight}`, entropy: 3.0, risk: 'medium' },
+    { name: 'Orientation', value: screen.orientation?.type || 'unknown', entropy: 0.5, risk: 'low' },
+  ];
+  categories.push({ id: 'screen', label: 'SCREEN & DISPLAY', color: 'terminal-cyan', signals: screenSignals });
+
+  // 2. BROWSER & ENGINE
+  PT?.appendLog('Scanning browser & engine...', 'info');
+  const browserSignals: Signal[] = [
+    { name: 'User Agent', value: truncate(navigator.userAgent, 80), entropy: 8.5, risk: 'high' },
+    { name: 'Platform', value: navigator.platform || 'unknown', entropy: 3.0, risk: 'medium' },
+    { name: 'Language', value: navigator.language, entropy: 3.5, risk: 'medium' },
+    { name: 'Languages', value: (navigator.languages || []).join(', '), entropy: 4.0, risk: 'medium' },
+    { name: 'Cookie Enabled', value: String(navigator.cookieEnabled), entropy: 0.3, risk: 'low' },
+    { name: 'Do Not Track', value: (navigator as any).doNotTrack || 'unset', entropy: 1.0, risk: 'low' },
+    { name: 'PDF Viewer', value: String((navigator as any).pdfViewerEnabled ?? 'unknown'), entropy: 0.5, risk: 'low' },
+    { name: 'Max Touch Points', value: String(navigator.maxTouchPoints), entropy: 1.5, risk: 'low' },
+  ];
+  categories.push({ id: 'browser', label: 'BROWSER & ENGINE', color: 'terminal-green', signals: browserSignals });
+
+  // 3. HARDWARE
+  PT?.appendLog('Scanning hardware...', 'info');
+  const hwSignals: Signal[] = [
+    { name: 'CPU Cores', value: String(navigator.hardwareConcurrency || 'unknown'), entropy: 2.5, risk: 'medium' },
+    { name: 'Device Memory', value: ((navigator as any).deviceMemory ? (navigator as any).deviceMemory + ' GB' : 'hidden'), entropy: 2.0, risk: 'medium' },
+  ];
+  // Battery
+  try {
+    const batt = await (navigator as any).getBattery?.();
+    if (batt) {
+      hwSignals.push({ name: 'Battery Charging', value: String(batt.charging), entropy: 0.5, risk: 'low' });
+      hwSignals.push({ name: 'Battery Level', value: (batt.level * 100).toFixed(0) + '%', entropy: 1.0, risk: 'low' });
+    }
+  } catch {}
+  // Connection
+  const conn = (navigator as any).connection;
+  if (conn) {
+    hwSignals.push({ name: 'Connection Type', value: conn.effectiveType || 'unknown', entropy: 1.5, risk: 'low' });
+    hwSignals.push({ name: 'Downlink', value: (conn.downlink || 'unknown') + ' Mbps', entropy: 1.0, risk: 'low' });
+  }
+  categories.push({ id: 'hardware', label: 'HARDWARE', color: 'terminal-amber', signals: hwSignals });
+
+  // 4. TIMEZONE & LOCALE
+  PT?.appendLog('Scanning timezone & locale...', 'info');
+  const tzSignals: Signal[] = [
+    { name: 'Timezone', value: Intl.DateTimeFormat().resolvedOptions().timeZone, entropy: 4.0, risk: 'medium' },
+    { name: 'TZ Offset', value: `UTC${new Date().getTimezoneOffset() > 0 ? '-' : '+'}${Math.abs(new Date().getTimezoneOffset() / 60)}`, entropy: 3.5, risk: 'medium' },
+    { name: 'Date Format', value: new Date().toLocaleDateString(), entropy: 2.0, risk: 'low' },
+    { name: 'Number Format', value: (1234567.89).toLocaleString(), entropy: 2.0, risk: 'low' },
+  ];
+  categories.push({ id: 'timezone', label: 'TIMEZONE & LOCALE', color: 'terminal-cyan', signals: tzSignals });
+
+  // 5. CANVAS
+  PT?.appendLog('Generating canvas fingerprint...', 'info');
+  const canvasHash = getCanvasFingerprint();
+  categories.push({ id: 'canvas', label: 'CANVAS', color: 'terminal-red', signals: [
+    { name: 'Canvas Hash', value: canvasHash, entropy: 8.0, risk: 'high' },
+  ]});
+
+  // 6. WEBGL
+  PT?.appendLog('Scanning WebGL...', 'info');
+  const webgl = getWebGLInfo();
+  const webglSignals: Signal[] = Object.entries(webgl).map(([k, v]) => ({
+    name: 'WebGL ' + k.charAt(0).toUpperCase() + k.slice(1),
+    value: truncate(v, 60),
+    entropy: k === 'renderer' ? 7.0 : k === 'vendor' ? 4.0 : 1.5,
+    risk: (k === 'renderer' ? 'high' : 'medium') as Signal['risk'],
+  }));
+  categories.push({ id: 'webgl', label: 'WEBGL', color: 'terminal-red', signals: webglSignals });
+
+  // 7. AUDIO
+  PT?.appendLog('Generating audio fingerprint...', 'info');
+  const audioFP = await getAudioFingerprint();
+  categories.push({ id: 'audio', label: 'AUDIO', color: 'terminal-amber', signals: [
+    { name: 'Audio FP', value: audioFP, entropy: 5.5, risk: 'high' },
+    { name: 'Audio Context', value: typeof OfflineAudioContext !== 'undefined' ? 'supported' : 'unsupported', entropy: 0.5, risk: 'low' },
+  ]});
+
+  // 8. FONTS
+  PT?.appendLog('Detecting installed fonts...', 'info');
+  const fonts = detectFonts();
+  categories.push({ id: 'fonts', label: 'FONTS', color: 'terminal-amber', signals: [
+    { name: 'Detected Fonts', value: `${fonts.length} fonts`, entropy: Math.min(fonts.length * 0.4, 8), risk: fonts.length > 15 ? 'high' : 'medium' },
+    { name: 'Font List', value: truncate(fonts.join(', '), 120), entropy: 0, risk: 'low' },
+  ]});
+
+  // 9. CSS FEATURES
+  PT?.appendLog('Probing CSS media features...', 'info');
+  const cssFeats = getCSSFeatures();
+  const cssSignals: Signal[] = Object.entries(cssFeats).map(([k, v]) => ({
+    name: k, value: v, entropy: 0.5, risk: 'low' as Signal['risk'],
+  }));
+  categories.push({ id: 'css', label: 'CSS MEDIA QUERIES', color: 'terminal-cyan', signals: cssSignals });
+
+  // 10. MATH PRECISION
+  PT?.appendLog('Testing math precision...', 'info');
+  const mathFP = getMathFingerprint();
+  categories.push({ id: 'math', label: 'MATH PRECISION', color: 'terminal-green', signals: [
+    { name: 'Math FP', value: mathFP, entropy: 3.0, risk: 'medium' },
+  ]});
+
+  // 11. STORAGE & APIS
+  PT?.appendLog('Checking storage & API support...', 'info');
+  const apiSignals: Signal[] = [
+    { name: 'LocalStorage', value: (() => { try { localStorage.setItem('_t', '1'); localStorage.removeItem('_t'); return 'available'; } catch { return 'blocked'; } })(), entropy: 0.5, risk: 'low' },
+    { name: 'SessionStorage', value: (() => { try { sessionStorage.setItem('_t', '1'); sessionStorage.removeItem('_t'); return 'available'; } catch { return 'blocked'; } })(), entropy: 0.3, risk: 'low' },
+    { name: 'IndexedDB', value: typeof indexedDB !== 'undefined' ? 'available' : 'blocked', entropy: 0.3, risk: 'low' },
+    { name: 'Service Workers', value: 'serviceWorker' in navigator ? 'supported' : 'unsupported', entropy: 0.3, risk: 'low' },
+    { name: 'WebAssembly', value: typeof WebAssembly !== 'undefined' ? 'supported' : 'unsupported', entropy: 0.3, risk: 'low' },
+    { name: 'WebRTC', value: typeof RTCPeerConnection !== 'undefined' ? 'supported' : 'unsupported', entropy: 0.5, risk: 'medium' },
+    { name: 'Bluetooth API', value: 'bluetooth' in navigator ? 'available' : 'unavailable', entropy: 0.3, risk: 'low' },
+    { name: 'Gamepad API', value: 'getGamepads' in navigator ? 'supported' : 'unsupported', entropy: 0.3, risk: 'low' },
+  ];
+  categories.push({ id: 'apis', label: 'STORAGE & APIS', color: 'terminal-green', signals: apiSignals });
+
+  // === COMPUTE TOTALS ===
+  PT?.appendLog('Computing fingerprint hash...', 'info');
+  let totalSignals = 0;
+  let totalEntropy = 0;
+  let allValues = '';
+  for (const cat of categories) {
+    totalSignals += cat.signals.length;
+    for (const sig of cat.signals) {
+      totalEntropy += sig.entropy;
+      allValues += sig.value + '|';
+    }
+  }
+
+  const fpHash = await hashString(allValues);
+  const shortHash = fpHash.substring(0, 16);
+
+  // Estimate uniqueness based on entropy
+  const uniqueIn = Math.pow(2, Math.min(totalEntropy, 33));
+  let uniqueLabel: string;
+  if (uniqueIn > 1_000_000_000) uniqueLabel = 'Extremely unique';
+  else if (uniqueIn > 1_000_000) uniqueLabel = 'Highly unique';
+  else if (uniqueIn > 10_000) uniqueLabel = 'Somewhat unique';
+  else uniqueLabel = 'Low uniqueness';
+
+  // === RENDER RESULTS ===
+  document.getElementById('results-container')!.classList.remove('hidden');
+  document.getElementById('total-signals')!.textContent = String(totalSignals);
+  document.getElementById('entropy-bits')!.textContent = totalEntropy.toFixed(1);
+  document.getElementById('uniqueness-pct')!.textContent = uniqueLabel;
+  document.getElementById('fp-hash')!.textContent = shortHash;
+
+  const catContainer = document.getElementById('categories')!;
+  catContainer.innerHTML = '';
+
+  for (const cat of categories) {
+    const box = document.createElement('div');
+    box.className = 'tui-box p-3';
+    box.innerHTML = `<span class="tui-box-title ${cat.color}">┤ ${cat.label} (${cat.signals.length}) ├</span>
+      <div class="mt-2 space-y-0.5">
+        ${cat.signals.map(sig => `
+          <div class="flex items-start justify-between gap-2 py-0.5 text-xs">
+            <span class="text-terminal-muted shrink-0">${sig.name}</span>
+            <span class="text-gray-300 text-right font-mono break-all max-w-[60%]">${sig.value}</span>
+            <span class="${riskColor(sig.risk)} text-[10px] shrink-0">[${riskLabel(sig.risk)}]</span>
+          </div>
+        `).join('')}
+      </div>`;
+    catContainer.appendChild(box);
+  }
+
+  // Show export button
+  document.getElementById('btn-export')!.classList.remove('hidden');
+
+  PT?.appendLog(`Scan complete: ${totalSignals} signals, ${totalEntropy.toFixed(1)} bits entropy`, 'success');
+  PT?.appendLog(`Fingerprint hash: ${shortHash}`, 'success');
+  PT?.appendLog(`Estimated uniqueness: ${uniqueLabel}`, 'success');
+  PT?.setToolStatus('complete');
+
+  // Store for export
+  (window as any)._fpResults = { categories, totalSignals, totalEntropy, fpHash, uniqueLabel };
+}
+
+// === EVENT LISTENERS ===
+document.getElementById('btn-scan')!.addEventListener('click', runScan);
+
+document.getElementById('btn-export')!.addEventListener('click', () => {
+  const r = (window as any)._fpResults;
+  if (!r) return;
+  const lines: string[] = [
+    '# Browser Fingerprint Report',
+    `# Generated by Privacy Terminal — ${new Date().toISOString()}`,
+    `# Hash: ${r.fpHash}`,
+    `# Signals: ${r.totalSignals} | Entropy: ${r.totalEntropy.toFixed(1)} bits | ${r.uniqueLabel}`,
+    '',
+  ];
+  for (const cat of r.categories) {
+    lines.push(`## ${cat.label}`);
+    for (const sig of cat.signals) {
+      lines.push(`  ${sig.name}: ${sig.value} [${sig.risk.toUpperCase()}]`);
+    }
+    lines.push('');
+  }
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `fingerprint-${r.fpHash.substring(0, 8)}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+  PT?.appendLog('Report exported', 'success');
+});
+</script>
