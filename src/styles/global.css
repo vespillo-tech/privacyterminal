@@ -248,3 +248,45 @@
   -moz-osx-font-smoothing: unset;
   text-rendering: optimizeSpeed;
 }
+
+/* === Terminal Button & Progress Bar Components === */
+.progress-bar {
+  background: #1a2332;
+  border-radius: 0;
+  height: 6px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.progress-fill {
+  background: #00ff41;
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+.btn-terminal {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border: 1px solid #00ff41;
+  color: #00ff41;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.btn-terminal:hover {
+  background: rgba(0, 255, 65, 0.1);
+}
+
+.btn-terminal-amber {
+  border-color: #ffb000;
+  color: #ffb000;
+}
+
+.btn-terminal-amber:hover {
+  background: rgba(255, 176, 0, 0.1);
+}

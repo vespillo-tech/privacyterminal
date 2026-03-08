@@ -4,11 +4,15 @@ export const prerender = true;
 ---
 
 <ToolLayout
-  title="Hash Generator & Verifier"
+  title="Free SHA-256 Hash Generator — MD5, SHA-512, SHA-1 Online | Privacy Terminal"
   toolName="hash-generator"
   toolVersion="2.0.0"
-  description="Generate and verify cryptographic hashes — all algorithms at once, real-time results, built-in verification. 100% client-side via Web Crypto API."
+  description="Generate SHA-256, SHA-512, SHA-384, SHA-1 and MD5 hashes instantly. Verify file integrity with hash comparison. 100% client-side, your data never leaves your browser."
 >
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"SHA-256 Hash Generator & Verifier","applicationCategory":"SecurityApplication","operatingSystem":"Web Browser","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Generate and verify SHA-256, SHA-512, MD5 hashes. Client-side, no data transmitted.","url":"https://privacyterminal.com/tools/hash-generator/"}
+</script>
+
   <!-- Controls -->
   <Fragment slot="controls">
     <div class="space-y-4">

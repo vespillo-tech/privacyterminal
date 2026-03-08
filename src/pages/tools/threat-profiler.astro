@@ -3,7 +3,11 @@ export const prerender = true;
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="Threat Model Calculator | Privacy Terminal" description="Build your personalized privacy threat profile. 28-category threat analysis. 100% client-side — zero data leaves your browser.">
+<BaseLayout title="Privacy Threat Model Calculator — Personal Risk Assessment | Privacy Terminal" description="Build your personalized privacy threat profile with 48 questions across 28 threat categories. Discover your risk level for surveillance, tracking, and data exposure. 100% client-side.">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Privacy Threat Model Calculator","applicationCategory":"SecurityApplication","operatingSystem":"Web Browser","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Build your personalized privacy threat profile with 48 questions across 28 threat categories. 100% client-side.","url":"https://privacyterminal.com/tools/threat-profiler/"}
+</script>
+
   <div class="max-w-4xl mx-auto" id="threat-app">
     <div id="boot-screen" class="tui-box mb-8">
       <div class="tui-box-title">[ THREAT ANALYSIS ENGINE v3.1.0 ]</div>

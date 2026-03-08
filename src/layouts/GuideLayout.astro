@@ -36,6 +36,23 @@ const categoryColors: Record<string, string> = {
   statusLeft={`guide: ${category}`}
   statusRight={readingTime || ''}
 >
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": title,
+    "description": description,
+    "datePublished": publishedDate || undefined,
+    "dateModified": updatedDate || publishedDate || undefined,
+    "publisher": {
+      "@type": "Organization",
+      "name": "Privacy Terminal",
+      "url": "https://privacyterminal.com"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://privacyterminal.com${Astro.url.pathname}`
+    }
+  })} />
   <div class="flex flex-col lg:flex-row gap-4">
     <!-- Sidebar / Table of Contents -->
     <aside class="lg:w-48 shrink-0 order-2 lg:order-1">
