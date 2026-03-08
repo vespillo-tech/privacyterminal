@@ -87,12 +87,26 @@ export const prerender = true;
     }
   </style>
 
-  <!-- Boot sequence -->
+  <!-- Boot sequence + hook -->
   <div class="space-y-1 mb-4 text-xs px-2">
     <div class="text-terminal-muted"><span class="text-terminal-green">[BOOT]</span> Privacy Terminal v0.1.0</div>
-    <div class="text-terminal-muted"><span class="text-terminal-cyan">[INFO]</span> No tracking · No cookies · No external requests</div>
+    <div class="text-terminal-muted"><span class="text-terminal-cyan">[INFO]</span> No tracking &middot; No cookies &middot; No external requests</div>
     <div class="text-terminal-muted"><span class="text-terminal-green">[READY]</span> All tools run client-side. Your data never leaves your browser.</div>
-    <div class="mt-2"><span class="text-terminal-green">$</span> <span class="text-white">Welcome to Privacy Terminal</span><span class="cursor-blink"></span></div>
+    <div class="mt-3"><span class="text-terminal-green">$</span> <span class="text-white">Welcome to Privacy Terminal</span><span class="cursor-blink"></span></div>
+  </div>
+
+  <!-- Hero CTA -->
+  <div class="tui-box p-4 mb-4">
+    <span class="tui-box-title text-terminal-amber">┤ START HERE ├</span>
+    <div class="mt-2 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+      <div class="flex-1">
+        <div class="text-white text-sm font-bold mb-1">How exposed are you?</div>
+        <div class="text-terminal-muted text-xs">Answer 48 questions. Get a personalized threat profile across 28 attack categories. Takes 5 minutes. Zero data leaves your browser.</div>
+      </div>
+      <a href="/tools/threat-profiler" class="shrink-0 px-4 py-2 border border-terminal-green text-terminal-green text-xs font-bold hover:bg-terminal-green/10 transition-colors">
+        ▶ Take the Assessment
+      </a>
+    </div>
   </div>
 
   <hr class="tui-hr" />
@@ -212,15 +226,20 @@ export const prerender = true;
   <div class="grid grid-cols-3 gap-0 text-xs text-center py-3">
     <div class="px-2">
       <div class="text-terminal-green font-bold mb-1">⊘ ZERO TRACKING</div>
-      <div class="text-terminal-muted">No analytics. No fingerprinting. No cookies.</div>
+      <div class="text-terminal-muted">No analytics. No fingerprinting. No cookies. Open your DevTools Network tab &mdash; silence.</div>
     </div>
     <div class="px-2 border-x border-terminal-border">
       <div class="text-terminal-cyan font-bold mb-1">⊚ CLIENT-SIDE</div>
-      <div class="text-terminal-muted">Your data never leaves your browser.</div>
+      <div class="text-terminal-muted">Every computation happens in your browser. Your data never touches a server.</div>
     </div>
     <div class="px-2">
       <div class="text-terminal-amber font-bold mb-1">⊡ OPEN SOURCE</div>
-      <div class="text-terminal-muted">Every line of code is public. Verify.</div>
+      <div class="text-terminal-muted">Every line of code is <a href="https://github.com/vespillo-tech/privacyterminal" class="text-terminal-cyan hover:text-terminal-green">public on GitHub</a>. Don't trust &mdash; verify.</div>
     </div>
+  </div>
+
+  <!-- Social proof / urgency strip -->
+  <div class="text-center text-terminal-muted text-[10px] py-2 border-t border-terminal-border">
+    Used by privacy researchers, journalists, and security professionals. Recommended on r/privacy.
   </div>
 </BaseLayout>
