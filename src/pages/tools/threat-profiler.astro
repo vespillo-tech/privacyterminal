@@ -8,6 +8,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 {"@context":"https://schema.org","@type":"SoftwareApplication","name":"Privacy Threat Model Calculator","applicationCategory":"SecurityApplication","operatingSystem":"Web Browser","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Build your personalized privacy threat profile with 48 questions across 28 threat categories. 100% client-side.","url":"https://privacyterminal.com/tools/threat-profiler/"}
 </script>
 
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "What is a privacy threat model?", "acceptedAnswer": {"@type": "Answer", "text": "A threat model is a systematic assessment of which privacy and security threats are most relevant to your specific situation. It considers your online behavior, profession, location, devices, and relationships to identify where you are most vulnerable."}},
+    {"@type": "Question", "name": "Is my data stored when I use this threat profiler?", "acceptedAnswer": {"@type": "Answer", "text": "No. All 48 questions are processed entirely in your browser. Zero data is transmitted to any server. Your answers exist only in browser memory and are discarded when you close the page."}},
+    {"@type": "Question", "name": "How accurate is this threat assessment?", "acceptedAnswer": {"@type": "Answer", "text": "This tool analyzes 28 distinct threat categories using weighted scoring across 48 questions. It provides a useful starting point but is not a substitute for professional security audit. For high-risk individuals, consult EFF Surveillance Self-Defense and Access Now Digital Security Helpline."}}
+  ]
+}
+</script>
   <div class="max-w-4xl mx-auto" id="threat-app">
     <div id="boot-screen" class="tui-box mb-8">
       <div class="tui-box-title">[ THREAT ANALYSIS ENGINE v3.1.0 ]</div>
@@ -588,6 +599,7 @@ h+='<div class="tui-box mb-6"><div class="tui-box-title">[ EXPORT RESULTS ]</div
 h+='<div class="flex gap-3 flex-wrap">';
 h+='<button class="btn-terminal" onclick="exportText()">COPY AS TEXT</button>';
 h+='<button class="btn-terminal" onclick="exportJSON()">DOWNLOAD JSON</button>';
+h+='<button class="btn-terminal" onclick="shareResults()">SHARE RESULTS</button>';
 h+='<button class="btn-terminal btn-terminal-amber" onclick="resetWizard()">START OVER</button>';
 h+='</div><div id="export-msg" class="text-terminal-green text-xs mt-3"></div></div></div>';
 h+='<div class="tui-box mb-8"><div class="tui-box-title">[ IMPORTANT NOTE ]</div><div class="p-4 text-terminal-muted text-xs leading-relaxed">';
@@ -610,5 +622,18 @@ next();
 }
 document.addEventListener('DOMContentLoaded',()=>runBoot());
 window.wizardNext=wizardNext;window.wizardBack=wizardBack;
-window.exportText=exportText;window.exportJSON=exportJSON;window.resetWizard=resetWizard;
+window.exportText=exportText;window.exportJSON=exportJSON;function shareResults(){
+var sc=computeScores();
+var sorted=[...THREATS].sort(function(a,b){return sc[b.id].pct-sc[a.id].pct;});
+var top3=sorted.slice(0,3);
+var avg=Math.round(sorted.reduce(function(s,t){return s+sc[t.id].pct;},0)/THREATS.length);
+var ol=avg>=60?'CRITICAL':avg>=40?'HIGH':avg>=20?'MODERATE':'LOW';
+var text='My Privacy Threat Profile: '+ol+' ('+avg+'% exposure)\nTop threats:\n';
+top3.forEach(function(t,i){text+=(i+1)+'. '+t.label+' ('+sc[t.id].pct+'%)\n';});
+text+='\nGet yours: https://privacyterminal.com/tools/threat-profiler/';
+if(navigator.share){navigator.share({title:'My Privacy Threat Profile',text:text,url:'https://privacyterminal.com/tools/threat-profiler/'}).catch(function(){});}
+else{navigator.clipboard.writeText(text).then(function(){if(el('export-msg'))el('export-msg').textContent='> Share text copied!';}).catch(function(){if(el('export-msg'))el('export-msg').textContent='> Copy failed.';});}
+}
+window.shareResults=shareResults;
+window.resetWizard=resetWizard;
 </script>

@@ -14,6 +14,18 @@ export const prerender = true;
 </script>
 
   <!-- Controls -->
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "What is a SHA-256 hash?", "acceptedAnswer": {"@type": "Answer", "text": "SHA-256 is a cryptographic hash function that produces a 256-bit (32-byte) fixed-size output from any input. It is used for file integrity verification, digital signatures, blockchain, and password storage. The same input always produces the same hash, but even a tiny change produces a completely different output."}},
+    {"@type": "Question", "name": "Is this hash generator safe to use?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. This tool runs entirely in your browser using the Web Crypto API. Your data never leaves your device. No server processing, no uploads, no logging. Verify this by checking the Network tab in your browser DevTools."}},
+    {"@type": "Question", "name": "What is the difference between MD5, SHA-1, and SHA-256?", "acceptedAnswer": {"@type": "Answer", "text": "MD5 produces a 128-bit hash and is cryptographically broken. SHA-1 produces a 160-bit hash with known collision vulnerabilities since 2017. SHA-256 produces a 256-bit hash and is currently secure for all purposes. Always use SHA-256 or SHA-512 for security-sensitive applications."}},
+    {"@type": "Question", "name": "How do I verify a file using a hash?", "acceptedAnswer": {"@type": "Answer", "text": "Upload the file, generate its hash, then compare the result with the hash provided by the publisher. If both match exactly, the file has not been modified. Use the built-in verify feature to paste the expected hash and instantly see if it matches."}}
+  ]
+}
+</script>
   <Fragment slot="controls">
     <div class="space-y-4">
 
