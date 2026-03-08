@@ -589,7 +589,8 @@ export const prerender = true;
     } else {
       verifyStatus.textContent = '✗ NO MATCH';
       verifyStatus.className = 'text-[10px] font-bold text-terminal-red';
-      PT?.appendLog('Verification: No match against any algorithm', 'warn');
+      // Only log mismatch when user has explicitly entered a hash to verify
+      if (expected.length > 10) PT?.appendLog('Verification: No match against any algorithm', 'warn');
     }
   }
 
