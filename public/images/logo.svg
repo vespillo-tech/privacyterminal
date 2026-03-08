@@ -1,19 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2106 862" role="img" aria-label="Privacy Terminal">
   <defs>
-    <!-- Subtle phosphor glow -->
-    <filter id="glow" x="-5%" y="-5%" width="110%" height="110%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="0.8" result="softBlur"/>
+    <!-- Phosphor glow -->
+    <filter id="glow" x="-8%" y="-8%" width="116%" height="116%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="1.2" result="innerBlur"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="outerBlur"/>
       <feMerge>
-        <feMergeNode in="softBlur"/>
+        <feMergeNode in="outerBlur"/>
+        <feMergeNode in="innerBlur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
 
-    <!-- Scanline texture overlay -->
-    <pattern id="scanlines" patternUnits="userSpaceOnUse" width="100%" height="4">
-      <rect width="100%" height="2" fill="rgba(0,0,0,0)" />
-      <rect y="2" width="100%" height="2" fill="rgba(0,0,0,0.08)" />
-    </pattern>
 
 
   </defs>
@@ -709,6 +706,4 @@ l-78 -3 0 156 c0 148 -1 155 -20 155 -19 0 -20 -7 -20 -175z"/>
 110 -20 110 -19 0 -20 -7 -20 -130z"/>
   </g>
 
-  <!-- Scanline overlay -->
-  <rect width="100%" height="100%" fill="url(#scanlines)" opacity="0.5" pointer-events="none"/>
 </svg>

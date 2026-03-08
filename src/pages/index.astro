@@ -8,7 +8,6 @@ export const prerender = true;
   <div class="logo-container py-4 md:py-8 flex justify-center px-4">
     <div class="logo-wrapper">
       <img src="/images/logo.svg" alt="Privacy Terminal" class="logo-img w-full max-w-3xl" />
-      <div class="logo-scanlines"></div>
     </div>
   </div>
 
@@ -24,40 +23,22 @@ export const prerender = true;
 
     .logo-img {
       filter:
-        drop-shadow(0 0 1px rgba(0, 255, 65, 0.4))
-        drop-shadow(0 0 4px rgba(0, 255, 65, 0.15));
+        drop-shadow(0 0 2px rgba(0, 255, 65, 0.6))
+        drop-shadow(0 0 8px rgba(0, 255, 65, 0.25));
       animation: phosphorPulse 5s ease-in-out infinite;
     }
 
-    /* Scanline overlay on logo */
-    .logo-scanlines {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent 0px,
-        transparent 2px,
-        rgba(0, 0, 0, 0.06) 2px,
-        rgba(0, 0, 0, 0.06) 4px
-      );
-      mix-blend-mode: multiply;
-    }
-
-    /* Very subtle phosphor glow breathing */
+    /* Phosphor glow breathing */
     @keyframes phosphorPulse {
       0%, 100% {
         filter:
-          drop-shadow(0 0 1px rgba(0, 255, 65, 0.4))
-          drop-shadow(0 0 4px rgba(0, 255, 65, 0.15));
+          drop-shadow(0 0 2px rgba(0, 255, 65, 0.6))
+          drop-shadow(0 0 8px rgba(0, 255, 65, 0.25));
       }
       50% {
         filter:
-          drop-shadow(0 0 2px rgba(0, 255, 65, 0.5))
-          drop-shadow(0 0 6px rgba(0, 255, 65, 0.2));
+          drop-shadow(0 0 3px rgba(0, 255, 65, 0.7))
+          drop-shadow(0 0 10px rgba(0, 255, 65, 0.3));
       }
     }
 
@@ -83,11 +64,11 @@ export const prerender = true;
       }
     }
 
-    /* Subtle CRT flicker on hover — uses opacity transition, no animation override */
+    /* Brighten slightly on hover */
     .logo-wrapper:hover .logo-img {
       filter:
-        drop-shadow(0 0 2px rgba(0, 255, 65, 0.5))
-        drop-shadow(0 0 6px rgba(0, 255, 65, 0.2));
+        drop-shadow(0 0 3px rgba(0, 255, 65, 0.7))
+        drop-shadow(0 0 12px rgba(0, 255, 65, 0.35));
       transition: filter 0.3s ease;
     }
 
@@ -100,8 +81,8 @@ export const prerender = true;
       .logo-img {
         animation: none;
         filter:
-          drop-shadow(0 0 1px rgba(0, 255, 65, 0.4))
-          drop-shadow(0 0 4px rgba(0, 255, 65, 0.15));
+          drop-shadow(0 0 2px rgba(0, 255, 65, 0.6))
+          drop-shadow(0 0 8px rgba(0, 255, 65, 0.25));
       }
     }
   </style>
