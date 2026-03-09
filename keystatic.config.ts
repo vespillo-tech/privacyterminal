@@ -79,7 +79,7 @@ export default config({
           defaultValue: false,
           description: 'Draft guides are not published to the live site',
         }),
-        content: fields.markdoc({
+        content: fields.mdx({
           label: 'Content',
         }),
       },
