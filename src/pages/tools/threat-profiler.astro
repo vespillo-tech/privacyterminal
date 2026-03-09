@@ -3,9 +3,9 @@ export const prerender = true;
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="Privacy Threat Model Calculator — Personal Risk Assessment | Privacy Terminal" description="Build your personalized privacy threat profile with 48 questions across 28 threat categories. Discover your risk level for surveillance, tracking, and data exposure. 100% client-side.">
+<BaseLayout title="Privacy Threat Model Calculator — Personal Risk Assessment | Privacy Terminal" description="Build your personalized privacy threat profile with 47 questions across 28 threat categories. Discover your risk level for surveillance, tracking, and data exposure. 100% client-side.">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Privacy Threat Model Calculator","applicationCategory":"SecurityApplication","operatingSystem":"Web Browser","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Build your personalized privacy threat profile with 48 questions across 28 threat categories. 100% client-side.","url":"https://privacyterminal.com/tools/threat-profiler/"}
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Privacy Threat Model Calculator","applicationCategory":"SecurityApplication","operatingSystem":"Web Browser","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Build your personalized privacy threat profile with 47 questions across 28 threat categories. 100% client-side.","url":"https://privacyterminal.com/tools/threat-profiler/"}
 </script>
 
   <script type="application/ld+json">
@@ -14,14 +14,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   "@type": "FAQPage",
   "mainEntity": [
     {"@type": "Question", "name": "What is a privacy threat model?", "acceptedAnswer": {"@type": "Answer", "text": "A threat model is a systematic assessment of which privacy and security threats are most relevant to your specific situation. It considers your online behavior, profession, location, devices, and relationships to identify where you are most vulnerable."}},
-    {"@type": "Question", "name": "Is my data stored when I use this threat profiler?", "acceptedAnswer": {"@type": "Answer", "text": "No. All 48 questions are processed entirely in your browser. Zero data is transmitted to any server. Your answers exist only in browser memory and are discarded when you close the page."}},
-    {"@type": "Question", "name": "How accurate is this threat assessment?", "acceptedAnswer": {"@type": "Answer", "text": "This tool analyzes 28 distinct threat categories using weighted scoring across 48 questions. It provides a useful starting point but is not a substitute for professional security audit. For high-risk individuals, consult EFF Surveillance Self-Defense and Access Now Digital Security Helpline."}}
+    {"@type": "Question", "name": "Is my data stored when I use this threat profiler?", "acceptedAnswer": {"@type": "Answer", "text": "No. All 47 questions are processed entirely in your browser. Zero data is transmitted to any server. Your answers exist only in browser memory and are discarded when you close the page."}},
+    {"@type": "Question", "name": "How accurate is this threat assessment?", "acceptedAnswer": {"@type": "Answer", "text": "This tool analyzes 28 distinct threat categories using weighted scoring across 47 questions. It provides a useful starting point but is not a substitute for professional security audit. For high-risk individuals, consult EFF Surveillance Self-Defense and Access Now Digital Security Helpline."}}
   ]
 }
 </script>
   <div class="max-w-4xl mx-auto" id="threat-app">
     <div id="boot-screen" class="tui-box mb-8">
-      <div class="tui-box-title">[ THREAT ANALYSIS ENGINE v3.1.0 ]</div>
+      <div class="tui-box-title">[ THREAT ANALYSIS ENGINE v0.1.0 ]</div>
       <div class="p-6 font-mono text-sm" id="boot-log">
         <div class="text-terminal-green">&gt; Initializing threat analysis engine...</div>
       </div>
@@ -610,7 +610,7 @@ h+='</div></div>';
 rc.innerHTML=h;
 window.scrollTo(0,0);
 }
-const BOOT=['> Initializing threat analysis engine v3.1.0...','> Loading 28 threat category definitions...','> Compiling '+QUESTIONS.length+' assessment vectors...','> Calibrating weight matrices...','> Establishing local scoring sandbox...','> Verifying zero-network-transmission mode: [OK]','> All data confined to browser memory: [OK]','> Ready. Beginning threat assessment protocol.'];
+const BOOT=['> Initializing threat analysis engine v0.1.0...','> Loading 28 threat category definitions...','> Compiling '+QUESTIONS.length+' assessment vectors...','> Calibrating weight matrices...','> Establishing local scoring sandbox...','> Verifying zero-network-transmission mode: [OK]','> All data confined to browser memory: [OK]','> Ready. Beginning threat assessment protocol.'];
 function runBoot(){
 const log=el('boot-log');log.innerHTML='';
 let i=0;

@@ -569,7 +569,7 @@ export const prerender = true;
   // Verify: compare pasted hash against results
   // ============================================================
   function runVerify() {
-    const expected = verifyInput.value.trim().toLowerCase();
+    const expected = verifyInput.value.trim();
     if (!expected || lastResults.length === 0) {
       verifyStatus.classList.add('hidden');
       // Reset card borders
@@ -585,7 +585,8 @@ export const prerender = true;
       const el = card as HTMLElement;
       const hex = el.dataset.hex || '';
       const b64 = hexToBase64(hex);
-      const isMatch = hex === expected || b64 === expected;
+      // Hex is case-insensitive, base64 is case-sensitive
+      const isMatch = hex.toLowerCase() === expected.toLowerCase() || b64 === expected;
 
       el.classList.remove('border-terminal-border', 'border-terminal-green', 'bg-terminal-green/5', 'border-terminal-red', 'bg-terminal-red/5');
 

@@ -60,7 +60,7 @@ export const prerender = true;
       </div>
       <div>
         <span class="text-terminal-green font-bold">How unique am I?</span>
-        <p class="mt-1">Research shows ~33% of desktop fingerprints are completely unique. More entropy bits = more identifiable. Our test collects the same signals trackers use, so you can see exactly what you're exposing.</p>
+        <p class="mt-1">Research shows 80–90% of desktop fingerprints are unique enough to identify individual browsers (EFF Panopticlick, AmIUnique). More entropy bits = more identifiable. Our test collects the same signals trackers use, so you can see exactly what you're exposing.</p>
         <p class="mt-1"><a href="/guides/browser-fingerprinting-explained" class="text-terminal-cyan hover:text-terminal-green">Read: Browser Fingerprinting Explained →</a></p>
       </div>
     </div>
@@ -404,7 +404,7 @@ async function runScan() {
   for (const cat of categories) {
     const box = document.createElement('div');
     box.className = 'tui-box p-3';
-    box.innerHTML = `<span class="tui-box-title ${cat.color}">┤ ${cat.label} (${cat.signals.length}) ├</span>
+    box.innerHTML = `<span class="tui-box-title text-${cat.color}">┤ ${cat.label} (${cat.signals.length}) ├</span>
       <div class="mt-2 space-y-0.5">
         ${cat.signals.map(sig => `
           <div class="flex items-start justify-between gap-2 py-0.5 text-xs">
