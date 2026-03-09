@@ -494,7 +494,10 @@ const categoryColors: Record<string, string> = {
         sibling = next;
       }
       h2.after(section);
-      section.style.maxHeight = section.scrollHeight + 'px';
+      // Start collapsed
+      section.classList.add('collapsed');
+      section.style.maxHeight = '0px';
+      indicator.textContent = '[+]';
 
       h2.addEventListener('click', function() {
         var isCollapsed = section.classList.contains('collapsed');
