@@ -6,6 +6,8 @@ order: 2
 tags: ["data-brokers", "opt-out", "people-search", "spokeo", "whitepages", "beenverified", "privacy-rights", "ccpa", "gdpr"]
 relatedTools: []
 relatedGuides: ["who-wants-your-data", "what-is-a-threat-model", "the-5-minute-privacy-checkup"]
+difficulty: 2
+tldr: []
 draft: false
 ---
 

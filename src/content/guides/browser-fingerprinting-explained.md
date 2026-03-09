@@ -6,6 +6,8 @@ order: 5
 tags: ["fingerprinting", "canvas", "webgl", "audio-fingerprint", "browser-privacy", "tracking", "entropy"]
 relatedTools: ["fingerprint-analyzer"]
 relatedGuides: ["how-youre-being-tracked", "choosing-a-browser-for-privacy"]
+difficulty: 3
+tldr: []
 draft: false
 ---
 

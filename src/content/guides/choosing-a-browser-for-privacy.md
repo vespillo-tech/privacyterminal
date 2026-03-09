@@ -6,6 +6,8 @@ order: 1
 tags: ["browsers", "brave", "firefox", "tor", "librewolf", "mullvad", "anti-fingerprinting", "tracking-protection"]
 relatedTools: ["fingerprint-analyzer"]
 relatedGuides: ["browser-fingerprinting-explained", "what-is-a-threat-model", "the-5-minute-privacy-checkup"]
+difficulty: 2
+tldr: []
 draft: false
 ---
 

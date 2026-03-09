@@ -6,6 +6,11 @@ order: 2
 tags: ["data-brokers", "surveillance", "advertising", "privacy-rights", "data-economy"]
 relatedTools: []
 relatedGuides: ["how-youre-being-tracked", "what-is-a-threat-model"]
+difficulty: 1
+tldr:
+  - "Ad networks, data brokers, governments, and hackers all want your data for different reasons"
+  - "Your data is bought and sold on a massive market you never consented to"
+  - "Understanding who wants your data helps you decide what to protect"
 draft: false
 ---
 

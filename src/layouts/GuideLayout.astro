@@ -9,6 +9,8 @@ interface Props {
   publishedDate?: string;
   updatedDate?: string;
   headings?: Array<{ depth: number; slug: string; text: string }>;
+  tldr?: string[];
+  difficulty?: number;
 }
 
 const {
@@ -19,7 +21,14 @@ const {
   publishedDate = '',
   updatedDate = '',
   headings = [],
+  tldr = [],
+  difficulty = 1,
 } = Astro.props;
+
+function difficultyBar(d: number): string {
+  return '█'.repeat(d) + '░'.repeat(5 - d);
+}
+const difficultyLabels = ['', 'Beginner', 'Easy', 'Intermediate', 'Advanced', 'Expert'];
 
 const categoryColors: Record<string, string> = {
   foundations: 'text-terminal-green',
@@ -108,7 +117,26 @@ const categoryColors: Record<string, string> = {
         </div>
         <h1 class="text-terminal-green text-glow-green text-lg font-bold leading-tight mb-2">{title}</h1>
         {description && <p class="text-terminal-muted text-xs">{description}</p>}
-      </header>
+        {difficulty > 0 && (
+          <div class="mt-2 text-xs">
+            <span class="text-terminal-muted">DIFFICULTY: </span>
+            <span class="text-terminal-green">{difficultyBar(difficulty)}</span>
+            <span class="text-terminal-muted"> ({difficulty}/5 {difficultyLabels[difficulty]})</span>
+          </div>
+        )}
+      {tldr.length > 0 && (
+        <div class="tui-box p-3 mb-2">
+          <span class="tui-box-title text-terminal-green">┤ TL;DR ├</span>
+          <ul class="mt-1 space-y-1">
+            {tldr.map((point) => (
+              <li class="text-terminal-muted text-xs flex gap-2">
+                <span class="text-terminal-green shrink-0">▸</span>
+                <span>{point}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <hr class="tui-hr" />
 
@@ -238,6 +266,107 @@ const categoryColors: Record<string, string> = {
     margin-bottom: 0;
   }
 
+  /* Key Takeaway boxes */
+  .guide-content blockquote.key-takeaway {
+    border-left: none;
+    border: 1px solid #00d4ff;
+    padding: 0.75rem;
+    background: rgba(0, 212, 255, 0.03);
+    position: relative;
+  }
+
+  .guide-content blockquote.key-takeaway::before {
+    content: '┤ KEY TAKEAWAY ├';
+    position: absolute;
+    top: -0.6em;
+    left: 0.75rem;
+    background: #0a0a0a;
+    padding: 0 0.4rem;
+    color: #00d4ff;
+    font-size: 0.65rem;
+    font-weight: 700;
+  }
+
+  .guide-content blockquote.key-takeaway p {
+    color: #c0c0c0;
+  }
+
+  /* Check Yourself widgets */
+  .guide-content blockquote.check-yourself {
+    border-left: none;
+    border: 1px solid #00ff41;
+    padding: 0.75rem;
+    background: rgba(0, 255, 65, 0.03);
+    position: relative;
+  }
+
+  .guide-content blockquote.check-yourself::before {
+    content: '┤ CHECK YOURSELF ├';
+    position: absolute;
+    top: -0.6em;
+    left: 0.75rem;
+    background: #0a0a0a;
+    padding: 0 0.4rem;
+    color: #00ff41;
+    font-size: 0.65rem;
+    font-weight: 700;
+  }
+
+  .check-answer {
+    cursor: pointer;
+    padding: 0.3rem 0.5rem;
+    margin: 0.2rem 0;
+    border: 1px solid #1a2332;
+    font-size: 0.75rem;
+    color: #a0a0a0;
+    transition: all 0.2s ease;
+  }
+
+  .check-answer:hover {
+    border-color: #00d4ff;
+    color: #d0d0d0;
+  }
+
+  .check-answer.correct {
+    border-color: #00ff41;
+    color: #00ff41;
+    background: rgba(0, 255, 65, 0.08);
+  }
+
+  .check-answer.incorrect {
+    border-color: #ff4444;
+    color: #ff4444;
+    background: rgba(255, 68, 68, 0.08);
+  }
+
+  /* Collapsible H2 sections */
+  .guide-content h2 {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .guide-content h2 .collapse-indicator {
+    font-size: 0.7rem;
+    color: #00ff41;
+    margin-right: 0.3rem;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+  }
+
+  .guide-content h2:hover .collapse-indicator {
+    opacity: 1;
+  }
+
+  .h2-section {
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+  }
+
+  .h2-section.collapsed {
+    max-height: 0 !important;
+    opacity: 0;
+  }
+
   .guide-content strong { color: #ffffff; font-weight: 600; }
   .guide-content em { color: #b0b0b0; }
 
@@ -341,4 +470,85 @@ const categoryColors: Record<string, string> = {
     );
     headings.forEach((heading) => observer.observe(heading));
   }
+
+  // ── Collapsible H2 Sections ──
+  (function() {
+    const guideContent = document.querySelector('.guide-content');
+    if (!guideContent) return;
+
+    const h2s = guideContent.querySelectorAll('h2');
+    h2s.forEach(function(h2) {
+      // Add toggle indicator
+      var indicator = document.createElement('span');
+      indicator.className = 'collapse-indicator';
+      indicator.textContent = '[-]';
+      h2.insertBefore(indicator, h2.firstChild);
+
+      // Wrap content between this h2 and next h2 in a div
+      var section = document.createElement('div');
+      section.className = 'h2-section';
+      var sibling = h2.nextElementSibling;
+      while (sibling && sibling.tagName !== 'H2') {
+        var next = sibling.nextElementSibling;
+        section.appendChild(sibling);
+        sibling = next;
+      }
+      h2.after(section);
+      section.style.maxHeight = section.scrollHeight + 'px';
+
+      h2.addEventListener('click', function() {
+        var isCollapsed = section.classList.contains('collapsed');
+        if (isCollapsed) {
+          section.classList.remove('collapsed');
+          section.style.maxHeight = section.scrollHeight + 'px';
+          indicator.textContent = '[-]';
+        } else {
+          section.style.maxHeight = section.scrollHeight + 'px';
+          requestAnimationFrame(function() {
+            section.classList.add('collapsed');
+          });
+          indicator.textContent = '[+]';
+        }
+      });
+    });
+  })();
+
+  // ── Key Takeaway Box Detection ──
+  (function() {
+    var bqs = document.querySelectorAll('.guide-content blockquote');
+    bqs.forEach(function(bq) {
+      var firstP = bq.querySelector('p');
+      if (!firstP) return;
+      var text = firstP.innerHTML;
+      if (text.startsWith('<strong>KEY TAKEAWAY:</strong>') || text.startsWith('<strong>KEY TAKEAWAY</strong>:')) {
+        bq.classList.add('key-takeaway');
+        firstP.innerHTML = text.replace(/<strong>KEY TAKEAWAY:?<\/strong>:?\s*/, '');
+      }
+      if (text.startsWith('<strong>CHECK YOURSELF:</strong>') || text.startsWith('<strong>CHECK YOURSELF</strong>:')) {
+        bq.classList.add('check-yourself');
+        // Parse check yourself quiz answers
+        var items = bq.querySelectorAll('li');
+        firstP.innerHTML = text.replace(/<strong>CHECK YOURSELF:?<\/strong>:?\s*/, '');
+        items.forEach(function(li) {
+          var raw = li.textContent.trim();
+          var isCorrect = raw.startsWith('[x]') || raw.startsWith('[X]');
+          li.textContent = raw.replace(/^\[[ xX]\]\s*/, '');
+          li.className = 'check-answer';
+          li.dataset.correct = isCorrect ? 'true' : 'false';
+          li.style.listStyle = 'none';
+          li.addEventListener('click', function() {
+            if (li.classList.contains('correct') || li.classList.contains('incorrect')) return;
+            if (isCorrect) {
+              li.classList.add('correct');
+              li.textContent = '✓ ' + li.textContent;
+            } else {
+              li.classList.add('incorrect');
+              li.textContent = '✗ ' + li.textContent;
+              setTimeout(function() { li.classList.remove('incorrect'); li.textContent = li.textContent.replace('✗ ', ''); }, 1500);
+            }
+          });
+        });
+      }
+    });
+  })();
 </script>

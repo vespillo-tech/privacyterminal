@@ -4,6 +4,10 @@ import { getCollection } from 'astro:content';
 export const prerender = true;
 
 const allGuides = await getCollection('guides');
+
+function diffBar(d: number): string {
+  return '█'.repeat(d || 1) + '░'.repeat(5 - (d || 1));
+}
 const publishedGuides = allGuides.filter((g) => !g.data.draft);
 
 const categories = [
@@ -39,10 +43,12 @@ const categories = [
                     class="flex items-center gap-2 py-0.5 px-2 hover:bg-terminal-green/5 transition-colors group"
                   >
                     <span class={`text-${cat.color}`}>{i === catGuides.length - 1 ? '└─' : '├─'}</span>
-                    <span class="text-gray-300 group-hover:text-terminal-green text-xs">{guide.data.title}</span>
-                    {guide.data.readingTime && (
-                      <span class="text-terminal-muted text-[10px] ml-auto">{guide.data.readingTime}</span>
-                    )}
+                    <span class="text-gray-300 group-hover:text-terminal-green text-xs" data-guide-title>{guide.data.title}</span>
+                    <span class="text-terminal-muted text-[10px] ml-auto flex items-center gap-2">
+                      <span class="guide-completion-badge hidden text-terminal-green" data-guide-id={guide.id}>[✓]</span>
+                      {guide.data.difficulty && <span title={`Difficulty ${guide.data.difficulty}/5`}>{diffBar(guide.data.difficulty)}</span>}
+                      {guide.data.readingTime && <span>{guide.data.readingTime}</span>}
+                    </span>
                   </a>
                 ))}
               </div>
@@ -55,9 +61,40 @@ const categories = [
     })}
   </div>
 
+  <!-- Guide completion progress -->
+  <div class="tui-box p-2 mb-0" id="guide-progress-bar">
+    <div class="flex items-center justify-between text-xs">
+      <span class="text-terminal-muted">progress:</span>
+      <span id="guide-progress-text" class="text-terminal-green">loading...</span>
+    </div>
+  </div>
+
   <hr class="tui-hr" />
   <div class="grid grid-cols-2 gap-4 text-xs text-terminal-muted py-2">
     <div><span class="text-terminal-green font-bold">Landscape Principle:</span> Every guide presents the full spectrum with honest trade-offs.</div>
     <div><span class="text-terminal-green font-bold">Source Attribution:</span> Claims backed by evidence. We cite sources and explain methodology.</div>
   </div>
+  <script>
+    (function() {
+      try {
+        var cached = JSON.parse(localStorage.getItem('pt_progress') || '{}');
+        var completed = cached.guides_completed || [];
+        var badges = document.querySelectorAll('.guide-completion-badge');
+        var total = badges.length;
+        var done = 0;
+        badges.forEach(function(badge) {
+          var id = badge.dataset.guideId;
+          if (completed.includes(id)) {
+            badge.classList.remove('hidden');
+            done++;
+          }
+        });
+        var el = document.getElementById('guide-progress-text');
+        if (el) {
+          var bar = '█'.repeat(Math.round((done/Math.max(total,1))*12)) + '░'.repeat(12 - Math.round((done/Math.max(total,1))*12));
+          el.textContent = done + '/' + total + ' completed ' + bar;
+        }
+      } catch(e) {}
+    })();
+  </script>
 </BaseLayout>

@@ -6,6 +6,8 @@ order: 1
 tags: ["passwords", "password-manager", "bitwarden", "1password", "keepassxc", "2fa", "totp", "passkeys", "security-keys"]
 relatedTools: ["hash-generator"]
 relatedGuides: ["the-5-minute-privacy-checkup", "what-is-a-threat-model"]
+difficulty: 2
+tldr: []
 draft: false
 ---
 

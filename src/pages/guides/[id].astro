@@ -24,6 +24,8 @@ const { Content, headings } = await render(guide);
   publishedDate={guide.data.publishedDate}
   updatedDate={guide.data.updatedDate}
   headings={headings}
+  tldr={guide.data.tldr || []}
+  difficulty={guide.data.difficulty || 1}
 >
   <Content />
 </GuideLayout>

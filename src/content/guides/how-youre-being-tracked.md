@@ -6,6 +6,11 @@ order: 1
 tags: ["tracking", "fingerprinting", "cookies", "surveillance", "data-collection"]
 relatedTools: ["fingerprint-analyzer"]
 relatedGuides: ["who-wants-your-data"]
+difficulty: 1
+tldr:
+  - "You are tracked through cookies, fingerprinting, IP addresses, and behavioral patterns"
+  - "First-party tracking comes from sites you visit; third-party tracking follows you across the web"
+  - "Your phone, browser, and apps all leak identifying data by default"
 draft: false
 ---
 

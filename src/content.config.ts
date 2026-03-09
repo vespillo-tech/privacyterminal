@@ -15,6 +15,8 @@ const guides = defineCollection({
     relatedTools: z.array(z.string()).default([]),
     relatedGuides: z.array(z.string()).default([]),
     draft: z.boolean().default(false),
+    tldr: z.array(z.string()).default([]),
+    difficulty: z.number().min(1).max(5).default(1),
   }),
 });
 

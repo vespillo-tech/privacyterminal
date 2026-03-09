@@ -6,6 +6,8 @@ order: 2
 tags: ["vpn", "network-privacy", "encryption", "isp", "mullvad", "protonvpn", "ivpn", "wireguard"]
 relatedTools: ["dns-leak", "webrtc-detector"]
 relatedGuides: ["what-is-a-threat-model", "how-youre-being-tracked", "choosing-a-browser-for-privacy"]
+difficulty: 2
+tldr: []
 draft: false
 ---
 

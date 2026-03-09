@@ -6,6 +6,8 @@ order: 4
 tags: ["quick-start", "privacy-settings", "tracking", "ad-tracking", "phone-privacy", "browser-privacy"]
 relatedTools: ["fingerprint-analyzer", "dns-leak"]
 relatedGuides: ["how-youre-being-tracked", "what-is-a-threat-model"]
+difficulty: 1
+tldr: []
 draft: false
 ---
 

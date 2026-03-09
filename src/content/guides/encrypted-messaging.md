@@ -6,6 +6,8 @@ order: 3
 tags: ["messaging", "encryption", "signal", "whatsapp", "telegram", "session", "matrix", "metadata", "e2ee"]
 relatedTools: []
 relatedGuides: ["what-is-a-threat-model", "who-wants-your-data", "vpns-what-they-actually-protect"]
+difficulty: 2
+tldr: []
 draft: false
 ---
 

@@ -79,6 +79,20 @@ export default config({
           defaultValue: false,
           description: 'Draft guides are not published to the live site',
         }),
+        tldr: fields.array(
+          fields.text({ label: 'TL;DR Point' }),
+          {
+            label: 'TL;DR',
+            itemLabel: (props) => props.value || 'New point',
+            description: 'Quick summary bullet points shown at top of guide',
+          }
+        ),
+        difficulty: fields.integer({
+          label: 'Difficulty',
+          defaultValue: 1,
+          validation: { min: 1, max: 5 },
+          description: 'Guide difficulty: 1=Beginner, 3=Intermediate, 5=Expert',
+        }),
         content: fields.mdx({
           label: 'Content',
         }),
