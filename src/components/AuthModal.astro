@@ -103,6 +103,48 @@ const ac = authEntry?.data as {
       </div>
     </div>
 
+    <!-- PASSKEY REGISTER VIEW -->
+    <div id="pt-view-passkey-register" class="p-5" style="display:none">
+      <span class="tui-box-title text-terminal-green">├ REGISTER PASSKEY ┤</span>
+      <div class="mt-3 text-xs text-terminal-muted space-y-1 leading-relaxed">
+        <p>Use your fingerprint, face, or security key for instant sign-in.</p>
+        <p>No codes to remember.</p>
+      </div>
+      <div class="mt-4">
+        <button id="pt-btn-passkey-register" class="btn-terminal w-full text-xs py-2">
+          [+] Register Passkey
+        </button>
+      </div>
+      <div id="pt-passkey-register-error" class="mt-1 text-terminal-red text-xs" style="display:none"></div>
+      <div id="pt-passkey-register-success" class="mt-2 text-terminal-green text-xs" style="display:none">
+        ✓ Passkey registered successfully!
+      </div>
+      <div class="mt-2 text-center">
+        <button id="pt-passkey-back" class="text-terminal-muted hover:text-terminal-cyan text-xs transition-colors">
+          [← back]
+        </button>
+      </div>
+    </div>
+
+    <!-- PASSKEY LOGIN VIEW -->
+    <div id="pt-view-passkey-login" class="p-5" style="display:none">
+      <span class="tui-box-title text-terminal-cyan">├ SIGN IN WITH PASSKEY ┤</span>
+      <div class="mt-3 text-xs text-terminal-muted">
+        Touch your fingerprint sensor or security key.
+      </div>
+      <div class="mt-4">
+        <button id="pt-btn-passkey-login" class="btn-terminal w-full text-xs py-2">
+          [>] Use Passkey
+        </button>
+      </div>
+      <div id="pt-passkey-login-error" class="mt-1 text-terminal-red text-xs" style="display:none"></div>
+      <div class="mt-2 text-center">
+        <button id="pt-switch-to-code-login" class="text-terminal-cyan hover:text-terminal-green text-xs transition-colors">
+          Prefer recovery code? [Use Code →]
+        </button>
+      </div>
+    </div>
+
     <!-- LOADING STATE -->
     <div id="pt-view-loading" class="p-5 text-center" style="display:none">
       <div class="text-terminal-green text-xs animate-pulse">{ac.loading_text}<span class="cursor-blink"></span></div>
@@ -215,4 +257,193 @@ if (!isLoggedIn()) {
     } catch { /* ignore */ }
   }
 }
+
+// ── Passkey (WebAuthn) Support ──────────────────────────────────
+const PASSKEY_CRED_KEY = 'pt_passkey_cred';
+const PASSKEY_SESSION_KEY = 'pt_passkey_session';
+
+function supportsPasskeys() {
+  return !!(window.PublicKeyCredential && navigator.credentials && navigator.credentials.create);
+}
+
+function getStoredCredId() {
+  try { return localStorage.getItem(PASSKEY_CRED_KEY); } catch { return null; }
+}
+
+// Show passkey buttons if supported
+if (supportsPasskeys()) {
+  var passkeyFromLogin = document.getElementById('pt-switch-to-passkey-from-login');
+  if (passkeyFromLogin && getStoredCredId()) passkeyFromLogin.style.display = 'block';
+
+  // Show passkey offer after registration
+  var passkeyOffer = document.getElementById('pt-passkey-offer');
+  if (passkeyOffer) {
+    var origSaved = document.getElementById('pt-btn-saved');
+    if (origSaved) {
+      var origClick = origSaved.onclick;
+      origSaved.addEventListener('click', function() {
+        if (passkeyOffer) passkeyOffer.style.display = 'block';
+      });
+    }
+  }
+}
+
+// Passkey views
+var passkeyViews = {
+  'pt-switch-to-passkey-from-login': 'passkey-login',
+  'pt-passkey-back': 'register',
+  'pt-switch-to-code-login': 'login',
+};
+
+Object.keys(passkeyViews).forEach(function(btnId) {
+  var btn = document.getElementById(btnId);
+  if (btn) {
+    btn.addEventListener('click', function() {
+      showView(passkeyViews[btnId].replace('passkey-', 'passkey_'));
+    });
+  }
+});
+
+// Map view names to elements
+var pkRegView = document.getElementById('pt-view-passkey-register');
+var pkLoginView = document.getElementById('pt-view-passkey-login');
+if (pkRegView) views['passkey_register'] = pkRegView;
+if (pkLoginView) views['passkey_login'] = pkLoginView;
+
+// Navigate passkey buttons
+var switchToPasskeyLogin = document.getElementById('pt-switch-to-passkey-from-login');
+if (switchToPasskeyLogin) switchToPasskeyLogin.addEventListener('click', function() { showView('passkey_login'); });
+var passkeyBackBtn = document.getElementById('pt-passkey-back');
+if (passkeyBackBtn) passkeyBackBtn.addEventListener('click', function() { showView('register'); });
+var switchToCodeLogin = document.getElementById('pt-switch-to-code-login');
+if (switchToCodeLogin) switchToCodeLogin.addEventListener('click', function() { showView('login'); });
+
+// Passkey Registration
+var btnPasskeyRegister = document.getElementById('pt-btn-passkey-register');
+if (btnPasskeyRegister) {
+  btnPasskeyRegister.addEventListener('click', async function() {
+    var errEl = document.getElementById('pt-passkey-register-error');
+    var successEl = document.getElementById('pt-passkey-register-success');
+    if (errEl) errEl.style.display = 'none';
+    if (successEl) successEl.style.display = 'none';
+
+    if (!supportsPasskeys()) {
+      if (errEl) { errEl.textContent = "Your browser doesn't support passkeys."; errEl.style.display = 'block'; }
+      return;
+    }
+
+    try {
+      var userId = new Uint8Array(16);
+      crypto.getRandomValues(userId);
+      var challenge = new Uint8Array(32);
+      crypto.getRandomValues(challenge);
+
+      var credential = await navigator.credentials.create({
+        publicKey: {
+          challenge: challenge,
+          rp: { name: 'Privacy Terminal', id: window.location.hostname },
+          user: {
+            id: userId,
+            name: 'privacy-terminal-user',
+            displayName: 'Privacy Terminal User'
+          },
+          pubKeyCredParams: [
+            { alg: -7, type: 'public-key' },
+            { alg: -257, type: 'public-key' }
+          ],
+          authenticatorSelection: {
+            authenticatorAttachment: 'platform',
+            userVerification: 'preferred',
+            residentKey: 'preferred'
+          },
+          timeout: 60000
+        }
+      });
+
+      if (credential && credential.rawId) {
+        var credId = btoa(String.fromCharCode.apply(null, new Uint8Array(credential.rawId)));
+        localStorage.setItem(PASSKEY_CRED_KEY, credId);
+        // Store current session token association
+        var token = localStorage.getItem('pt_session');
+        if (token) {
+          localStorage.setItem(PASSKEY_SESSION_KEY, token);
+        }
+        if (successEl) successEl.style.display = 'block';
+        btnPasskeyRegister.textContent = '[v] Passkey Registered';
+        btnPasskeyRegister.disabled = true;
+      }
+    } catch (err) {
+      if (errEl) {
+        errEl.textContent = 'Passkey registration failed: ' + (err.message || 'Unknown error');
+        errEl.style.display = 'block';
+      }
+    }
+  });
+}
+
+// Offer passkey registration after recovery code creation
+var btnOfferPasskey = document.getElementById('pt-btn-offer-passkey');
+if (btnOfferPasskey) {
+  btnOfferPasskey.addEventListener('click', function() {
+    showView('passkey_register');
+  });
+}
+
+// Passkey Login
+var btnPasskeyLogin = document.getElementById('pt-btn-passkey-login');
+if (btnPasskeyLogin) {
+  btnPasskeyLogin.addEventListener('click', async function() {
+    var errEl = document.getElementById('pt-passkey-login-error');
+    if (errEl) errEl.style.display = 'none';
+
+    if (!supportsPasskeys()) {
+      if (errEl) { errEl.textContent = "Your browser doesn't support passkeys."; errEl.style.display = 'block'; }
+      return;
+    }
+
+    var storedCredId = getStoredCredId();
+    if (!storedCredId) {
+      if (errEl) { errEl.textContent = 'No passkey found. Register one first.'; errEl.style.display = 'block'; }
+      return;
+    }
+
+    try {
+      var challenge = new Uint8Array(32);
+      crypto.getRandomValues(challenge);
+      var rawId = Uint8Array.from(atob(storedCredId), function(c) { return c.charCodeAt(0); });
+
+      var assertion = await navigator.credentials.get({
+        publicKey: {
+          challenge: challenge,
+          allowCredentials: [{
+            id: rawId,
+            type: 'public-key',
+            transports: ['internal']
+          }],
+          userVerification: 'preferred',
+          timeout: 60000
+        }
+      });
+
+      if (assertion) {
+        // Restore session from stored association
+        var savedToken = localStorage.getItem(PASSKEY_SESSION_KEY);
+        if (savedToken) {
+          localStorage.setItem('pt_session', savedToken);
+          closeModal();
+          window.dispatchEvent(new CustomEvent('pt:progress'));
+          window.location.reload();
+        } else {
+          if (errEl) { errEl.textContent = 'Passkey verified but no session found. Use recovery code instead.'; errEl.style.display = 'block'; }
+        }
+      }
+    } catch (err) {
+      if (errEl) {
+        errEl.textContent = 'Passkey authentication failed. Try again or use your recovery code.';
+        errEl.style.display = 'block';
+      }
+    }
+  });
+}
+
 </script>

@@ -21,3 +21,16 @@ login:
   error_invalid: "Invalid recovery code. Check your spelling and try again."
   error_empty: "Please enter your recovery code."
 loading_text: processing
+
+passkey:
+  register_title: REGISTER PASSKEY
+  register_description: "Use your fingerprint, face, or security key for instant sign-in. No codes to remember."
+  register_button: "[+] Register Passkey"
+  login_title: SIGN IN WITH PASSKEY
+  login_button: "[>] Use Passkey"
+  login_description: "Touch your fingerprint sensor or security key."
+  success: "Passkey registered successfully!"
+  error_not_supported: "Your browser doesn't support passkeys."
+  error_failed: "Passkey authentication failed. Try again or use your recovery code."
+  switch_to_passkey: "Have a passkey? [Use Passkey →]"
+  switch_to_code: "Prefer recovery code? [Use Code →]"
