@@ -1,0 +1,7 @@
+site_name: Privacy Terminal
+version: v0.1.0
+site_url: https://privacyterminal.com
+default_description: "Open-source privacy tools and education. Test your browser fingerprint, detect leaks, and learn to protect your digital identity."
+og_image: /og-default.png
+github_url: https://github.com/vespillo-tech/privacyterminal
+security_txt: /.well-known/security.txt

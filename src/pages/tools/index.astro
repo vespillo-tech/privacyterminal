@@ -1,16 +1,17 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 export const prerender = true;
 
-const tools = [
-  { name: 'threat-profiler', title: 'Threat Model Profiler', desc: 'Answer 47 questions, get a personalized threat profile across 28 attack categories. 100% client-side.', status: 'ready' },
-  { name: 'hash-generator', title: 'Hash Generator & Verifier', desc: 'SHA-256, SHA-512, SHA-384, SHA-1, MD5 — all client-side via Web Crypto API.', status: 'ready' },
-  { name: 'fingerprint-analyzer', title: 'Browser Fingerprint Analyzer', desc: 'Canvas, WebGL, AudioContext, fonts, screen, timezone, hardware — 30+ vectors.', status: 'ready' },
-  { name: 'leak-tester', title: 'IP & DNS Leak Tester', desc: 'Verify your VPN. Detect IP exposure, DNS leaks, WebRTC disclosure.', status: 'soon' },
-  { name: 'webrtc-detector', title: 'WebRTC Leak Detector', desc: 'Test whether WebRTC exposes your real IP behind VPN or proxy.', status: 'soon' },
-  { name: 'metadata-stripper', title: 'Metadata Stripper', desc: 'Remove EXIF, GPS, camera info from photos. Client-side processing.', status: 'soon' },
-  { name: 'email-header-analyzer', title: 'Email Header Analyzer', desc: 'Parse Received headers, verify SPF/DKIM/DMARC, detect spoofing.', status: 'soon' },
-];
+const allTools = await getCollection('tools');
+const tools = allTools
+  .sort((a, b) => a.data.order - b.data.order)
+  .map(t => ({
+    name: t.id,
+    title: t.data.title,
+    desc: t.data.description,
+    status: t.data.status,
+  }));
 ---
 
 <BaseLayout title="Free Online Privacy Tools — Browser-Based, Zero Tracking | Privacy Terminal" description="Open-source privacy tools that run entirely in your browser. Hash generators, threat modeling, and more. No data transmitted, no tracking, no cookies." statusLeft="tools index" statusRight={`${tools.filter(t=>t.status==='ready').length}/${tools.length} ready`}>
@@ -25,7 +26,7 @@ const tools = [
       return (
         <div class:list={['tui-box p-3 relative', !isReady && 'opacity-60']}>
           <span class:list={['tui-box-title', isReady ? 'text-terminal-green' : 'text-terminal-muted']}>
-            ┤ {isReady ? 'READY' : 'SOON'} ├
+            ├ {isReady ? 'READY' : 'SOON'} ┤
           </span>
           <div class="mt-1">
             {isReady ? (

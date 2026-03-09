@@ -1,0 +1,23 @@
+register:
+  title: "SAVE YOUR PROGRESS"
+  subtitle_lines:
+    - "Your privacy score, guides, and achievements"
+    - "will be saved anonymously."
+  promise: "No email. No password. No personal data."
+  create_button: "[+] Create Recovery Code"
+  switch_to_login: "Already have a code? [Log in →]"
+recovery:
+  title: YOUR RECOVERY CODE
+  warning: "Write this down. It's the ONLY way to restore your progress on another device."
+  storage_note: "We do not store this code — only a hash. If you lose it, your progress is gone."
+  copy_button: "[=] Copy Code"
+  saved_button: "[v] I've Saved It"
+login:
+  title: RESTORE PROGRESS
+  input_placeholder: "WORD-WORD-WORD-0000"
+  prompt: "Enter your recovery code:"
+  submit_button: "[>] Restore Progress"
+  switch_to_register: "Don't have one? [Create New →]"
+  error_invalid: "Invalid recovery code. Check your spelling and try again."
+  error_empty: "Please enter your recovery code."
+loading_text: processing

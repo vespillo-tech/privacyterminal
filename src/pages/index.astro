@@ -1,8 +1,36 @@
 ---
+import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 export const prerender = true;
----
 
+// Load homepage singleton
+const homepageEntry = await getEntry('site', 'homepage');
+const hp = homepageEntry?.data as {
+  hero_cards: Array<{ box_title: string; title_color: string; heading: string; description: string; cta_text: string; link: string }>;
+  boot_messages: Array<{ type: string; text: string }>;
+  promises: Array<{ icon: string; title: string; color: string; description: string }>;
+  social_proof: string;
+};
+
+// Load tools for the tools panel (ready tools only, sorted by order)
+const allTools = await getCollection('tools');
+const readyTools = allTools
+  .filter(t => t.data.status === 'ready')
+  .sort((a, b) => a.data.order - b.data.order);
+const soonCount = allTools.length - readyTools.length;
+
+// Map title_color to Tailwind classes
+const colorClass: Record<string, string> = {
+  green: 'text-terminal-green',
+  cyan:  'text-terminal-cyan',
+  amber: 'text-terminal-amber',
+};
+const hoverClass: Record<string, string> = {
+  green: 'group-hover:text-terminal-green',
+  cyan:  'group-hover:text-terminal-cyan',
+  amber: 'group-hover:text-terminal-amber',
+};
+---
 <BaseLayout title="Free Privacy Tools & Guides — Protect Your Digital Privacy | Privacy Terminal" description="Free open-source privacy tools that run in your browser. Check your threat model, analyze your fingerprint, and learn to protect your digital identity. Zero tracking." statusLeft="system ready" statusRight="3 tools │ 8 guides">
   <!-- SVG Logo with terminal CRT effects -->
   <div class="logo-container py-4 md:py-8 flex justify-center px-4">
@@ -19,14 +47,12 @@ export const prerender = true;
       max-width: 48rem;
       animation: logoReveal 1.2s ease-out forwards;
     }
-
     .logo-img {
       filter:
         drop-shadow(0 0 2px rgba(0, 255, 65, 0.6))
         drop-shadow(0 0 8px rgba(0, 255, 65, 0.25));
       animation: phosphorPulse 5s ease-in-out infinite;
     }
-
     @keyframes phosphorPulse {
       0%, 100% {
         filter:
@@ -39,40 +65,21 @@ export const prerender = true;
           drop-shadow(0 0 10px rgba(0, 255, 65, 0.3));
       }
     }
-
     @keyframes logoReveal {
-      0% {
-        opacity: 0;
-        transform: scaleY(0.01);
-      }
-      30% {
-        opacity: 1;
-        transform: scaleY(0.01);
-      }
-      50% {
-        transform: scaleY(1.02) scaleX(0.99);
-      }
-      70% {
-        transform: scaleY(1) scaleX(1);
-      }
-      100% {
-        opacity: 1;
-        transform: scaleY(1) scaleX(1);
-      }
+      0% { opacity: 0; transform: scaleY(0.01); }
+      30% { opacity: 1; transform: scaleY(0.01); }
+      50% { transform: scaleY(1.02) scaleX(0.99); }
+      70% { transform: scaleY(1) scaleX(1); }
+      100% { opacity: 1; transform: scaleY(1) scaleX(1); }
     }
-
     .logo-wrapper:hover .logo-img {
       filter:
         drop-shadow(0 0 3px rgba(0, 255, 65, 0.7))
         drop-shadow(0 0 12px rgba(0, 255, 65, 0.35));
       transition: filter 0.3s ease;
     }
-
     @media (prefers-reduced-motion: reduce) {
-      .logo-wrapper {
-        animation: none;
-        opacity: 1;
-      }
+      .logo-wrapper { animation: none; opacity: 1; }
       .logo-img {
         animation: none;
         filter:
@@ -81,86 +88,68 @@ export const prerender = true;
       }
     }
   </style>
-
-  <!-- Boot sequence (animates in, then collapses) -->
+  <!-- Boot sequence -->
   <div id="boot-sequence" class="space-y-1 mb-2 text-xs px-2">
-    <div class="boot-line" data-delay="0"><span class="text-terminal-green">[BOOT]</span> <span class="text-terminal-muted">Privacy Terminal v0.1.0</span></div>
-    <div class="boot-line" data-delay="1"><span class="text-terminal-cyan">[INFO]</span> <span class="text-terminal-muted">No tracking &middot; No cookies &middot; No external requests</span></div>
-    <div class="boot-line" data-delay="2"><span class="text-terminal-green">[READY]</span> <span class="text-terminal-muted">All tools run client-side. Your data never leaves your browser.</span></div>
+    {hp.boot_messages.map((msg, i) => (
+      <div class="boot-line" data-delay={i}>
+        <span class:list={[
+          msg.type === 'BOOT'  ? 'text-terminal-green' : '',
+          msg.type === 'INFO'  ? 'text-terminal-cyan'  : '',
+          msg.type === 'READY' ? 'text-terminal-green' : '',
+        ]}>[{msg.type}]</span>
+        {' '}
+        <span class="text-terminal-muted">{msg.text}</span>
+      </div>
+    ))}
   </div>
 
-  <!-- Welcome prompt (persists) -->
+  <!-- Welcome prompt -->
   <div class="mb-4 px-2">
     <span class="text-terminal-green">$</span> <span class="text-white text-sm">Welcome to Privacy Terminal</span><span class="cursor-blink"></span>
   </div>
 
   <!-- THREE CLEAR PATHS -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-0 mb-4">
-    <!-- Path 1: Don't know where to start -->
-    <a href="/guides/the-5-minute-privacy-checkup" class="tui-box p-4 hover:bg-terminal-green/5 transition-colors group block no-underline">
-      <span class="tui-box-title text-terminal-green">┤ START HERE ├</span>
-      <div class="mt-2">
-        <div class="text-white text-sm font-bold mb-2 group-hover:text-terminal-green transition-colors">I don't know where to start</div>
-        <div class="text-terminal-muted text-xs leading-relaxed">A 5-minute checkup that shows you exactly what to fix first — no jargon, no overwhelm.</div>
-      </div>
-      <div class="mt-3 text-terminal-green text-xs">▶ Take the checkup →</div>
-    </a>
-
-    <!-- Path 2: Test my exposure -->
-    <a href="/tools/threat-profiler" class="tui-box p-4 hover:bg-terminal-green/5 transition-colors group block no-underline">
-      <span class="tui-box-title text-terminal-cyan">┤ TEST YOURSELF ├</span>
-      <div class="mt-2">
-        <div class="text-white text-sm font-bold mb-2 group-hover:text-terminal-cyan transition-colors">How exposed am I?</div>
-        <div class="text-terminal-muted text-xs leading-relaxed">47 questions across 28 attack categories. Get a personalized threat profile in 5 minutes. Nothing leaves your browser.</div>
-      </div>
-      <div class="mt-3 text-terminal-cyan text-xs">▶ Take the assessment →</div>
-    </a>
-
-    <!-- Path 3: Learn -->
-    <a href="/guides" class="tui-box p-4 hover:bg-terminal-green/5 transition-colors group block no-underline">
-      <span class="tui-box-title text-terminal-amber">┤ LEARN ├</span>
-      <div class="mt-2">
-        <div class="text-white text-sm font-bold mb-2 group-hover:text-terminal-amber transition-colors">I want to understand privacy</div>
-        <div class="text-terminal-muted text-xs leading-relaxed">8 guides from basics to advanced. How tracking works, who wants your data, and what actually protects you.</div>
-      </div>
-      <div class="mt-3 text-terminal-amber text-xs">▶ Browse guides →</div>
-    </a>
+    {hp.hero_cards.map((card) => (
+      <a href={card.link} class="tui-box p-4 hover:bg-terminal-green/5 transition-colors group block no-underline">
+        <span class:list={['tui-box-title', colorClass[card.title_color] ?? 'text-terminal-green']}>
+          ├ {card.box_title} ┤
+        </span>
+        <div class="mt-2">
+          <div class:list={['text-white text-sm font-bold mb-2 transition-colors', hoverClass[card.title_color] ?? '']}>
+            {card.heading}
+          </div>
+          <div class="text-terminal-muted text-xs leading-relaxed">{card.description}</div>
+        </div>
+        <div class:list={['mt-3 text-xs', colorClass[card.title_color] ?? 'text-terminal-green']}>{card.cta_text}</div>
+      </a>
+    ))}
   </div>
 
   <hr class="tui-hr" />
 
-  <!-- TOOLS (compact, ready tools only + collapsed coming-soon) -->
+  <!-- TOOLS panel -->
   <div class="tui-box p-3">
-    <span class="tui-box-title text-terminal-green">┤ TOOLS ├</span>
+    <span class="tui-box-title text-terminal-green">├ TOOLS ┤</span>
     <div class="mt-2 space-y-1">
-      <a href="/tools/threat-profiler" class="flex items-center justify-between py-1 px-2 hover:bg-terminal-green/5 transition-colors group">
-        <div class="flex items-center gap-2">
-          <span class="text-terminal-green">│</span>
-          <span class="text-gray-300 group-hover:text-terminal-green text-xs">Threat Model Profiler</span>
+      {readyTools.map((tool) => (
+        <a href={`/tools/${tool.id}`} class="flex items-center justify-between py-1 px-2 hover:bg-terminal-green/5 transition-colors group">
+          <div class="flex items-center gap-2">
+            <span class="text-terminal-green">│</span>
+            <span class="text-gray-300 group-hover:text-terminal-green text-xs">{tool.data.title}</span>
+          </div>
+          <span class="text-terminal-green text-xs">[READY]</span>
+        </a>
+      ))}
+      {soonCount > 0 && (
+        <div class="flex items-center justify-between py-1 px-2">
+          <div class="flex items-center gap-2">
+            <span class="text-terminal-muted">│</span>
+            <span class="text-terminal-muted text-xs">{soonCount} more tools in development</span>
+          </div>
+          <a href="/tools" class="text-terminal-cyan text-xs hover:text-terminal-green">see roadmap →</a>
         </div>
-        <span class="text-terminal-green text-xs">[READY]</span>
-      </a>
-      <a href="/tools/hash-generator" class="flex items-center justify-between py-1 px-2 hover:bg-terminal-green/5 transition-colors group">
-        <div class="flex items-center gap-2">
-          <span class="text-terminal-green">│</span>
-          <span class="text-gray-300 group-hover:text-terminal-green text-xs">Hash Generator & Verifier</span>
-        </div>
-        <span class="text-terminal-green text-xs">[READY]</span>
-      </a>
-      <a href="/tools/fingerprint-analyzer" class="flex items-center justify-between py-1 px-2 hover:bg-terminal-green/5 transition-colors group">
-        <div class="flex items-center gap-2">
-          <span class="text-terminal-green">│</span>
-          <span class="text-gray-300 group-hover:text-terminal-green text-xs">Browser Fingerprint Analyzer</span>
-        </div>
-        <span class="text-terminal-green text-xs">[READY]</span>
-      </a>
-      <div class="flex items-center justify-between py-1 px-2">
-        <div class="flex items-center gap-2">
-          <span class="text-terminal-muted">│</span>
-          <span class="text-terminal-muted text-xs">4 more tools in development</span>
-        </div>
-        <a href="/tools" class="text-terminal-cyan text-xs hover:text-terminal-green">see roadmap →</a>
-      </div>
+      )}
     </div>
   </div>
 
@@ -168,60 +157,44 @@ export const prerender = true;
 
   <!-- Promise row -->
   <div class="grid grid-cols-3 gap-0 text-xs text-center py-3">
-    <div class="px-2">
-      <div class="text-terminal-green font-bold mb-1">⊘ ZERO TRACKING</div>
-      <div class="text-terminal-muted">No analytics. No fingerprinting. No cookies. Open your DevTools Network tab &mdash; silence.</div>
-    </div>
-    <div class="px-2 border-x border-terminal-border">
-      <div class="text-terminal-cyan font-bold mb-1">⊚ CLIENT-SIDE</div>
-      <div class="text-terminal-muted">Every computation happens in your browser. Your data never touches a server.</div>
-    </div>
-    <div class="px-2">
-      <div class="text-terminal-amber font-bold mb-1">⊡ OPEN SOURCE</div>
-      <div class="text-terminal-muted">Every line of code is <a href="https://github.com/vespillo-tech/privacyterminal" class="text-terminal-cyan hover:text-terminal-green">public on GitHub</a>. Don't trust &mdash; verify.</div>
-    </div>
+    {hp.promises.map((p, i) => (
+      <div class:list={['px-2', i === 1 && 'border-x border-terminal-border']}>
+        <div class:list={['font-bold mb-1', colorClass[p.color] ?? 'text-terminal-green']}>{p.icon} {p.title}</div>
+        <div class="text-terminal-muted">{p.description}</div>
+      </div>
+    ))}
   </div>
 
-  <!-- Social proof strip -->
+  <!-- Social proof -->
   <div class="text-center text-terminal-muted text-[10px] py-2 border-t border-terminal-border">
-    Used by privacy researchers, journalists, and security professionals. Recommended on r/privacy.
+    {hp.social_proof}
   </div>
 
-  <!-- Boot sequence: animate in quickly, then collapse -->
+  <!-- Boot sequence script -->
   <script>
     (function() {
       const boot = document.getElementById('boot-sequence');
       if (!boot) return;
-
       const lines = boot.querySelectorAll('.boot-line');
-
       if (sessionStorage.getItem('pt-booted')) {
-        // Already seen boot this session — hide immediately
         boot.style.display = 'none';
         return;
       }
-
-      // Start lines hidden
       lines.forEach(function(line) {
         line.style.opacity = '0';
         line.style.transform = 'translateX(-8px)';
         line.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
       });
-
-      // Animate lines in quickly (150ms apart)
       lines.forEach(function(line, i) {
         setTimeout(function() {
           line.style.opacity = '1';
           line.style.transform = 'translateX(0)';
         }, i * 150);
       });
-
-      // After all lines shown, collapse the section
       var totalAnimTime = lines.length * 150 + 800;
       setTimeout(function() {
         boot.style.overflow = 'hidden';
         boot.style.maxHeight = boot.scrollHeight + 'px';
-        // Force reflow
         boot.offsetHeight;
         boot.style.transition = 'max-height 0.4s ease, opacity 0.3s ease, margin 0.4s ease';
         boot.style.maxHeight = '0';

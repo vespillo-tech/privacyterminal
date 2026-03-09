@@ -1,4 +1,5 @@
 ---
+import { getCollection, getEntry } from 'astro:content';
 import '../styles/global.css';
 import PrivacyScore from '../components/PrivacyScore.astro';
 import AuthModal from '../components/AuthModal.astro';
@@ -20,9 +21,52 @@ const {
   statusRight = '',
 } = Astro.props;
 
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+// ── Load singletons from content collections ──────────────────
+const navEntry     = await getEntry('site', 'navigation');
+const settingsEntry = await getEntry('site', 'site-settings');
+const gameEntry    = await getEntry('site', 'game-config');
 
-const navItems = [
+const navData = navEntry?.data as {
+  items: Array<{ label: string; href: string; key: string }>;
+};
+
+const settings = settingsEntry?.data as {
+  site_name: string;
+  version: string;
+  site_url: string;
+  security_txt: string;
+};
+
+const gameConfig = gameEntry?.data as {
+  levels: Array<{ level: number; name: string; min: number; max: number }>;
+  guide_points: number;
+  tool_points: number;
+  api_base: string;
+};
+
+// ── Build achievements map for client-side injection ──────────
+const achievementEntries = await getCollection('achievements');
+const achievementsMap: Record<string, unknown> = {};
+for (const entry of achievementEntries) {
+  achievementsMap[entry.data.id] = {
+    id:          entry.data.id,
+    name:        entry.data.name,
+    icon:        entry.data.icon,
+    description: entry.data.description,
+    points:      entry.data.points,
+  };
+}
+
+// JSON payload injected into <head> for client-side privacy-score.ts
+const gameDataJson = JSON.stringify({
+  achievements: achievementsMap,
+  levels:       gameConfig?.levels       ?? [],
+  guidePoints:  gameConfig?.guide_points ?? 15,
+  toolPoints:   gameConfig?.tool_points  ?? 10,
+  apiBase:      gameConfig?.api_base     ?? 'https://privacyterminal-api.workers.dev',
+});
+
+const navItems = navData?.items ?? [
   { label: 'home',     href: '/',        key: '0' },
   { label: 'tools',    href: '/tools',    key: '1' },
   { label: 'guides',   href: '/guides',   key: '2' },
@@ -30,13 +74,14 @@ const navItems = [
   { label: 'about',    href: '/about',    key: '4' },
 ];
 
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
 const currentPath = Astro.url.pathname;
 function isActive(href: string) {
   if (href === '/') return currentPath === '/';
   return currentPath.startsWith(href);
 }
 ---
-
 <!doctype html>
 <html lang="en">
   <head>
@@ -50,7 +95,7 @@ function isActive(href: string) {
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:site_name" content="Privacy Terminal" />
+    <meta property="og:site_name" content={settings?.site_name ?? 'Privacy Terminal'} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
@@ -59,16 +104,18 @@ function isActive(href: string) {
     <link rel="preload" href="/fonts/JetBrainsMono-Bold.woff2" as="font" type="font/woff2" crossorigin />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <!-- Game config + achievements injected at build time for client-side scripts -->
+    <script type="application/json" id="pt-game-data" set:html={gameDataJson} />
     <script type="application/ld+json" set:html={JSON.stringify({
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "Privacy Terminal",
-      "url": "https://privacyterminal.com",
+      "name": settings?.site_name ?? "Privacy Terminal",
+      "url": settings?.site_url ?? "https://privacyterminal.com",
       "description": "Open-source privacy tools and education. All tools run client-side.",
       "publisher": {
         "@type": "Organization",
-        "name": "Privacy Terminal",
-        "url": "https://privacyterminal.com"
+        "name": settings?.site_name ?? "Privacy Terminal",
+        "url": settings?.site_url ?? "https://privacyterminal.com"
       }
     })} />
   </head>
@@ -76,16 +123,13 @@ function isActive(href: string) {
     <!-- Scanline overlay -->
     <div class="scanlines" aria-hidden="true"></div>
 
-    <!-- TOP STATUS BAR (tmux/vim style) -->
+    <!-- TOP STATUS BAR -->
     <header class="tui-topbar">
       <div class="flex items-center justify-between w-full px-2 md:px-4">
-        <!-- Left: site identity -->
         <div class="flex items-center gap-1">
           <span class="text-terminal-green font-bold">&#9656; PRIVACY TERMINAL</span>
-          <span class="text-terminal-muted text-xs hidden sm:inline">v0.1.0</span>
+          <span class="text-terminal-muted text-xs hidden sm:inline">{settings?.version ?? 'v0.1.0'}</span>
         </div>
-
-        <!-- Right: navigation tabs -->
         <nav class="flex items-center gap-0">
           {navItems.map((item) => (
             <a
@@ -102,12 +146,12 @@ function isActive(href: string) {
       </div>
     </header>
 
-    <!-- MAIN CONTENT (fills viewport between bars) -->
+    <!-- MAIN CONTENT -->
     <main class="flex-1 overflow-y-auto px-2 md:px-4 py-3">
       <slot />
     </main>
 
-    <!-- BOTTOM STATUS BAR (vim statusline style) -->
+    <!-- BOTTOM STATUS BAR -->
     <footer class="tui-bottombar">
       <div class="flex items-center justify-between w-full px-2 md:px-4">
         <span>
@@ -116,25 +160,20 @@ function isActive(href: string) {
         </span>
         <span class="flex items-center gap-3">
           {statusRight && <span class="text-terminal-muted">{statusRight}</span>}
-          <!-- Privacy Score display (dynamic) -->
           <PrivacyScore />
           <span class="text-terminal-muted hidden sm:inline">&#124;</span>
           <span class="text-terminal-muted hidden sm:inline">no tracking</span>
           <span class="text-terminal-muted hidden sm:inline">&#124;</span>
           <span class="text-terminal-muted hidden sm:inline">no cookies</span>
           <span class="text-terminal-muted hidden sm:inline">&#124;</span>
-          <a href="/.well-known/security.txt" class="text-terminal-muted hover:text-terminal-cyan hidden sm:inline">security.txt</a>
+          <a href={settings?.security_txt ?? '/.well-known/security.txt'} class="text-terminal-muted hover:text-terminal-cyan hidden sm:inline">security.txt</a>
         </span>
       </div>
     </footer>
 
-    <!-- Auth Modal (hidden by default, opens on pt:open-auth event) -->
     <AuthModal />
-
-    <!-- Achievement Toast Container -->
     <AchievementToast />
 
-    <!-- Init privacy score library on every page -->
     <script>
       import { initPrivacyScore } from '../scripts/privacy-score';
       initPrivacyScore();

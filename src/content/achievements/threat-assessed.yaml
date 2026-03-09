@@ -1,0 +1,5 @@
+id: THREAT_ASSESSED
+name: THREAT ASSESSED
+icon: "[!]"
+description: Completed the threat profiler
+points: 50

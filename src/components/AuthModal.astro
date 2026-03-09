@@ -1,7 +1,34 @@
 ---
-// AuthModal.astro -- Terminal-styled registration/login modal
----
+import { getEntry } from 'astro:content';
 
+const authEntry = await getEntry('site', 'auth-copy');
+const ac = authEntry?.data as {
+  register: {
+    title: string;
+    subtitle_lines: string[];
+    promise: string;
+    create_button: string;
+    switch_to_login: string;
+  };
+  recovery: {
+    title: string;
+    warning: string;
+    storage_note: string;
+    copy_button: string;
+    saved_button: string;
+  };
+  login: {
+    title: string;
+    input_placeholder: string;
+    prompt: string;
+    submit_button: string;
+    switch_to_register: string;
+    error_invalid: string;
+    error_empty: string;
+  };
+  loading_text: string;
+};
+---
 <!-- Auth Modal Overlay -->
 <div id="pt-auth-modal" class="fixed inset-0 z-[200] flex items-center justify-center" style="display:none!important" aria-modal="true" role="dialog">
   <!-- Backdrop -->
@@ -14,76 +41,74 @@
 
     <!-- REGISTER VIEW -->
     <div id="pt-view-register" class="p-5">
-      <span class="tui-box-title text-terminal-green">├ SAVE YOUR PROGRESS ┤</span>
+      <span class="tui-box-title text-terminal-green">├ {ac.register.title} ┤</span>
       <div class="mt-3 text-xs text-terminal-muted space-y-1 leading-relaxed">
-        <p>Your privacy score, guides, and achievements</p>
-        <p>will be saved anonymously.</p>
+        {ac.register.subtitle_lines.map((line: string) => <p>{line}</p>)}
       </div>
       <div class="mt-3 text-center text-terminal-green text-xs font-bold">
-        No email. No password. No personal data.
+        {ac.register.promise}
       </div>
       <div class="mt-4">
         <button id="pt-btn-create" class="btn-terminal w-full text-xs py-2">
-          [+] Create Recovery Code
+          {ac.register.create_button}
         </button>
       </div>
       <div class="mt-2 text-center">
         <button id="pt-switch-to-login" class="text-terminal-cyan hover:text-terminal-green text-xs transition-colors">
-          Already have a code? [Log in →]
+          {ac.register.switch_to_login}
         </button>
       </div>
     </div>
 
     <!-- RECOVERY CODE VIEW -->
     <div id="pt-view-code" class="p-5" style="display:none">
-      <span class="tui-box-title text-terminal-green">├ YOUR RECOVERY CODE ┤</span>
+      <span class="tui-box-title text-terminal-green">├ {ac.recovery.title} ┤</span>
       <div class="mt-3">
         <div class="border border-terminal-green p-3 text-center" style="box-shadow:0 0 8px rgba(0,255,65,0.2)">
           <div id="pt-recovery-display" class="text-terminal-green font-bold text-sm tracking-widest"></div>
         </div>
       </div>
       <div class="mt-3 text-xs text-terminal-muted space-y-1 leading-relaxed">
-        <p class="text-terminal-amber">Write this down. It&#39;s the ONLY way to restore your progress on another device.</p>
-        <p>We do not store this code — only a hash. If you lose it, your progress is gone.</p>
+        <p class="text-terminal-amber">{ac.recovery.warning}</p>
+        <p>{ac.recovery.storage_note}</p>
       </div>
       <div class="mt-4 grid grid-cols-2 gap-2">
-        <button id="pt-btn-copy" class="btn-terminal text-xs py-2">[=] Copy Code</button>
-        <button id="pt-btn-saved" class="btn-terminal text-xs py-2">[v] I’ve Saved It</button>
+        <button id="pt-btn-copy" class="btn-terminal text-xs py-2">{ac.recovery.copy_button}</button>
+        <button id="pt-btn-saved" class="btn-terminal text-xs py-2">{ac.recovery.saved_button}</button>
       </div>
     </div>
 
     <!-- LOGIN VIEW -->
     <div id="pt-view-login" class="p-5" style="display:none">
-      <span class="tui-box-title text-terminal-cyan">├ RESTORE PROGRESS ┤</span>
-      <div class="mt-3 text-xs text-terminal-muted">Enter your recovery code:</div>
+      <span class="tui-box-title text-terminal-cyan">├ {ac.login.title} ┤</span>
+      <div class="mt-3 text-xs text-terminal-muted">{ac.login.prompt}</div>
       <div class="mt-2">
         <input
           id="pt-code-input"
           type="text"
-          placeholder="WORD-WORD-WORD-0000"
+          placeholder={ac.login.input_placeholder}
           autocomplete="off"
           spellcheck="false"
-          class="w-full bg-transparent border border-terminal-border text-terminal-green text-xs font-mono px-3 py-2 focus:border-terminal-cyan focus:outline-none uppercase tracking-widest"
+          class="w-full bg-transparent border border-terminal-border text-terminal-green text-xs font-mono px-3 py-2 focus:border-terminal-cyan focus:outline-none uppercase tracking-widest" data-error-empty={ac.login.error_empty} data-error-invalid={ac.login.error_invalid}
         />
       </div>
       <div id="pt-login-error" class="mt-1 text-terminal-red text-xs" style="display:none"></div>
       <div class="mt-3">
-        <button id="pt-btn-login" class="btn-terminal w-full text-xs py-2">[>] Restore Progress</button>
+        <button id="pt-btn-login" class="btn-terminal w-full text-xs py-2">{ac.login.submit_button}</button>
       </div>
       <div class="mt-2 text-center">
         <button id="pt-switch-to-register" class="text-terminal-cyan hover:text-terminal-green text-xs transition-colors">
-          Don’t have one? [Create New →]
+          {ac.login.switch_to_register}
         </button>
       </div>
     </div>
 
     <!-- LOADING STATE -->
     <div id="pt-view-loading" class="p-5 text-center" style="display:none">
-      <div class="text-terminal-green text-xs animate-pulse">processing<span class="cursor-blink"></span></div>
+      <div class="text-terminal-green text-xs animate-pulse">{ac.loading_text}<span class="cursor-blink"></span></div>
     </div>
   </div>
 </div>
-
 <script>
 import { register, login, isLoggedIn } from '../scripts/privacy-score';
 
@@ -115,20 +140,16 @@ function closeModal(): void {
   document.body.style.overflow = '';
 }
 
-// Open triggers
 window.addEventListener('pt:open-auth', () => openModal('register'));
 window.addEventListener('pt:open-login', () => openModal('login'));
 
-// Close triggers
 close.addEventListener('click', closeModal);
 backdrop.addEventListener('click', closeModal);
 document.addEventListener('keydown', (e: KeyboardEvent) => { if (e.key === 'Escape') closeModal(); });
 
-// Switch views
 document.getElementById('pt-switch-to-login')!.addEventListener('click', () => showView('login'));
 document.getElementById('pt-switch-to-register')!.addEventListener('click', () => showView('register'));
 
-// Register flow
 document.getElementById('pt-btn-create')!.addEventListener('click', async () => {
   showView('loading');
   try {
@@ -142,7 +163,6 @@ document.getElementById('pt-btn-create')!.addEventListener('click', async () => 
   }
 });
 
-// Copy code
 document.getElementById('pt-btn-copy')!.addEventListener('click', async () => {
   const code = document.getElementById('pt-recovery-display')!.textContent ?? '';
   try {
@@ -153,16 +173,17 @@ document.getElementById('pt-btn-copy')!.addEventListener('click', async () => {
   } catch { /* ignore */ }
 });
 
-// Saved — close modal
 document.getElementById('pt-btn-saved')!.addEventListener('click', closeModal);
 
-// Login flow
 document.getElementById('pt-btn-login')!.addEventListener('click', async () => {
-  const input = document.getElementById('pt-code-input') as HTMLInputElement;
-  const errEl = document.getElementById('pt-login-error')!;
-  const code  = input.value.trim();
+  const input  = document.getElementById('pt-code-input') as HTMLInputElement;
+  const errEl  = document.getElementById('pt-login-error')!;
+  const code   = input.value.trim();
+  // Read error messages from DOM data attributes set at build time
+  const emptyMsg   = input.dataset.errorEmpty   ?? 'Please enter your recovery code.';
+  const invalidMsg = input.dataset.errorInvalid  ?? 'Invalid recovery code. Check your spelling and try again.';
   if (!code) {
-    errEl.textContent = 'Please enter your recovery code.';
+    errEl.textContent = emptyMsg;
     errEl.style.display = 'block';
     return;
   }
@@ -174,27 +195,22 @@ document.getElementById('pt-btn-login')!.addEventListener('click', async () => {
     input.value = '';
   } else {
     showView('login');
-    errEl.textContent = 'Invalid recovery code. Check your spelling and try again.';
+    errEl.textContent = invalidMsg;
     errEl.style.display = 'block';
   }
 });
 
-// Enter key in code input
 document.getElementById('pt-code-input')!.addEventListener('keydown', (e: KeyboardEvent) => {
   if (e.key === 'Enter') document.getElementById('pt-btn-login')!.click();
 });
 
-// Auto-open if not logged in and user has progress worth saving
 if (!isLoggedIn()) {
   const stored = localStorage.getItem('pt_progress');
   if (stored) {
     try {
       const p = JSON.parse(stored);
       if (p.score >= 50) {
-        // Hint to save — show after a delay
-        setTimeout(() => {
-          if (!isLoggedIn()) openModal('register');
-        }, 30000);
+        setTimeout(() => { if (!isLoggedIn()) openModal('register'); }, 30000);
       }
     } catch { /* ignore */ }
   }

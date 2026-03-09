@@ -1,8 +1,26 @@
 ---
+import { getEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 export const prerender = true;
----
 
+const aboutEntry = await getEntry('site', 'about-page');
+const ab = aboutEntry?.data as {
+  what_is_this: string[];
+  principles: Array<{ title: string; description: string }>;
+  transparency: Array<{ key: string; value: string; color: string; link?: string }>;
+  verification_steps: string[];
+  tech_stack: string;
+};
+
+// Map color names to Tailwind classes
+const tColor: Record<string, string> = {
+  red:  'text-terminal-red',
+  cyan: 'text-terminal-cyan',
+  gray: 'text-gray-400',
+  green: 'text-terminal-green',
+  amber: 'text-terminal-amber',
+};
+---
 <BaseLayout title="About Privacy Terminal — Open Source Privacy Tools & Transparency" description="Privacy Terminal is an open-source collection of browser-based privacy tools and guides. Zero tracking, zero cookies, zero external requests. Verify our claims yourself." statusLeft="about" statusRight="transparency report">
   <div class="mb-4">
     <div class="text-terminal-green text-glow-green font-bold mb-1">~/about</div>
@@ -11,68 +29,57 @@ export const prerender = true;
   <div class="max-w-3xl space-y-0">
     <!-- What is this -->
     <div class="tui-box p-4">
-      <span class="tui-box-title text-terminal-green">┤ WHAT IS THIS ├</span>
+      <span class="tui-box-title text-terminal-green">├ WHAT IS THIS ┤</span>
       <div class="mt-1 text-sm text-gray-300 leading-relaxed space-y-2">
-        <p>Privacy Terminal is an open-source collection of browser-based privacy tools and educational guides. We help you understand your digital footprint and take practical steps to reduce it.</p>
-        <p>Every tool runs entirely in your browser. Your data never touches our servers. Every guide presents the full landscape of options. Every line of code is publicly auditable.</p>
+        {ab.what_is_this.map((para: string) => (
+          <p>{para}</p>
+        ))}
       </div>
     </div>
 
     <!-- Principles -->
     <div class="tui-box p-4">
-      <span class="tui-box-title text-terminal-cyan">┤ PRINCIPLES ├</span>
+      <span class="tui-box-title text-terminal-cyan">├ PRINCIPLES ┤</span>
       <div class="mt-1 space-y-3 text-xs">
-        <div>
-          <span class="text-terminal-cyan font-bold">Privacy by Architecture</span>
-          <span class="text-terminal-muted"> — We don't ask you to trust us with your data. Tools run client-side. No server processing. No database. No logs.</span>
-        </div>
-        <div>
-          <span class="text-terminal-cyan font-bold">The Landscape Principle</span>
-          <span class="text-terminal-muted"> — Every guide shows the full spectrum of options with honest trade-offs. We don't prescribe — we inform.</span>
-        </div>
-        <div>
-          <span class="text-terminal-cyan font-bold">Verify, Don't Trust</span>
-          <span class="text-terminal-muted"> — Source code is public. Tools run in your browser where you can inspect them. We cite our sources.</span>
-        </div>
-        <div>
-          <span class="text-terminal-cyan font-bold">Education Over Products</span>
-          <span class="text-terminal-muted"> — Understanding <em>why</em> something matters is more durable than knowing <em>which app</em> to install.</span>
-        </div>
+        {ab.principles.map((p: { title: string; description: string }) => (
+          <div>
+            <span class="text-terminal-cyan font-bold">{p.title}</span>
+            <span class="text-terminal-muted"> — {p.description}</span>
+          </div>
+        ))}
       </div>
     </div>
 
     <!-- Transparency -->
     <div class="tui-box p-4">
-      <span class="tui-box-title text-terminal-amber">┤ TRANSPARENCY ├</span>
+      <span class="tui-box-title text-terminal-amber">├ TRANSPARENCY ┤</span>
       <div class="mt-1 text-xs space-y-1 font-mono">
-        <div><span class="text-terminal-green">tracking_scripts:</span> <span class="text-terminal-red">none</span></div>
-        <div><span class="text-terminal-green">cookies_set:</span> <span class="text-terminal-red">none</span></div>
-        <div><span class="text-terminal-green">external_requests:</span> <span class="text-terminal-red">none</span></div>
-        <div><span class="text-terminal-green">third_party_js:</span> <span class="text-terminal-red">none</span></div>
-        <div><span class="text-terminal-green">user_accounts:</span> <span class="text-terminal-red">none</span></div>
-        <div><span class="text-terminal-green">data_collected:</span> <span class="text-terminal-red">none</span></div>
-        <div><span class="text-terminal-green">server_logs:</span> <span class="text-gray-400">Cloudflare standard (no IP storage by us)</span></div>
-        <div><span class="text-terminal-green">source_code:</span> <a href="https://github.com/vespillo-tech/privacyterminal" class="text-terminal-cyan">github.com/vespillo-tech/privacyterminal</a></div>
-        <div><span class="text-terminal-green">security_contact:</span> <a href="/.well-known/security.txt" class="text-terminal-cyan">/.well-known/security.txt</a></div>
-        <div><span class="text-terminal-green">hosting:</span> <span class="text-gray-400">Cloudflare Pages (static)</span></div>
-        <div><span class="text-terminal-green">monetization:</span> <span class="text-gray-400">none currently</span></div>
+        {ab.transparency.map((item: { key: string; value: string; color: string; link?: string }) => (
+          <div>
+            <span class="text-terminal-green">{item.key}:</span>{' '}
+            {item.link ? (
+              <a href={item.link} class="text-terminal-cyan">{item.value}</a>
+            ) : (
+              <span class:list={[tColor[item.color] ?? 'text-gray-400']}>{item.value}</span>
+            )}
+          </div>
+        ))}
       </div>
     </div>
 
     <!-- Verify -->
     <div class="tui-box p-4">
-      <span class="tui-box-title text-terminal-green">┤ HOW TO VERIFY ├</span>
+      <span class="tui-box-title text-terminal-green">├ HOW TO VERIFY ┤</span>
       <div class="mt-1 text-xs text-gray-300 space-y-2">
-        <div><span class="text-terminal-green">1.</span> Open DevTools → Network tab while using any tool. Zero external requests.</div>
-        <div><span class="text-terminal-green">2.</span> Inspect the <a href="https://github.com/vespillo-tech/privacyterminal" class="text-terminal-cyan">source code</a>. No obfuscation.</div>
-        <div><span class="text-terminal-green">3.</span> Check CSP headers — external scripts/connections blocked by default.</div>
-        <div><span class="text-terminal-green">4.</span> Use uBlock Origin or NoScript to verify no hidden requests.</div>
+        {ab.verification_steps.map((step: string, i: number) => (
+          <div><span class="text-terminal-green">{i + 1}.</span> {step}</div>
+        ))}
       </div>
     </div>
 
     <!-- Tech -->
     <div class="text-xs text-terminal-muted py-3">
-      <span class="text-terminal-green">stack:</span> Astro · Tailwind · Cloudflare Pages · JetBrains Mono · Web Crypto API · Client-side JS
+      <span class="text-terminal-green">stack:</span> {ab.tech_stack}
     </div>
   </div>
 </BaseLayout>

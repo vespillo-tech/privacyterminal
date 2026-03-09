@@ -1,0 +1,4 @@
+title: "IP & DNS Leak Tester"
+description: "Verify your VPN. Detect IP exposure, DNS leaks, WebRTC disclosure."
+status: soon
+order: 4

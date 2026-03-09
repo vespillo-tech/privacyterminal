@@ -1,0 +1,54 @@
+what_is_this:
+  - "Privacy Terminal is an open-source collection of browser-based privacy tools and educational guides. We help you understand your digital footprint and take practical steps to reduce it."
+  - "Every tool runs entirely in your browser. Your data never touches our servers. Every guide presents the full landscape of options. Every line of code is publicly auditable."
+principles:
+  - title: Privacy by Architecture
+    description: "We don't ask you to trust us with your data. Tools run client-side. No server processing. No database. No logs."
+  - title: The Landscape Principle
+    description: "Every guide shows the full spectrum of options with honest trade-offs. We don't prescribe — we inform."
+  - title: "Verify, Don't Trust"
+    description: "Source code is public. Tools run in your browser where you can inspect them. We cite our sources."
+  - title: Education Over Products
+    description: "Understanding why something matters is more durable than knowing which app to install."
+transparency:
+  - key: tracking_scripts
+    value: none
+    color: red
+  - key: cookies_set
+    value: none
+    color: red
+  - key: external_requests
+    value: none
+    color: red
+  - key: third_party_js
+    value: none
+    color: red
+  - key: user_accounts
+    value: none
+    color: red
+  - key: data_collected
+    value: none
+    color: red
+  - key: server_logs
+    value: "Cloudflare standard (no IP storage by us)"
+    color: gray
+  - key: source_code
+    value: github.com/vespillo-tech/privacyterminal
+    link: https://github.com/vespillo-tech/privacyterminal
+    color: cyan
+  - key: security_contact
+    value: /.well-known/security.txt
+    link: /.well-known/security.txt
+    color: cyan
+  - key: hosting
+    value: "Cloudflare Pages (static)"
+    color: gray
+  - key: monetization
+    value: none currently
+    color: gray
+verification_steps:
+  - "Open DevTools → Network tab while using any tool. Zero external requests."
+  - "Inspect the source code. No obfuscation."
+  - "Check CSP headers — external scripts/connections blocked by default."
+  - "Use uBlock Origin or NoScript to verify no hidden requests."
+tech_stack: "Astro · Tailwind · Cloudflare Pages · JetBrains Mono · Web Crypto API · Client-side JS"

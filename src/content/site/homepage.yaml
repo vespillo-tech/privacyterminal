@@ -1,0 +1,40 @@
+hero_cards:
+  - box_title: START HERE
+    title_color: green
+    heading: "I don't know where to start"
+    description: "A 5-minute checkup that shows you exactly what to fix first — no jargon, no overwhelm."
+    cta_text: "▶ Take the checkup →"
+    link: /guides/the-5-minute-privacy-checkup
+  - box_title: TEST YOURSELF
+    title_color: cyan
+    heading: "How exposed am I?"
+    description: "47 questions across 28 attack categories. Get a personalized threat profile in 5 minutes. Nothing leaves your browser."
+    cta_text: "▶ Take the assessment →"
+    link: /tools/threat-profiler
+  - box_title: LEARN
+    title_color: amber
+    heading: "I want to understand privacy"
+    description: "8 guides from basics to advanced. How tracking works, who wants your data, and what actually protects you."
+    cta_text: "▶ Browse guides →"
+    link: /guides
+boot_messages:
+  - type: BOOT
+    text: "Privacy Terminal v0.1.0"
+  - type: INFO
+    text: "No tracking · No cookies · No external requests"
+  - type: READY
+    text: "All tools run client-side. Your data never leaves your browser."
+promises:
+  - icon: "⊘"
+    title: ZERO TRACKING
+    color: green
+    description: "No analytics. No fingerprinting. No cookies. Open your DevTools Network tab — silence."
+  - icon: "⊚"
+    title: CLIENT-SIDE
+    color: cyan
+    description: "Every computation happens in your browser. Your data never touches a server."
+  - icon: "⊡"
+    title: OPEN SOURCE
+    color: amber
+    description: "Every line of code is public on GitHub. Don't trust — verify."
+social_proof: "Used by privacy researchers, journalists, and security professionals. Recommended on r/privacy."

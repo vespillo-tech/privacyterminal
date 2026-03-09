@@ -1,11 +1,12 @@
 /**
  * Privacy Terminal — Client-side progress & scoring library
  * Manages session state, syncs with backend, falls back to localStorage
+ * Game data (achievements, levels, config) is loaded from the DOM at runtime
+ * via the #pt-game-data <script type="application/json"> element injected by BaseLayout.
  */
 
-const API_BASE = 'https://privacyterminal-api.workers.dev';
-const SESSION_KEY = 'pt_session';
-const PROGRESS_KEY = 'pt_progress';
+const SESSION_KEY   = 'pt_session';
+const PROGRESS_KEY  = 'pt_progress';
 const HASH_COUNT_KEY = 'pt_hash_count';
 
 // ── Types ──────────────────────────────────────────────────────
@@ -35,39 +36,95 @@ export interface AchievementDef {
   points: number;
 }
 
-// ── Achievement Definitions ────────────────────────────────────
+interface LevelDef {
+  level: number;
+  name: string;
+  min: number;
+  max: number;
+}
 
-export const ACHIEVEMENTS: Record<string, AchievementDef> = {
-  FIRST_BOOT:          { id: 'FIRST_BOOT',          name: 'FIRST BOOT',          icon: '[*]', description: 'Welcome to Privacy Terminal',           points: 10 },
-  FIRST_SCAN:          { id: 'FIRST_SCAN',          name: 'FIRST SCAN',          icon: '[~]', description: 'Ran your first fingerprint analysis',    points: 30 },
-  HASH_MASTER:         { id: 'HASH_MASTER',         name: 'HASH MASTER',         icon: '[#]', description: 'Generated 10 hashes',                    points: 25 },
-  THREAT_ASSESSED:     { id: 'THREAT_ASSESSED',     name: 'THREAT ASSESSED',     icon: '[!]', description: 'Completed the threat profiler',           points: 50 },
-  FOUNDATION_COMPLETE: { id: 'FOUNDATION_COMPLETE', name: 'FOUNDATION COMPLETE', icon: '[=]', description: 'Read all foundations guides',            points: 40 },
-  ESSENTIALS_COMPLETE: { id: 'ESSENTIALS_COMPLETE', name: 'ESSENTIALS COMPLETE', icon: '[v]', description: 'Read all essentials guides',              points: 40 },
-  FULL_AUDIT:          { id: 'FULL_AUDIT',          name: 'FULL AUDIT',          icon: '[S]', description: 'Used every tool at least once',           points: 60 },
-  SPEED_RUN:           { id: 'SPEED_RUN',           name: 'SPEED RUN',           icon: '[>]', description: 'Completed the 5-Min Checkup',             points: 20 },
-};
+interface GameData {
+  achievements: Record<string, AchievementDef>;
+  levels: LevelDef[];
+  guidePoints: number;
+  toolPoints: number;
+  apiBase: string;
+}
 
-// ── Level Definitions ────────────────────────────────────────────
+// ── Game Data Loader (reads from DOM, injected by BaseLayout at build time) ──
 
-const LEVELS = [
-  { level: 1, name: 'NEWBIE',   min: 0,    max: 99   },
-  { level: 2, name: 'AWARE',    min: 100,  max: 249  },
-  { level: 3, name: 'CAUTIOUS', min: 250,  max: 499  },
-  { level: 4, name: 'HARDENED', min: 500,  max: 999  },
-  { level: 5, name: 'GHOST',    min: 1000, max: 9999 },
-];
+let _gameData: GameData | null = null;
 
-const GUIDE_POINTS = 15;
-const TOOL_POINTS  = 10;
+function getGameData(): GameData {
+  if (_gameData) return _gameData;
+  try {
+    const el = typeof document !== 'undefined'
+      ? document.getElementById('pt-game-data')
+      : null;
+    if (el?.textContent) {
+      _gameData = JSON.parse(el.textContent) as GameData;
+      return _gameData;
+    }
+  } catch { /* fall through to defaults */ }
+  // Fallback defaults — only reached if DOM element is missing
+  _gameData = {
+    achievements: {
+      FIRST_BOOT:          { id: 'FIRST_BOOT',          name: 'FIRST BOOT',          icon: '[*]', description: 'Welcome to Privacy Terminal',        points: 10 },
+      FIRST_SCAN:          { id: 'FIRST_SCAN',          name: 'FIRST SCAN',          icon: '[~]', description: 'Ran your first fingerprint analysis', points: 30 },
+      HASH_MASTER:         { id: 'HASH_MASTER',         name: 'HASH MASTER',         icon: '[#]', description: 'Generated 10 hashes',                points: 25 },
+      THREAT_ASSESSED:     { id: 'THREAT_ASSESSED',     name: 'THREAT ASSESSED',     icon: '[!]', description: 'Completed the threat profiler',      points: 50 },
+      FOUNDATION_COMPLETE: { id: 'FOUNDATION_COMPLETE', name: 'FOUNDATION COMPLETE', icon: '[=]', description: 'Read all foundations guides',        points: 40 },
+      ESSENTIALS_COMPLETE: { id: 'ESSENTIALS_COMPLETE', name: 'ESSENTIALS COMPLETE', icon: '[v]', description: 'Read all essentials guides',         points: 40 },
+      FULL_AUDIT:          { id: 'FULL_AUDIT',          name: 'FULL AUDIT',          icon: '[S]', description: 'Used every tool at least once',      points: 60 },
+      SPEED_RUN:           { id: 'SPEED_RUN',           name: 'SPEED RUN',           icon: '[>]', description: 'Completed the 5-Min Checkup',        points: 20 },
+    },
+    levels: [
+      { level: 1, name: 'NEWBIE',   min: 0,    max: 99   },
+      { level: 2, name: 'AWARE',    min: 100,  max: 249  },
+      { level: 3, name: 'CAUTIOUS', min: 250,  max: 499  },
+      { level: 4, name: 'HARDENED', min: 500,  max: 999  },
+      { level: 5, name: 'GHOST',    min: 1000, max: 9999 },
+    ],
+    guidePoints: 15,
+    toolPoints: 10,
+    apiBase: 'https://privacyterminal-api.workers.dev',
+  };
+  return _gameData;
+}
+
+/**
+ * Returns the achievements map. Use this instead of importing ACHIEVEMENTS directly.
+ * Data is sourced from the pt-game-data DOM element (injected by BaseLayout).
+ */
+export function getAchievements(): Record<string, AchievementDef> {
+  return getGameData().achievements;
+}
+
+/**
+ * @deprecated Use getAchievements() instead.
+ * Kept for backward compatibility — reads from DOM-sourced game data.
+ */
+export const ACHIEVEMENTS: Record<string, AchievementDef> = new Proxy(
+  {} as Record<string, AchievementDef>,
+  {
+    get(_target, prop: string) { return getGameData().achievements[prop]; },
+    has(_target, prop: string) { return prop in getGameData().achievements; },
+    ownKeys()                  { return Object.keys(getGameData().achievements); },
+    getOwnPropertyDescriptor(_target, prop: string) {
+      const v = getGameData().achievements[prop];
+      return v ? { value: v, enumerable: true, configurable: true, writable: false } : undefined;
+    },
+  }
+);
 
 // ── Helpers ─────────────────────────────────────────────────────
 
 export function getLevelInfo(score: number) {
-  for (let i = LEVELS.length - 1; i >= 0; i--) {
-    if (score >= LEVELS[i].min) return { ...LEVELS[i] };
+  const levels = getGameData().levels;
+  for (let i = levels.length - 1; i >= 0; i--) {
+    if (score >= levels[i].min) return { ...levels[i] };
   }
-  return { ...LEVELS[0] };
+  return { ...levels[0] };
 }
 
 export function buildProgressBar(score: number, blocks = 12): string {
@@ -89,7 +146,7 @@ function defaultProgress(): ProgressData {
   };
 }
 
-// ── Session ───────────────────────────────────────────────────
+// ── Session ────────────────────────────────────────────────────
 
 export function isLoggedIn(): boolean {
   try { return !!localStorage.getItem(SESSION_KEY); } catch { return false; }
@@ -106,9 +163,10 @@ export function logout(): void {
   } catch { /* ignore */ }
 }
 
-// ── Auth API ────────────────────────────────────────────────
+// ── Auth API ────────────────────────────────────────────────────
 
 export async function register(): Promise<{ user_id: string; recovery_code: string }> {
+  const API_BASE = getGameData().apiBase;
   const res = await fetch(`${API_BASE}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -126,6 +184,7 @@ export async function register(): Promise<{ user_id: string; recovery_code: stri
 }
 
 export async function login(code: string): Promise<boolean> {
+  const API_BASE = getGameData().apiBase;
   try {
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
@@ -140,7 +199,7 @@ export async function login(code: string): Promise<boolean> {
   } catch { return false; }
 }
 
-// ── Progress Cache ─────────────────────────────────────────
+// ── Progress Cache ─────────────────────────────────────────────
 
 export function getCachedProgress(): ProgressData {
   try {
@@ -157,7 +216,7 @@ function setCachedProgress(data: ProgressData): void {
   } catch { /* ignore */ }
 }
 
-// ── Events ───────────────────────────────────────────────────
+// ── Events ────────────────────────────────────────────────────
 
 function dispatchProgressUpdate(data: ProgressData): void {
   if (typeof window !== 'undefined') {
@@ -166,13 +225,13 @@ function dispatchProgressUpdate(data: ProgressData): void {
 }
 
 export function dispatchAchievement(achievementId: string): void {
-  const ach = ACHIEVEMENTS[achievementId];
+  const ach = getGameData().achievements[achievementId];
   if (ach && typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('pt:achievement', { detail: ach }));
   }
 }
 
-// ── Server Sync ──────────────────────────────────────────────
+// ── Server Sync ────────────────────────────────────────────────
 
 export async function getProgress(): Promise<ProgressData> {
   if (!isLoggedIn()) return getCachedProgress();
@@ -182,6 +241,7 @@ export async function getProgress(): Promise<ProgressData> {
 async function refreshProgress(): Promise<ProgressData> {
   const token = getToken();
   if (!token) return getCachedProgress();
+  const API_BASE = getGameData().apiBase;
   try {
     const res = await fetch(`${API_BASE}/progress`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -212,6 +272,7 @@ async function syncLocalToServer(): Promise<void> {
 async function apiPost(path: string, body: Record<string, unknown>): Promise<void> {
   const token = getToken();
   if (!token) return;
+  const API_BASE = getGameData().apiBase;
   await fetch(`${API_BASE}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -219,20 +280,21 @@ async function apiPost(path: string, body: Record<string, unknown>): Promise<voi
   });
 }
 
-// ── Score Calculation ────────────────────────────────────────
+// ── Score Calculation ──────────────────────────────────────────
 
 function recalcScore(p: ProgressData): ProgressData {
+  const { achievements, guidePoints, toolPoints } = getGameData();
   let score = 0;
-  score += p.guides_completed.length   * GUIDE_POINTS;
-  score += p.tools_used.length         * TOOL_POINTS;
+  score += p.guides_completed.length * guidePoints;
+  score += p.tools_used.length       * toolPoints;
   for (const id of p.achievements_unlocked) {
-    score += ACHIEVEMENTS[id]?.points ?? 0;
+    score += achievements[id]?.points ?? 0;
   }
   const lvl = getLevelInfo(score);
   return { ...p, score, level: lvl.level, level_name: lvl.name };
 }
 
-// ── Core Actions ─────────────────────────────────────────────
+// ── Core Actions ──────────────────────────────────────────────
 
 export async function completeGuide(guideId: string): Promise<void> {
   const p = getCachedProgress();
@@ -251,7 +313,7 @@ export async function trackTool(toolId: string): Promise<void> {
 }
 
 export async function unlockAchievement(achievementId: string): Promise<void> {
-  if (!ACHIEVEMENTS[achievementId]) return;
+  if (!getGameData().achievements[achievementId]) return;
   const p = getCachedProgress();
   if (p.achievements_unlocked.includes(achievementId)) return;
   p.achievements_unlocked.push(achievementId);
@@ -276,12 +338,10 @@ export function incrementHashCount(): number {
   } catch { return 0; }
 }
 
-// ── Init ─────────────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────
 
 export function initPrivacyScore(): void {
   if (typeof window === 'undefined') return;
-  // Emit current cached state immediately for instant render
   dispatchProgressUpdate(getCachedProgress());
-  // Background sync with server
   if (isLoggedIn()) refreshProgress().catch(() => {});
 }

@@ -1,0 +1,4 @@
+title: "Email Header Analyzer"
+description: "Parse Received headers, verify SPF/DKIM/DMARC, detect spoofing."
+status: soon
+order: 7

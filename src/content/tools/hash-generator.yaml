@@ -1,0 +1,4 @@
+title: "Hash Generator & Verifier"
+description: "SHA-256, SHA-512, SHA-384, SHA-1, MD5 — all client-side via Web Crypto API."
+status: ready
+order: 2
