@@ -61,6 +61,7 @@ export const prerender = true;
       <div>
         <span class="text-terminal-green font-bold">How unique am I?</span>
         <p class="mt-1">Research shows 80–90% of desktop fingerprints are unique enough to identify individual browsers (EFF Panopticlick, AmIUnique). More entropy bits = more identifiable. Our test collects the same signals trackers use, so you can see exactly what you're exposing.</p>
+        <p class="mt-1"><span class="text-terminal-amber">Note:</span> Entropy values are estimates based on published research. Actual uniqueness depends on the comparison population, and correlated signals mean simple addition slightly overstates total entropy. Treat results as directional, not precise.</p>
         <p class="mt-1"><a href="/guides/browser-fingerprinting-explained" class="text-terminal-cyan hover:text-terminal-green">Read: Browser Fingerprinting Explained →</a></p>
       </div>
     </div>
@@ -261,9 +262,9 @@ async function runScan() {
   // 2. BROWSER & ENGINE
   PT?.appendLog('Scanning browser & engine...', 'info');
   const browserSignals: Signal[] = [
-    { name: 'User Agent', value: truncate(navigator.userAgent, 80), entropy: 8.5, risk: 'high' },
+    { name: 'User Agent', value: truncate(navigator.userAgent, 80), entropy: 7.5, risk: 'high' },
     { name: 'Platform', value: navigator.platform || 'unknown', entropy: 3.0, risk: 'medium' },
-    { name: 'Language', value: navigator.language, entropy: 3.5, risk: 'medium' },
+    { name: 'Language', value: navigator.language, entropy: 2.5, risk: 'medium' },
     { name: 'Languages', value: (navigator.languages || []).join(', '), entropy: 4.0, risk: 'medium' },
     { name: 'Cookie Enabled', value: String(navigator.cookieEnabled), entropy: 0.3, risk: 'low' },
     { name: 'Do Not Track', value: (navigator as any).doNotTrack || 'unset', entropy: 1.0, risk: 'low' },
@@ -317,7 +318,7 @@ async function runScan() {
   const webglSignals: Signal[] = Object.entries(webgl).map(([k, v]) => ({
     name: 'WebGL ' + k.charAt(0).toUpperCase() + k.slice(1),
     value: truncate(v, 60),
-    entropy: k === 'renderer' ? 7.0 : k === 'vendor' ? 4.0 : 1.5,
+    entropy: k === 'renderer' ? 5.5 : k === 'vendor' ? 3.5 : 1.5,
     risk: (k === 'renderer' ? 'high' : 'medium') as Signal['risk'],
   }));
   categories.push({ id: 'webgl', label: 'WEBGL', color: 'terminal-red', signals: webglSignals });
