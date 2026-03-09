@@ -166,35 +166,54 @@ export function logout(): void {
 // ── Auth API ────────────────────────────────────────────────────
 
 export async function register(): Promise<{ user_id: string; recovery_code: string }> {
-  const API_BASE = getGameData().apiBase;
-  const res = await fetch(`${API_BASE}/auth/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: 'Registration failed' })) as { error?: string };
-    throw new Error(err.error ?? 'Registration failed');
-  }
-  const data = await res.json() as { user_id: string; recovery_code: string; session_token: string };
+  // Fully client-side registration — no API needed
+  const words = ['ALPHA','BRAVO','CHARLIE','DELTA','ECHO','FOXTROT','GOLF','HOTEL',
+    'INDIA','JULIET','KILO','LIMA','MIKE','NOVEMBER','OSCAR','PAPA','QUEBEC',
+    'ROMEO','SIERRA','TANGO','UNIFORM','VICTOR','WHISKEY','XRAY','YANKEE','ZULU',
+    'CIPHER','GHOST','PROXY','ONION','SHIELD','VAULT','PIXEL','EMBER','FROST',
+    'NEXUS','DRIFT','HAVEN','PRISM','SPARK','PULSE','FLARE','STORM','BLADE'];
+  const pick = () => words[Math.floor(Math.random() * words.length)];
+  const num = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+  const recovery_code = `${pick()}-${pick()}-${pick()}-${num}`;
+
+  // Generate user_id and session token
+  const arr = new Uint8Array(16);
+  crypto.getRandomValues(arr);
+  const user_id = Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+  const sessArr = new Uint8Array(32);
+  crypto.getRandomValues(sessArr);
+  const session_token = Array.from(sessArr).map(b => b.toString(16).padStart(2, '0')).join('');
+
+  // Hash the recovery code for storage (so we can verify on login)
+  const encoder = new TextEncoder();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(recovery_code));
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const codeHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
   try {
-    localStorage.setItem(SESSION_KEY, data.session_token);
-    syncLocalToServer().catch(() => {});
+    localStorage.setItem(SESSION_KEY, session_token);
+    localStorage.setItem('pt_user_id', user_id);
+    localStorage.setItem('pt_code_hash', codeHash);
   } catch { /* ignore */ }
-  return { user_id: data.user_id, recovery_code: data.recovery_code };
+  return { user_id, recovery_code };
 }
 
 export async function login(code: string): Promise<boolean> {
-  const API_BASE = getGameData().apiBase;
+  // Fully client-side login — verify recovery code against stored hash
   try {
-    const res = await fetch(`${API_BASE}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ recovery_code: code.trim().toUpperCase() }),
-    });
-    if (!res.ok) return false;
-    const data = await res.json() as { session_token: string };
-    localStorage.setItem(SESSION_KEY, data.session_token);
-    await refreshProgress();
+    const storedHash = localStorage.getItem('pt_code_hash');
+    if (!storedHash) return false;
+    const encoder = new TextEncoder();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(code.trim().toUpperCase()));
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const inputHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    if (inputHash !== storedHash) return false;
+    // Restore session
+    const sessArr = new Uint8Array(32);
+    crypto.getRandomValues(sessArr);
+    const session_token = Array.from(sessArr).map(b => b.toString(16).padStart(2, '0')).join('');
+    localStorage.setItem(SESSION_KEY, session_token);
+    dispatchProgressUpdate(getCachedProgress());
     return true;
   } catch { return false; }
 }
@@ -239,34 +258,12 @@ export async function getProgress(): Promise<ProgressData> {
 }
 
 async function refreshProgress(): Promise<ProgressData> {
-  const token = getToken();
-  if (!token) return getCachedProgress();
-  const API_BASE = getGameData().apiBase;
-  try {
-    const res = await fetch(`${API_BASE}/progress`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) return getCachedProgress();
-    const data = await res.json() as ProgressData;
-    const lvl = getLevelInfo(data.score);
-    data.level      = lvl.level;
-    data.level_name = lvl.name;
-    setCachedProgress(data);
-    return data;
-  } catch { return getCachedProgress(); }
+  // All progress is local — just return cached data
+  return getCachedProgress();
 }
 
 async function syncLocalToServer(): Promise<void> {
-  const local = getCachedProgress();
-  for (const guide of local.guides_completed) {
-    await apiPost('/progress/guide', { guide_id: guide }).catch(() => {});
-  }
-  for (const tool of local.tools_used) {
-    await apiPost('/progress/tool', { tool_id: tool }).catch(() => {});
-  }
-  for (const ach of local.achievements_unlocked) {
-    await apiPost('/progress/achievement', { achievement_id: ach }).catch(() => {});
-  }
+  // No-op: all data is stored client-side in localStorage
 }
 
 async function apiPost(path: string, body: Record<string, unknown>): Promise<void> {
@@ -301,7 +298,7 @@ export async function completeGuide(guideId: string): Promise<void> {
   if (p.guides_completed.includes(guideId)) return;
   p.guides_completed.push(guideId);
   setCachedProgress(recalcScore(p));
-  if (isLoggedIn()) apiPost('/progress/guide', { guide_id: guideId }).catch(() => {});
+  // Progress saved to localStorage automatically
 }
 
 export async function trackTool(toolId: string): Promise<void> {
@@ -309,7 +306,7 @@ export async function trackTool(toolId: string): Promise<void> {
   if (p.tools_used.includes(toolId)) return;
   p.tools_used.push(toolId);
   setCachedProgress(recalcScore(p));
-  if (isLoggedIn()) apiPost('/progress/tool', { tool_id: toolId }).catch(() => {});
+  // Progress saved to localStorage automatically
 }
 
 export async function unlockAchievement(achievementId: string): Promise<void> {
@@ -319,14 +316,14 @@ export async function unlockAchievement(achievementId: string): Promise<void> {
   p.achievements_unlocked.push(achievementId);
   setCachedProgress(recalcScore(p));
   dispatchAchievement(achievementId);
-  if (isLoggedIn()) apiPost('/progress/achievement', { achievement_id: achievementId }).catch(() => {});
+  // Progress saved to localStorage automatically
 }
 
 export async function saveThreatProfile(data: ThreatProfileData): Promise<void> {
   const p = getCachedProgress();
   p.threat_profile = data;
   setCachedProgress(p);
-  if (isLoggedIn()) apiPost('/progress/threat-profile', { threat_profile: data }).catch(() => {});
+  // Progress saved to localStorage automatically
 }
 
 export function incrementHashCount(): number {
@@ -343,5 +340,4 @@ export function incrementHashCount(): number {
 export function initPrivacyScore(): void {
   if (typeof window === 'undefined') return;
   dispatchProgressUpdate(getCachedProgress());
-  if (isLoggedIn()) refreshProgress().catch(() => {});
 }
