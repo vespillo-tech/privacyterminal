@@ -117,6 +117,24 @@ const categoryColors: Record<string, string> = {
         <slot />
       </div>
 
+      <!-- Guide Completion -->
+      <div class="mt-8 border-t border-terminal-border pt-4" id="guide-completion">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span id="completion-icon" class="text-terminal-muted">☐</span>
+            <span id="completion-text" class="text-terminal-muted text-xs">Mark this guide as read</span>
+          </div>
+          <button id="btn-complete-guide" class="px-3 py-1.5 border border-terminal-green text-terminal-green text-xs hover:bg-terminal-green/10 transition-colors">
+            ✓ Mark Complete
+          </button>
+        </div>
+        <div id="completion-done" class="hidden flex items-center gap-2 py-2">
+          <span class="text-terminal-green">✅</span>
+          <span class="text-terminal-green text-xs font-bold">Guide complete!</span>
+          <span class="text-terminal-muted text-[10px] ml-2">Progress saved</span>
+        </div>
+      </div>
+
       <!-- Related -->
       <div class="mt-6" id="guide-related">
         <slot name="related" />
@@ -251,6 +269,61 @@ const categoryColors: Record<string, string> = {
 </style>
 
 <script>
+  // Guide completion tracking
+  (function() {
+    const btn = document.getElementById('btn-complete-guide');
+    const doneEl = document.getElementById('completion-done');
+    const completionSection = document.querySelector('#guide-completion > div:first-child');
+    if (!btn) return;
+
+    // Extract guide ID from URL path: /guides/some-guide-id/ → some-guide-id
+    const pathParts = window.location.pathname.replace(/^\/|\/$/, '').split('/');
+    const guideId = pathParts.length >= 2 ? pathParts[pathParts.length - 1] : '';
+    if (!guideId) return;
+
+    // Check if already completed (from localStorage cache)
+    function checkCompleted() {
+      try {
+        const cached = JSON.parse(localStorage.getItem('pt_progress') || '{}');
+        const completed = cached.completed_guides || [];
+        if (completed.includes(guideId)) {
+          showCompleted();
+        }
+      } catch (e) {}
+    }
+
+    function showCompleted() {
+      if (completionSection) completionSection.classList.add('hidden');
+      if (doneEl) doneEl.classList.remove('hidden');
+    }
+
+    btn.addEventListener('click', async function() {
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+      try {
+        const { completeGuide } = await import('../scripts/privacy-score');
+        await completeGuide(guideId);
+        showCompleted();
+      } catch (e) {
+        // Fallback: save to localStorage directly
+        try {
+          const cached = JSON.parse(localStorage.getItem('pt_progress') || '{"completed_guides":[]}');
+          if (!cached.completed_guides) cached.completed_guides = [];
+          if (!cached.completed_guides.includes(guideId)) {
+            cached.completed_guides.push(guideId);
+          }
+          localStorage.setItem('pt_progress', JSON.stringify(cached));
+          showCompleted();
+        } catch (e2) {
+          btn.textContent = '✓ Mark Complete';
+          btn.disabled = false;
+        }
+      }
+    });
+
+    checkCompleted();
+  })();
+
   const tocLinks = document.querySelectorAll('[data-toc-link]');
   const headings = document.querySelectorAll('.guide-content h2, .guide-content h3');
   if (tocLinks.length > 0 && headings.length > 0) {

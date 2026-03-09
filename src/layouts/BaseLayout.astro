@@ -1,5 +1,8 @@
 ---
 import '../styles/global.css';
+import PrivacyScore from '../components/PrivacyScore.astro';
+import AuthModal from '../components/AuthModal.astro';
+import AchievementToast from '../components/AchievementToast.astro';
 
 interface Props {
   title: string;
@@ -20,11 +23,11 @@ const {
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
 const navItems = [
-  { label: 'home', href: '/', key: '0' },
-  { label: 'tools', href: '/tools', key: '1' },
-  { label: 'guides', href: '/guides', key: '2' },
+  { label: 'home',     href: '/',        key: '0' },
+  { label: 'tools',    href: '/tools',    key: '1' },
+  { label: 'guides',   href: '/guides',   key: '2' },
   { label: 'terminal', href: '/terminal', key: '3' },
-  { label: 'about', href: '/about', key: '4' },
+  { label: 'about',    href: '/about',    key: '4' },
 ];
 
 const currentPath = Astro.url.pathname;
@@ -78,7 +81,7 @@ function isActive(href: string) {
       <div class="flex items-center justify-between w-full px-2 md:px-4">
         <!-- Left: site identity -->
         <div class="flex items-center gap-1">
-          <span class="text-terminal-green font-bold">▸ PRIVACY TERMINAL</span>
+          <span class="text-terminal-green font-bold">&#9656; PRIVACY TERMINAL</span>
           <span class="text-terminal-muted text-xs hidden sm:inline">v0.1.0</span>
         </div>
 
@@ -108,18 +111,33 @@ function isActive(href: string) {
     <footer class="tui-bottombar">
       <div class="flex items-center justify-between w-full px-2 md:px-4">
         <span>
-          <span class="text-terminal-green">●</span>
+          <span class="text-terminal-green">&#9679;</span>
           <span class="text-terminal-muted ml-1">{statusLeft}</span>
         </span>
         <span class="flex items-center gap-3">
           {statusRight && <span class="text-terminal-muted">{statusRight}</span>}
+          <!-- Privacy Score display (dynamic) -->
+          <PrivacyScore />
+          <span class="text-terminal-muted hidden sm:inline">&#124;</span>
           <span class="text-terminal-muted hidden sm:inline">no tracking</span>
-          <span class="text-terminal-muted hidden sm:inline">│</span>
+          <span class="text-terminal-muted hidden sm:inline">&#124;</span>
           <span class="text-terminal-muted hidden sm:inline">no cookies</span>
-          <span class="text-terminal-muted hidden sm:inline">│</span>
+          <span class="text-terminal-muted hidden sm:inline">&#124;</span>
           <a href="/.well-known/security.txt" class="text-terminal-muted hover:text-terminal-cyan hidden sm:inline">security.txt</a>
         </span>
       </div>
     </footer>
+
+    <!-- Auth Modal (hidden by default, opens on pt:open-auth event) -->
+    <AuthModal />
+
+    <!-- Achievement Toast Container -->
+    <AchievementToast />
+
+    <!-- Init privacy score library on every page -->
+    <script>
+      import { initPrivacyScore } from '../scripts/privacy-score';
+      initPrivacyScore();
+    </script>
   </body>
 </html>

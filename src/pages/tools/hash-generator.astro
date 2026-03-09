@@ -504,6 +504,13 @@ export const prerender = true;
 
     const totalMs = lastResults.reduce((sum, r) => sum + r.ms, 0);
     PT?.appendLog('Completed ' + lastResults.length + ' hashes in ' + totalMs.toFixed(1) + 'ms', 'success');
+
+    // Track tool usage for gamification
+    try {
+      const ps = await import('../../scripts/privacy-score');
+      await ps.trackTool('hash-generator');
+      ps.incrementHashCount();
+    } catch (e) { /* gamification optional */ }
     PT?.setToolStatus('complete');
   }
 

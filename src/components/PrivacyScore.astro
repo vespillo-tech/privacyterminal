@@ -1,0 +1,39 @@
+---
+// PrivacyScore.astro -- Bottom status bar score display
+---
+
+<span id="pt-score-wrap" class="flex items-center gap-1"></span>
+
+<script>
+import { getCachedProgress, buildProgressBar, getLevelInfo, isLoggedIn } from '../scripts/privacy-score';
+
+function renderScore(): void {
+  const el = document.getElementById('pt-score-wrap');
+  if (!el) return;
+
+  if (!isLoggedIn()) {
+    const a = document.createElement('a');
+    a.href = '#';
+    a.className = 'text-terminal-cyan hover:text-terminal-green transition-colors';
+    a.textContent = '[save progress]';
+    a.addEventListener('click', (e: MouseEvent) => {
+      e.preventDefault();
+      window.dispatchEvent(new CustomEvent('pt:open-auth'));
+    });
+    el.replaceChildren(a);
+    return;
+  }
+
+  const p   = getCachedProgress();
+  const lvl = getLevelInfo(p.score);
+  const bar = buildProgressBar(p.score, 10);
+
+  el.innerHTML =
+    '<span class="text-terminal-muted">score: </span>' +
+    '<span class="text-terminal-green font-bold">' + String(p.score) + '</span>' +
+    '<span class="text-terminal-muted hidden sm:inline"> ' + bar + ' LVL ' + String(lvl.level) + ': ' + lvl.name + '</span>';
+}
+
+renderScore();
+window.addEventListener('pt:progress', renderScore);
+</script>

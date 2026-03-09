@@ -422,6 +422,13 @@ async function runScan() {
   document.getElementById('btn-export')!.classList.remove('hidden');
 
   PT?.appendLog(`Scan complete: ${totalSignals} signals, ${totalEntropy.toFixed(1)} bits entropy`, 'success');
+
+  // Track tool usage for gamification
+  try {
+    const { trackTool, unlockAchievement } = await import('../../scripts/privacy-score');
+    await trackTool('fingerprint-analyzer');
+    await unlockAchievement('FIRST_SCAN');
+  } catch (e) { /* gamification optional */ }
   PT?.appendLog(`Fingerprint hash: ${shortHash}`, 'success');
   PT?.appendLog(`Estimated uniqueness: ${uniqueLabel}`, 'success');
   PT?.setToolStatus('complete');

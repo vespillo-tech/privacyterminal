@@ -609,6 +609,17 @@ h+='<span class="text-terminal-green">&gt;</span> For high-risk individuals: con
 h+='</div></div>';
 rc.innerHTML=h;
 window.scrollTo(0,0);
+
+// Track tool usage for gamification
+try {
+  Promise.all([
+    import('/src/scripts/privacy-score').then(function(ps) {
+      ps.trackTool('threat-profiler');
+      ps.unlockAchievement('THREAT_ASSESSED');
+      ps.saveThreatProfile({ overall_level: ol, overall_pct: avg, top_threats: top5.map(function(t){ return t.id; }) });
+    })
+  ]).catch(function(){});
+} catch(e) {}
 }
 const BOOT=['> Initializing threat analysis engine v0.1.0...','> Loading 28 threat category definitions...','> Compiling '+QUESTIONS.length+' assessment vectors...','> Calibrating weight matrices...','> Establishing local scoring sandbox...','> Verifying zero-network-transmission mode: [OK]','> All data confined to browser memory: [OK]','> Ready. Beginning threat assessment protocol.'];
 function runBoot(){
