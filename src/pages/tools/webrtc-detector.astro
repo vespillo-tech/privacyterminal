@@ -1,0 +1,353 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+export const prerender = true;
+---
+
+<ToolLayout
+  title="WebRTC Leak Detector"
+  toolName="webrtc-detector"
+  toolVersion="1.0.0"
+  description="Test whether WebRTC is exposing your real IP address. If you use a VPN, this tool reveals if WebRTC is leaking your actual local and public IPs through STUN/TURN requests."
+>
+  <Fragment slot="controls">
+    <div class="flex flex-wrap gap-2">
+      <button id="btn-scan" class="px-4 py-2 border border-terminal-green text-terminal-green text-xs font-bold hover:bg-terminal-green/10 transition-colors">
+        $ run webrtc leak test
+      </button>
+      <button id="btn-rescan" class="hidden px-3 py-1.5 border border-terminal-cyan text-terminal-cyan text-xs hover:bg-terminal-cyan/10 transition-colors">
+        $ rescan
+      </button>
+    </div>
+  </Fragment>
+
+  <Fragment slot="results">
+    <div id="results-container" class="hidden space-y-0">
+      <!-- Verdict -->
+      <div id="verdict-panel" class="tui-box p-4">
+        <span class="tui-box-title text-terminal-green">┤ VERDICT ├</span>
+        <div id="verdict-content" class="mt-2 text-center py-3">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+      <!-- WebRTC Support -->
+      <div id="support-panel" class="tui-box p-3">
+        <span class="tui-box-title text-terminal-cyan">┤ WEBRTC SUPPORT ├</span>
+        <div id="support-content" class="mt-2 space-y-1 text-xs">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+      <!-- IP Addresses Found -->
+      <div id="ips-panel" class="tui-box p-3">
+        <span class="tui-box-title text-terminal-amber">┤ IP ADDRESSES DETECTED ├</span>
+        <div id="ips-content" class="mt-2 space-y-1 text-xs">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+      <!-- ICE Candidates -->
+      <div id="ice-panel" class="tui-box p-3">
+        <span class="tui-box-title text-terminal-muted">┤ RAW ICE CANDIDATES ├</span>
+        <div class="mt-2 flex justify-between items-center mb-2">
+          <span class="text-terminal-muted text-[10px]">Technical details — what trackers see</span>
+          <button id="btn-toggle-ice" class="text-terminal-cyan text-[10px] hover:text-terminal-green">show</button>
+        </div>
+        <div id="ice-content" class="hidden space-y-0.5 text-[10px] font-mono max-h-[200px] overflow-y-auto">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+    </div>
+  </Fragment>
+
+  <!-- Educational section -->
+  <div class="mt-6">
+    <hr class="tui-hr" />
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-terminal-muted py-3">
+      <div>
+        <span class="text-terminal-green font-bold">What is a WebRTC leak?</span>
+        <p class="mt-1">WebRTC (Web Real-Time Communication) enables browsers to make peer-to-peer connections for video calls, file sharing, etc. To establish these connections, your browser sends STUN requests that can reveal your real IP address — even when you're using a VPN.</p>
+      </div>
+      <div>
+        <span class="text-terminal-green font-bold">Why does this matter?</span>
+        <p class="mt-1">If you use a VPN for privacy, a WebRTC leak undermines its protection by exposing your actual local network IP and sometimes your real public IP. Websites can silently extract these IPs without your permission using simple JavaScript.</p>
+        <p class="mt-1"><a href="/guides/vpns-what-they-actually-protect" class="text-terminal-cyan hover:text-terminal-green">Read: VPNs — What They Actually Protect →</a></p>
+      </div>
+    </div>
+  </div>
+</ToolLayout>
+
+<script>
+const PT = (window as any).privacyTerminal;
+
+interface IPInfo {
+  ip: string;
+  type: 'local' | 'public' | 'relay' | 'unknown';
+  protocol: string;
+  candidateType: string;
+}
+
+function classifyIP(ip: string): 'local' | 'public' | 'relay' | 'unknown' {
+  if (ip.match(/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|fd|fc|fe80|::1|127\.)/)) return 'local';
+  if (ip.match(/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/)) return 'public';
+  if (ip.includes(':')) {
+    if (ip.startsWith('fd') || ip.startsWith('fc') || ip.startsWith('fe80') || ip === '::1') return 'local';
+    return 'public';
+  }
+  return 'unknown';
+}
+
+function extractIPsFromCandidate(candidate: string): IPInfo[] {
+  const results: IPInfo[] = [];
+  // Parse ICE candidate format: candidate:... typ host/srflx/relay
+  const parts = candidate.split(' ');
+  if (parts.length < 5) return results;
+
+  const ip = parts[4];
+  const protocol = parts[2]?.toLowerCase() || 'unknown';
+
+  // Determine candidate type
+  const typIdx = parts.indexOf('typ');
+  const candidateType = typIdx >= 0 && parts[typIdx + 1] ? parts[typIdx + 1] : 'unknown';
+
+  // Filter out .local mDNS hostnames (privacy-preserving browsers)
+  if (ip.endsWith('.local')) return results;
+  // Filter out empty or obviously wrong values
+  if (!ip || ip === '0.0.0.0') return results;
+
+  let type: IPInfo['type'];
+  if (candidateType === 'relay') type = 'relay';
+  else if (candidateType === 'srflx') type = classifyIP(ip) === 'local' ? 'local' : 'public';
+  else type = classifyIP(ip);
+
+  results.push({ ip, type, protocol, candidateType });
+
+  // Check for raddr (related address)
+  const raddrIdx = parts.indexOf('raddr');
+  if (raddrIdx >= 0 && parts[raddrIdx + 1]) {
+    const rip = parts[raddrIdx + 1];
+    if (!rip.endsWith('.local') && rip !== '0.0.0.0') {
+      results.push({ ip: rip, type: classifyIP(rip), protocol, candidateType: 'related' });
+    }
+  }
+
+  return results;
+}
+
+async function runScan() {
+  PT?.setToolStatus('running');
+  PT?.appendLog('Starting WebRTC leak detection...', 'info');
+
+  const results = document.getElementById('results-container')!;
+  const verdictContent = document.getElementById('verdict-content')!;
+  const supportContent = document.getElementById('support-content')!;
+  const ipsContent = document.getElementById('ips-content')!;
+  const iceContent = document.getElementById('ice-content')!;
+
+  results.classList.remove('hidden');
+  document.getElementById('btn-rescan')!.classList.remove('hidden');
+
+  // Check WebRTC support
+  const hasRTC = typeof RTCPeerConnection !== 'undefined';
+  const hasMediaDevices = 'mediaDevices' in navigator;
+  const hasGetUserMedia = hasMediaDevices && 'getUserMedia' in navigator.mediaDevices;
+  const hasGetDisplayMedia = hasMediaDevices && 'getDisplayMedia' in navigator.mediaDevices;
+  const hasEnumerateDevices = hasMediaDevices && 'enumerateDevices' in navigator.mediaDevices;
+
+  supportContent.innerHTML = `
+    <div class="flex justify-between"><span class="text-terminal-muted">RTCPeerConnection</span><span class="${hasRTC ? 'text-terminal-amber' : 'text-terminal-green'}">${hasRTC ? 'AVAILABLE' : 'BLOCKED'}</span></div>
+    <div class="flex justify-between"><span class="text-terminal-muted">getUserMedia</span><span class="${hasGetUserMedia ? 'text-terminal-amber' : 'text-terminal-green'}">${hasGetUserMedia ? 'AVAILABLE' : 'BLOCKED'}</span></div>
+    <div class="flex justify-between"><span class="text-terminal-muted">getDisplayMedia</span><span class="${hasGetDisplayMedia ? 'text-terminal-amber' : 'text-terminal-green'}">${hasGetDisplayMedia ? 'AVAILABLE' : 'BLOCKED'}</span></div>
+    <div class="flex justify-between"><span class="text-terminal-muted">enumerateDevices</span><span class="${hasEnumerateDevices ? 'text-terminal-amber' : 'text-terminal-green'}">${hasEnumerateDevices ? 'AVAILABLE' : 'BLOCKED'}</span></div>
+  `;
+
+  if (!hasRTC) {
+    PT?.appendLog('RTCPeerConnection not available — WebRTC is disabled or blocked', 'success');
+    verdictContent.innerHTML = `
+      <div class="text-terminal-green text-glow-green text-lg font-bold">✓ NO LEAK POSSIBLE</div>
+      <div class="text-terminal-muted text-xs mt-2">WebRTC is disabled in this browser. No IP addresses can be leaked through WebRTC.</div>
+    `;
+    ipsContent.innerHTML = '<div class="text-terminal-muted">No IPs exposed — WebRTC is blocked.</div>';
+    iceContent.innerHTML = '<div class="text-terminal-muted">N/A</div>';
+    PT?.setToolStatus('complete');
+    return;
+  }
+
+  PT?.appendLog('WebRTC is available — probing for IP leaks...', 'warn');
+
+  // Create peer connection with STUN servers
+  const config: RTCConfiguration = {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun.services.mozilla.com' },
+    ],
+  };
+
+  const allIPs: Map<string, IPInfo> = new Map();
+  const rawCandidates: string[] = [];
+
+  try {
+    const pc = new RTCPeerConnection(config);
+
+    // Create data channel to trigger ICE gathering
+    pc.createDataChannel('');
+
+    const candidatePromise = new Promise<void>((resolve) => {
+      let timeout: ReturnType<typeof setTimeout>;
+
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          const c = event.candidate.candidate;
+          rawCandidates.push(c);
+          PT?.appendLog(`ICE candidate: ${c.substring(0, 60)}...`, 'info');
+
+          const ips = extractIPsFromCandidate(c);
+          for (const info of ips) {
+            if (!allIPs.has(info.ip)) {
+              allIPs.set(info.ip, info);
+              PT?.appendLog(`Found ${info.type} IP: ${info.ip} (${info.candidateType}/${info.protocol})`, info.type === 'public' ? 'warn' : 'info');
+            }
+          }
+
+          clearTimeout(timeout);
+          timeout = setTimeout(resolve, 1500);
+        } else {
+          // Gathering complete
+          clearTimeout(timeout);
+          resolve();
+        }
+      };
+
+      pc.onicegatheringstatechange = () => {
+        if (pc.iceGatheringState === 'complete') {
+          clearTimeout(timeout);
+          resolve();
+        }
+      };
+
+      // Timeout after 8 seconds
+      timeout = setTimeout(resolve, 8000);
+    });
+
+    // Create and set local offer
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+
+    // Also parse SDP for any IPs
+    if (offer.sdp) {
+      const sdpIPs = offer.sdp.match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g) || [];
+      for (const ip of sdpIPs) {
+        if (ip !== '0.0.0.0' && !allIPs.has(ip)) {
+          const type = classifyIP(ip);
+          allIPs.set(ip, { ip, type, protocol: 'sdp', candidateType: 'sdp-offer' });
+          PT?.appendLog(`SDP contains IP: ${ip} (${type})`, type === 'public' ? 'warn' : 'info');
+        }
+      }
+    }
+
+    // Wait for ICE gathering
+    await candidatePromise;
+
+    // Cleanup
+    pc.close();
+
+  } catch (err) {
+    PT?.appendLog(`Error during scan: ${err}`, 'error');
+  }
+
+  // === Render results ===
+
+  const publicIPs = [...allIPs.values()].filter(i => i.type === 'public');
+  const localIPs = [...allIPs.values()].filter(i => i.type === 'local');
+  const relayIPs = [...allIPs.values()].filter(i => i.type === 'relay');
+  const hasLeak = publicIPs.length > 0 || localIPs.length > 0;
+  const hasMdnsOnly = allIPs.size === 0 && rawCandidates.length > 0;
+
+  // Verdict
+  if (publicIPs.length > 0) {
+    verdictContent.innerHTML = `
+      <div class="text-terminal-red text-lg font-bold">⚠ LEAK DETECTED</div>
+      <div class="text-terminal-muted text-xs mt-2">
+        WebRTC is exposing <span class="text-terminal-red font-bold">${publicIPs.length} public IP${publicIPs.length > 1 ? 's' : ''}</span>
+        ${localIPs.length > 0 ? ` and <span class="text-terminal-amber font-bold">${localIPs.length} local IP${localIPs.length > 1 ? 's' : ''}</span>` : ''}.
+        ${publicIPs.length > 0 ? 'Your real public IP is visible even behind a VPN.' : ''}
+      </div>
+    `;
+    PT?.appendLog(`LEAK DETECTED: ${publicIPs.length} public IP(s) exposed`, 'error');
+  } else if (localIPs.length > 0) {
+    verdictContent.innerHTML = `
+      <div class="text-terminal-amber text-lg font-bold">⚡ PARTIAL LEAK</div>
+      <div class="text-terminal-muted text-xs mt-2">
+        WebRTC is exposing <span class="text-terminal-amber font-bold">${localIPs.length} local/private IP${localIPs.length > 1 ? 's' : ''}</span>.
+        No public IP was leaked, but local network addresses can reveal information about your network configuration.
+      </div>
+    `;
+    PT?.appendLog(`PARTIAL LEAK: ${localIPs.length} local IP(s) exposed`, 'warn');
+  } else if (hasMdnsOnly) {
+    verdictContent.innerHTML = `
+      <div class="text-terminal-green text-glow-green text-lg font-bold">✓ PROTECTED (mDNS)</div>
+      <div class="text-terminal-muted text-xs mt-2">
+        Your browser is using mDNS hostname obfuscation. WebRTC is available but real IPs are hidden behind <code>.local</code> addresses. This is good protection.
+      </div>
+    `;
+    PT?.appendLog('Protected: Browser uses mDNS obfuscation for WebRTC', 'success');
+  } else {
+    verdictContent.innerHTML = `
+      <div class="text-terminal-green text-glow-green text-lg font-bold">✓ NO LEAK DETECTED</div>
+      <div class="text-terminal-muted text-xs mt-2">
+        No IP addresses were exposed through WebRTC. Your browser appears to be properly configured.
+      </div>
+    `;
+    PT?.appendLog('No WebRTC IP leaks detected', 'success');
+  }
+
+  // IPs table
+  if (allIPs.size > 0) {
+    const typeColor = (t: string) => t === 'public' ? 'text-terminal-red' : t === 'local' ? 'text-terminal-amber' : t === 'relay' ? 'text-terminal-cyan' : 'text-terminal-muted';
+    ipsContent.innerHTML = [...allIPs.values()].map(info => `
+      <div class="flex items-center justify-between py-1 px-1 border-b border-terminal-border/30">
+        <span class="font-mono text-gray-300">${info.ip}</span>
+        <div class="flex items-center gap-2">
+          <span class="text-terminal-muted text-[10px]">${info.candidateType}/${info.protocol}</span>
+          <span class="${typeColor(info.type)} text-[10px] font-bold">[${info.type.toUpperCase()}]</span>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    ipsContent.innerHTML = '<div class="text-terminal-green">No IP addresses exposed through WebRTC.</div>';
+  }
+
+  // Raw ICE candidates
+  if (rawCandidates.length > 0) {
+    iceContent.innerHTML = rawCandidates.map(c =>
+      `<div class="text-gray-500 py-0.5 border-b border-terminal-border/20 break-all">${c}</div>`
+    ).join('');
+  } else {
+    iceContent.innerHTML = '<div class="text-terminal-muted">No ICE candidates generated.</div>';
+  }
+
+  PT?.appendLog(`Scan complete: ${allIPs.size} IPs found, ${rawCandidates.length} ICE candidates`, 'success');
+  PT?.setToolStatus(hasLeak ? 'error' : 'complete');
+}
+
+// === Event listeners ===
+document.getElementById('btn-scan')!.addEventListener('click', () => {
+  document.getElementById('btn-scan')!.classList.add('hidden');
+  runScan();
+});
+
+document.getElementById('btn-rescan')!.addEventListener('click', () => {
+  // Reset
+  document.getElementById('results-container')!.classList.add('hidden');
+  document.getElementById('ice-content')!.classList.add('hidden');
+  runScan();
+});
+
+document.getElementById('btn-toggle-ice')!.addEventListener('click', () => {
+  const el = document.getElementById('ice-content')!;
+  const btn = document.getElementById('btn-toggle-ice')!;
+  el.classList.toggle('hidden');
+  btn.textContent = el.classList.contains('hidden') ? 'show' : 'hide';
+});
+</script>
