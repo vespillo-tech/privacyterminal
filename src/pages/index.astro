@@ -19,6 +19,11 @@ const readyTools = allTools
   .sort((a, b) => a.data.order - b.data.order);
 const soonCount = allTools.length - readyTools.length;
 
+// Load guides for dynamic count
+const allGuides = await getCollection('guides');
+const guideCount = allGuides.length;
+const readyToolCount = readyTools.length;
+
 // Map title_color to Tailwind classes
 const colorClass: Record<string, string> = {
   green: 'text-terminal-green',
@@ -31,7 +36,7 @@ const hoverClass: Record<string, string> = {
   amber: 'group-hover:text-terminal-amber',
 };
 ---
-<BaseLayout title="Free Privacy Tools & Guides — Protect Your Digital Privacy | Privacy Terminal" description="Free open-source privacy tools that run in your browser. Check your threat model, analyze your fingerprint, and learn to protect your digital identity. Zero tracking." statusLeft="system ready" statusRight="5 tools │ 8 guides">
+<BaseLayout title="Free Privacy Tools & Guides — Protect Your Digital Privacy | Privacy Terminal" description="Free open-source privacy tools that run in your browser. Check your threat model, analyze your fingerprint, and learn to protect your digital identity. Zero tracking." statusLeft="system ready" statusRight={`${readyToolCount} tools │ ${guideCount} guides`}>
   <!-- SVG Logo with terminal CRT effects -->
   <div class="logo-container py-4 md:py-8 flex justify-center px-4">
     <div class="logo-wrapper">

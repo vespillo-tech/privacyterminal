@@ -1,4 +1,4 @@
 title: "WebRTC Leak Detector"
 description: "Test whether WebRTC exposes your real IP behind VPN or proxy."
-status: soon
+status: ready
 order: 5
