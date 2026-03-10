@@ -1,0 +1,394 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+export const prerender = true;
+---
+
+<ToolLayout
+  title="Email Header Analyzer"
+  toolName="email-header-analyzer"
+  toolVersion="1.0.0"
+  description="Paste email headers to trace the message route, verify SPF/DKIM/DMARC authentication, detect spoofing attempts, and identify the originating server. All parsing runs client-side."
+>
+  <Fragment slot="controls">
+    <div class="space-y-3">
+      <div>
+        <label class="text-terminal-muted text-xs block mb-1">Paste full email headers below:</label>
+        <textarea
+          id="header-input"
+          class="w-full bg-terminal-bg border border-terminal-border p-3 text-xs text-gray-300 font-mono placeholder-terminal-muted focus:outline-none focus:border-terminal-green/50 resize-y min-h-[150px]"
+          placeholder="Paste email headers here...&#10;&#10;To get headers: Gmail → Open email → ⋮ → Show original&#10;Outlook → Open email → ⋮ → View message source&#10;Thunderbird → View → Headers → All"
+          rows="8"
+        ></textarea>
+      </div>
+      <div class="flex gap-2">
+        <button id="btn-analyze" class="px-4 py-2 border border-terminal-green text-terminal-green text-xs font-bold hover:bg-terminal-green/10 transition-colors">
+          $ analyze headers
+        </button>
+        <button id="btn-clear" class="px-3 py-1.5 border border-terminal-border text-terminal-muted text-xs hover:text-terminal-red hover:border-terminal-red transition-colors">
+          clear
+        </button>
+        <button id="btn-sample" class="px-3 py-1.5 border border-terminal-border text-terminal-muted text-xs hover:text-terminal-cyan hover:border-terminal-cyan transition-colors">
+          load sample
+        </button>
+      </div>
+    </div>
+  </Fragment>
+
+  <Fragment slot="results">
+    <div id="results-container" class="hidden space-y-0">
+      <!-- Authentication Summary -->
+      <div id="auth-panel" class="tui-box p-4">
+        <span class="tui-box-title text-terminal-green">┤ AUTHENTICATION ├</span>
+        <div id="auth-content" class="mt-2"></div>
+      </div>
+
+      <!-- Route/Hops -->
+      <div id="route-panel" class="tui-box p-3">
+        <span class="tui-box-title text-terminal-cyan">┤ MESSAGE ROUTE ├</span>
+        <div id="route-content" class="mt-2 space-y-1 text-xs"></div>
+      </div>
+
+      <!-- Key Headers -->
+      <div id="headers-panel" class="tui-box p-3">
+        <span class="tui-box-title text-terminal-amber">┤ KEY HEADERS ├</span>
+        <div id="headers-content" class="mt-2 space-y-1 text-xs"></div>
+      </div>
+
+      <!-- Security Warnings -->
+      <div id="warnings-panel" class="tui-box p-3 hidden">
+        <span class="tui-box-title text-terminal-red">┤ WARNINGS ├</span>
+        <div id="warnings-content" class="mt-2 space-y-1 text-xs"></div>
+      </div>
+
+      <!-- All Parsed Headers -->
+      <div id="all-panel" class="tui-box p-3">
+        <span class="tui-box-title text-terminal-muted">┤ ALL HEADERS ├</span>
+        <div class="mt-2 flex justify-between items-center mb-2">
+          <span class="text-terminal-muted text-[10px]"><span id="header-count">0</span> headers parsed</span>
+          <button id="btn-toggle-all" class="text-terminal-cyan text-[10px] hover:text-terminal-green">show</button>
+        </div>
+        <div id="all-content" class="hidden space-y-0.5 text-[10px] font-mono max-h-[300px] overflow-y-auto"></div>
+      </div>
+    </div>
+  </Fragment>
+
+  <!-- Educational section -->
+  <div class="mt-6">
+    <hr class="tui-hr" />
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-terminal-muted py-3">
+      <div>
+        <span class="text-terminal-green font-bold">What are email headers?</span>
+        <p class="mt-1">Every email carries hidden metadata — the headers. They record every server the message passed through, authentication results, timestamps, and the originating IP address. Headers are added by each mail server in the chain.</p>
+      </div>
+      <div>
+        <span class="text-terminal-green font-bold">What do SPF/DKIM/DMARC mean?</span>
+        <p class="mt-1"><strong class="text-white">SPF</strong> verifies the sending server is authorized. <strong class="text-white">DKIM</strong> cryptographically signs the message content. <strong class="text-white">DMARC</strong> ties SPF and DKIM together with a policy for failures. All three passing = high confidence the email is legitimate.</p>
+      </div>
+    </div>
+  </div>
+</ToolLayout>
+
+<script>
+const PT = (window as any).privacyTerminal;
+
+interface ParsedHeader {
+  name: string;
+  value: string;
+}
+
+interface Hop {
+  from: string;
+  by: string;
+  timestamp: string;
+  protocol: string;
+  delay: string;
+}
+
+interface AuthResult {
+  method: string;
+  result: string;
+  detail: string;
+}
+
+// === SAMPLE HEADERS ===
+const SAMPLE_HEADERS = `Delivered-To: user@example.com
+Received: by 2002:a05:6402:3546:b0:518:fca2:f320 with SMTP id l6csp1234567edw;
+        Mon, 10 Mar 2026 06:15:32 -0700 (PDT)
+Received: from mail-sor-f41.google.com (mail-sor-f41.google.com. [209.85.220.41])
+        by mx.google.com with SMTPS id a1234567890abc.100.2026.03.10.06.15.31
+        for <user@example.com>;
+        Mon, 10 Mar 2026 06:15:31 -0700 (PDT)
+Received-SPF: pass (google.com: domain of sender@company.com designates 209.85.220.41 as permitted sender) client-ip=209.85.220.41;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@company.com header.s=selector1 header.b=abc123;
+       spf=pass (google.com: domain of sender@company.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=sender@company.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=company.com
+Received: from internal-mail.company.com (internal-mail.company.com [10.0.1.50])
+        by mail-sor-f41.google.com with ESMTP id x7891011121314;
+        Mon, 10 Mar 2026 06:15:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=company.com; s=selector1;
+        h=from:to:subject:date:message-id; bh=abc123def456=; b=xyz789...
+From: Alice <sender@company.com>
+To: Bob <user@example.com>
+Subject: Quarterly Report
+Date: Mon, 10 Mar 2026 13:15:28 +0000
+Message-ID: <abc123@company.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+X-Mailer: Microsoft Outlook 16.0
+Return-Path: <sender@company.com>`;
+
+// === PARSER ===
+function parseHeaders(raw: string): ParsedHeader[] {
+  const headers: ParsedHeader[] = [];
+  const lines = raw.split(/\r?\n/);
+  let current: ParsedHeader | null = null;
+
+  for (const line of lines) {
+    if (line.match(/^[A-Za-z][A-Za-z0-9-]*:/)) {
+      if (current) headers.push(current);
+      const idx = line.indexOf(':');
+      current = { name: line.substring(0, idx).trim(), value: line.substring(idx + 1).trim() };
+    } else if (current && (line.startsWith(' ') || line.startsWith('\t'))) {
+      current.value += ' ' + line.trim();
+    }
+  }
+  if (current) headers.push(current);
+  return headers;
+}
+
+function extractHops(headers: ParsedHeader[]): Hop[] {
+  const received = headers.filter(h => h.name.toLowerCase() === 'received');
+  const hops: Hop[] = [];
+
+  for (const r of received) {
+    const val = r.value;
+    const fromMatch = val.match(/from\s+([^\s(]+)(?:\s*\(([^)]+)\))?/i);
+    const byMatch = val.match(/by\s+([^\s;]+)/i);
+    const dateMatch = val.match(/;\s*(.+)$/);
+    const protoMatch = val.match(/with\s+(\S+)/i);
+
+    hops.push({
+      from: fromMatch ? (fromMatch[1] + (fromMatch[2] ? ` (${fromMatch[2]})` : '')) : 'unknown',
+      by: byMatch ? byMatch[1] : 'unknown',
+      timestamp: dateMatch ? dateMatch[1].trim() : '',
+      protocol: protoMatch ? protoMatch[1] : 'unknown',
+      delay: '',
+    });
+  }
+
+  // Calculate delays between hops
+  for (let i = 0; i < hops.length - 1; i++) {
+    try {
+      const t1 = new Date(hops[i].timestamp).getTime();
+      const t2 = new Date(hops[i + 1].timestamp).getTime();
+      const diff = (t1 - t2) / 1000;
+      if (!isNaN(diff) && diff >= 0) {
+        hops[i].delay = diff < 60 ? `${diff.toFixed(0)}s` : `${(diff / 60).toFixed(1)}m`;
+      }
+    } catch {}
+  }
+
+  return hops;
+}
+
+function extractAuth(headers: ParsedHeader[]): AuthResult[] {
+  const results: AuthResult[] = [];
+
+  // Authentication-Results header
+  const authHeaders = headers.filter(h => h.name.toLowerCase() === 'authentication-results');
+  for (const ah of authHeaders) {
+    const val = ah.value;
+    // SPF
+    const spfMatch = val.match(/spf=(\w+)(?:\s*\(([^)]+)\))?/i);
+    if (spfMatch) results.push({ method: 'SPF', result: spfMatch[1], detail: spfMatch[2] || '' });
+    // DKIM
+    const dkimMatch = val.match(/dkim=(\w+)(?:\s+([^;]+))?/i);
+    if (dkimMatch) results.push({ method: 'DKIM', result: dkimMatch[1], detail: dkimMatch[2]?.trim() || '' });
+    // DMARC
+    const dmarcMatch = val.match(/dmarc=(\w+)(?:\s*\(([^)]+)\))?/i);
+    if (dmarcMatch) results.push({ method: 'DMARC', result: dmarcMatch[1], detail: dmarcMatch[2] || '' });
+  }
+
+  // Received-SPF header
+  const spfHeaders = headers.filter(h => h.name.toLowerCase() === 'received-spf');
+  for (const sh of spfHeaders) {
+    const match = sh.value.match(/^(\w+)(?:\s*\(([^)]+)\))?/i);
+    if (match && !results.some(r => r.method === 'SPF')) {
+      results.push({ method: 'SPF', result: match[1], detail: match[2] || '' });
+    }
+  }
+
+  return results;
+}
+
+function detectWarnings(headers: ParsedHeader[], auth: AuthResult[]): string[] {
+  const warnings: string[] = [];
+
+  // Failed auth
+  for (const a of auth) {
+    if (['fail', 'softfail', 'temperror', 'permerror'].includes(a.result.toLowerCase())) {
+      warnings.push(`${a.method} ${a.result.toUpperCase()}: ${a.detail || 'Authentication failed'}`);
+    }
+  }
+
+  // Missing auth
+  const methods = auth.map(a => a.method);
+  if (!methods.includes('SPF')) warnings.push('No SPF verification found — sender domain not validated');
+  if (!methods.includes('DKIM')) warnings.push('No DKIM signature found — message integrity not verified');
+  if (!methods.includes('DMARC')) warnings.push('No DMARC policy found — domain alignment not checked');
+
+  // Mismatch detection
+  const from = headers.find(h => h.name.toLowerCase() === 'from')?.value || '';
+  const returnPath = headers.find(h => h.name.toLowerCase() === 'return-path')?.value || '';
+  const fromDomain = from.match(/@([^>\s]+)/)?.[1]?.toLowerCase();
+  const returnDomain = returnPath.match(/@([^>\s]+)/)?.[1]?.toLowerCase();
+  if (fromDomain && returnDomain && fromDomain !== returnDomain) {
+    warnings.push(`From domain (${fromDomain}) differs from Return-Path domain (${returnDomain}) — possible spoofing`);
+  }
+
+  // X-Mailer detection
+  const xMailer = headers.find(h => h.name.toLowerCase() === 'x-mailer')?.value;
+  if (xMailer) {
+    // Not a warning per se, just noted
+  }
+
+  return warnings;
+}
+
+function resultColor(r: string): string {
+  const low = r.toLowerCase();
+  if (low === 'pass') return 'text-terminal-green';
+  if (low === 'fail' || low === 'permerror') return 'text-terminal-red';
+  if (low === 'softfail' || low === 'temperror' || low === 'neutral') return 'text-terminal-amber';
+  return 'text-terminal-muted';
+}
+
+// === ANALYZE ===
+function analyze() {
+  const raw = (document.getElementById('header-input') as HTMLTextAreaElement).value.trim();
+  if (!raw) { PT?.appendLog('No headers provided', 'warn'); return; }
+
+  PT?.setToolStatus('running');
+  PT?.appendLog('Parsing email headers...', 'info');
+
+  const headers = parseHeaders(raw);
+  PT?.appendLog(`Parsed ${headers.length} headers`, 'info');
+
+  const hops = extractHops(headers);
+  PT?.appendLog(`Found ${hops.length} hops in message route`, 'info');
+
+  const auth = extractAuth(headers);
+  PT?.appendLog(`Extracted ${auth.length} authentication results`, 'info');
+
+  const warnings = detectWarnings(headers, auth);
+
+  // Show results
+  document.getElementById('results-container')!.classList.remove('hidden');
+
+  // Authentication
+  const authEl = document.getElementById('auth-content')!;
+  if (auth.length > 0) {
+    authEl.innerHTML = `
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        ${auth.map(a => `
+          <div class="text-center py-2">
+            <div class="text-terminal-muted text-[10px] uppercase mb-1">${a.method}</div>
+            <div class="${resultColor(a.result)} text-lg font-bold">${a.result.toUpperCase()}</div>
+            ${a.detail ? `<div class="text-terminal-muted text-[10px] mt-1 break-all">${a.detail.substring(0, 80)}</div>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    `;
+    const allPass = auth.every(a => a.result.toLowerCase() === 'pass');
+    PT?.appendLog(`Authentication: ${allPass ? 'ALL PASSED' : 'ISSUES DETECTED'}`, allPass ? 'success' : 'warn');
+  } else {
+    authEl.innerHTML = '<div class="text-terminal-amber text-xs">No authentication results found in headers.</div>';
+    PT?.appendLog('No authentication results found', 'warn');
+  }
+
+  // Route
+  const routeEl = document.getElementById('route-content')!;
+  if (hops.length > 0) {
+    routeEl.innerHTML = hops.map((hop, i) => `
+      <div class="flex items-start gap-2 py-1.5 ${i < hops.length - 1 ? 'border-b border-terminal-border/30' : ''}">
+        <span class="text-terminal-green shrink-0 mt-0.5">${i === 0 ? '┌' : i === hops.length - 1 ? '└' : '├'}─</span>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-gray-300 font-mono break-all">${hop.by}</span>
+            <span class="text-terminal-muted text-[10px]">${hop.protocol}</span>
+            ${hop.delay ? `<span class="text-terminal-amber text-[10px]">+${hop.delay}</span>` : ''}
+          </div>
+          <div class="text-terminal-muted text-[10px]">
+            from: <span class="text-gray-400 break-all">${hop.from}</span>
+          </div>
+          ${hop.timestamp ? `<div class="text-terminal-muted text-[10px]">${hop.timestamp}</div>` : ''}
+        </div>
+      </div>
+    `).join('');
+  } else {
+    routeEl.innerHTML = '<div class="text-terminal-muted">No Received headers found.</div>';
+  }
+
+  // Key headers
+  const keyNames = ['from', 'to', 'subject', 'date', 'message-id', 'return-path', 'reply-to', 'x-mailer', 'x-originating-ip', 'content-type'];
+  const keyHeaders = headers.filter(h => keyNames.includes(h.name.toLowerCase()));
+  const headersEl = document.getElementById('headers-content')!;
+  headersEl.innerHTML = keyHeaders.map(h => `
+    <div class="flex items-start gap-2 py-0.5">
+      <span class="text-terminal-cyan shrink-0 w-28 text-right">${h.name}:</span>
+      <span class="text-gray-300 break-all">${h.value}</span>
+    </div>
+  `).join('');
+
+  // Warnings
+  const warningsPanel = document.getElementById('warnings-panel')!;
+  const warningsEl = document.getElementById('warnings-content')!;
+  if (warnings.length > 0) {
+    warningsPanel.classList.remove('hidden');
+    warningsEl.innerHTML = warnings.map(w => `
+      <div class="flex items-start gap-2 py-0.5">
+        <span class="text-terminal-red shrink-0">⚠</span>
+        <span class="text-terminal-amber">${w}</span>
+      </div>
+    `).join('');
+    PT?.appendLog(`${warnings.length} warning(s) detected`, 'warn');
+  } else {
+    warningsPanel.classList.add('hidden');
+  }
+
+  // All headers
+  document.getElementById('header-count')!.textContent = String(headers.length);
+  const allEl = document.getElementById('all-content')!;
+  allEl.innerHTML = headers.map(h => `
+    <div class="py-0.5 border-b border-terminal-border/20">
+      <span class="text-terminal-cyan">${h.name}:</span> <span class="text-gray-500 break-all">${h.value}</span>
+    </div>
+  `).join('');
+
+  PT?.appendLog('Analysis complete', 'success');
+  PT?.setToolStatus(warnings.length > 0 ? 'error' : 'complete');
+}
+
+// === EVENTS ===
+document.getElementById('btn-analyze')!.addEventListener('click', analyze);
+
+document.getElementById('btn-clear')!.addEventListener('click', () => {
+  (document.getElementById('header-input') as HTMLTextAreaElement).value = '';
+  document.getElementById('results-container')!.classList.add('hidden');
+  PT?.appendLog('Cleared', 'info');
+  PT?.setToolStatus('ready');
+});
+
+document.getElementById('btn-sample')!.addEventListener('click', () => {
+  (document.getElementById('header-input') as HTMLTextAreaElement).value = SAMPLE_HEADERS;
+  PT?.appendLog('Sample headers loaded — click Analyze to parse', 'info');
+});
+
+document.getElementById('btn-toggle-all')!.addEventListener('click', () => {
+  const el = document.getElementById('all-content')!;
+  const btn = document.getElementById('btn-toggle-all')!;
+  el.classList.toggle('hidden');
+  btn.textContent = el.classList.contains('hidden') ? 'show' : 'hide';
+});
+</script>
