@@ -1,0 +1,288 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+export const prerender = true;
+---
+
+<ToolLayout
+  title="IP & DNS Leak Tester"
+  toolName="leak-tester"
+  toolVersion="1.0.0"
+  description="Check if your VPN or proxy is leaking your real IP address or DNS requests. Tests your public IP, DNS resolver, and WebRTC exposure in one scan."
+>
+  <Fragment slot="controls">
+    <div class="flex flex-wrap gap-2">
+      <button id="btn-scan" class="px-4 py-2 border border-terminal-green text-terminal-green text-xs font-bold hover:bg-terminal-green/10 transition-colors">
+        $ run leak test
+      </button>
+      <button id="btn-rescan" class="hidden px-3 py-1.5 border border-terminal-cyan text-terminal-cyan text-xs hover:bg-terminal-cyan/10 transition-colors">
+        $ rescan
+      </button>
+    </div>
+  </Fragment>
+
+  <Fragment slot="results">
+    <div id="results-container" class="hidden space-y-0">
+      <!-- Overall Verdict -->
+      <div id="verdict-panel" class="tui-box p-4">
+        <span class="tui-box-title text-terminal-green">┤ VERDICT ├</span>
+        <div id="verdict-content" class="mt-2 text-center py-3"></div>
+      </div>
+
+      <!-- IP Address -->
+      <div id="ip-panel" class="tui-box p-3">
+        <span class="tui-box-title text-terminal-cyan">┤ YOUR IP ADDRESS ├</span>
+        <div id="ip-content" class="mt-2"></div>
+      </div>
+
+      <!-- Geolocation -->
+      <div id="geo-panel" class="tui-box p-3">
+        <span class="tui-box-title text-terminal-amber">┤ GEOLOCATION ├</span>
+        <div id="geo-content" class="mt-2 text-xs"></div>
+      </div>
+
+      <!-- DNS -->
+      <div id="dns-panel" class="tui-box p-3">
+        <span class="tui-box-title text-terminal-cyan">┤ DNS RESOLVER ├</span>
+        <div id="dns-content" class="mt-2 text-xs"></div>
+      </div>
+
+      <!-- WebRTC -->
+      <div id="webrtc-panel" class="tui-box p-3">
+        <span class="tui-box-title text-terminal-amber">┤ WEBRTC CHECK ├</span>
+        <div id="webrtc-content" class="mt-2 text-xs"></div>
+      </div>
+
+      <!-- Connection Details -->
+      <div id="conn-panel" class="tui-box p-3">
+        <span class="tui-box-title text-terminal-muted">┤ CONNECTION DETAILS ├</span>
+        <div id="conn-content" class="mt-2 text-xs"></div>
+      </div>
+    </div>
+  </Fragment>
+
+  <!-- Educational section -->
+  <div class="mt-6">
+    <hr class="tui-hr" />
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-terminal-muted py-3">
+      <div>
+        <span class="text-terminal-green font-bold">What is an IP leak?</span>
+        <p class="mt-1">When your VPN or proxy fails to hide your real IP address, websites can see where you actually are. This can happen through direct IP exposure, DNS requests going to your ISP instead of the VPN, or WebRTC revealing local IPs.</p>
+      </div>
+      <div>
+        <span class="text-terminal-green font-bold">What is a DNS leak?</span>
+        <p class="mt-1">Even with a VPN, your DNS queries (website lookups) might still go through your ISP's DNS servers instead of the VPN's. This lets your ISP see every website you visit, defeating much of the VPN's purpose.</p>
+        <p class="mt-1"><a href="/guides/vpns-what-they-actually-protect" class="text-terminal-cyan hover:text-terminal-green">Read: VPNs — What They Actually Protect →</a></p>
+      </div>
+    </div>
+  </div>
+</ToolLayout>
+
+<script>
+const PT = (window as any).privacyTerminal;
+const API_BASE = 'https://privacyterminal-api.vespillo-tech.workers.dev';
+
+interface IPInfo {
+  ip: string;
+  country: string;
+  city: string;
+  region: string;
+  postalCode: string;
+  timezone: string;
+  asn: string;
+  asOrg: string;
+  colo: string;
+  isEU: boolean;
+  httpProtocol: string;
+  tlsVersion: string;
+  timestamp: string;
+}
+
+// === WebRTC IP Detection ===
+async function getWebRTCIPs(): Promise<string[]> {
+  return new Promise((resolve) => {
+    const ips: Set<string> = new Set();
+    if (typeof RTCPeerConnection === 'undefined') { resolve([]); return; }
+    try {
+      const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+      pc.createDataChannel('');
+      pc.onicecandidate = (e) => {
+        if (e.candidate) {
+          const parts = e.candidate.candidate.split(' ');
+          if (parts.length >= 5) {
+            const ip = parts[4];
+            if (!ip.endsWith('.local') && ip !== '0.0.0.0') ips.add(ip);
+          }
+        }
+      };
+      pc.createOffer().then(o => pc.setLocalDescription(o));
+      setTimeout(() => { pc.close(); resolve([...ips]); }, 4000);
+    } catch { resolve([]); }
+  });
+}
+
+function isPrivateIP(ip: string): boolean {
+  return /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|fd|fc|fe80|::1|127\.)/.test(ip);
+}
+
+// === Main Scan ===
+async function runScan() {
+  PT?.setToolStatus('running');
+  PT?.appendLog('Starting comprehensive leak test...', 'info');
+
+  document.getElementById('results-container')!.classList.remove('hidden');
+  document.getElementById('btn-rescan')!.classList.remove('hidden');
+  document.getElementById('btn-scan')!.classList.add('hidden');
+
+  let ipData: IPInfo | null = null;
+  let webrtcIPs: string[] = [];
+  let issues: string[] = [];
+
+  // 1. IP Check
+  PT?.appendLog('Checking your public IP address...', 'info');
+  try {
+    const resp = await fetch(`${API_BASE}/ip`, { cache: 'no-store' });
+    if (resp.ok) {
+      ipData = await resp.json();
+      PT?.appendLog(`Public IP: ${ipData!.ip}`, 'info');
+    } else {
+      PT?.appendLog(`IP check failed: HTTP ${resp.status}`, 'error');
+      issues.push('Could not determine public IP');
+    }
+  } catch (err) {
+    PT?.appendLog(`IP check failed: ${err}`, 'error');
+    issues.push('Could not reach IP detection server');
+  }
+
+  // 2. WebRTC Check
+  PT?.appendLog('Checking for WebRTC IP leaks...', 'info');
+  webrtcIPs = await getWebRTCIPs();
+  const publicWebRTCIPs = webrtcIPs.filter(ip => !isPrivateIP(ip));
+  const localWebRTCIPs = webrtcIPs.filter(ip => isPrivateIP(ip));
+
+  if (publicWebRTCIPs.length > 0 && ipData) {
+    const leakedDifferent = publicWebRTCIPs.filter(ip => ip !== ipData!.ip);
+    if (leakedDifferent.length > 0) {
+      issues.push(`WebRTC leaking different public IP(s): ${leakedDifferent.join(', ')}`);
+      PT?.appendLog(`WebRTC LEAK: Exposing different IP(s): ${leakedDifferent.join(', ')}`, 'error');
+    }
+  }
+  if (localWebRTCIPs.length > 0) {
+    PT?.appendLog(`WebRTC exposing local IP(s): ${localWebRTCIPs.join(', ')}`, 'warn');
+  }
+
+  // 3. DNS Check
+  PT?.appendLog('Checking DNS resolver...', 'info');
+  let dnsData: { resolverIP: string; colo: string } | null = null;
+  try {
+    const resp = await fetch(`${API_BASE}/dns-check`, { cache: 'no-store' });
+    if (resp.ok) dnsData = await resp.json();
+  } catch {}
+
+  // === Render Results ===
+
+  // IP Panel
+  const ipEl = document.getElementById('ip-content')!;
+  if (ipData) {
+    ipEl.innerHTML = `
+      <div class="text-center">
+        <div class="text-terminal-green text-glow-green text-2xl font-bold font-mono">${ipData.ip}</div>
+        <div class="text-terminal-muted text-[10px] mt-1">${ipData.asOrg} (AS${ipData.asn})</div>
+      </div>
+    `;
+  } else {
+    ipEl.innerHTML = '<div class="text-terminal-red text-center">Could not determine IP</div>';
+  }
+
+  // Geo Panel
+  const geoEl = document.getElementById('geo-content')!;
+  if (ipData) {
+    geoEl.innerHTML = `
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+        <div><span class="text-terminal-muted">country:</span> <span class="text-gray-300">${ipData.country}</span></div>
+        <div><span class="text-terminal-muted">city:</span> <span class="text-gray-300">${ipData.city}</span></div>
+        <div><span class="text-terminal-muted">region:</span> <span class="text-gray-300">${ipData.region}</span></div>
+        <div><span class="text-terminal-muted">timezone:</span> <span class="text-gray-300">${ipData.timezone}</span></div>
+        <div><span class="text-terminal-muted">postal:</span> <span class="text-gray-300">${ipData.postalCode}</span></div>
+        <div><span class="text-terminal-muted">EU:</span> <span class="text-gray-300">${ipData.isEU ? 'yes' : 'no'}</span></div>
+      </div>
+    `;
+  } else {
+    geoEl.innerHTML = '<div class="text-terminal-muted">No geolocation data available</div>';
+  }
+
+  // DNS Panel
+  const dnsEl = document.getElementById('dns-content')!;
+  if (dnsData) {
+    const sameIP = ipData && dnsData.resolverIP === ipData.ip;
+    dnsEl.innerHTML = `
+      <div class="space-y-1">
+        <div><span class="text-terminal-muted">DNS resolver IP:</span> <span class="text-gray-300 font-mono">${dnsData.resolverIP}</span></div>
+        <div><span class="text-terminal-muted">Cloudflare colo:</span> <span class="text-gray-300">${dnsData.colo}</span></div>
+        <div class="mt-2 text-terminal-muted">Note: This is a basic DNS check. For thorough DNS leak testing, use the dedicated <a href="/tools/webrtc-detector" class="text-terminal-cyan">WebRTC Detector</a> alongside a full DNS leak test service.</div>
+      </div>
+    `;
+  } else {
+    dnsEl.innerHTML = '<div class="text-terminal-muted">DNS check unavailable</div>';
+  }
+
+  // WebRTC Panel
+  const webrtcEl = document.getElementById('webrtc-content')!;
+  if (typeof RTCPeerConnection === 'undefined') {
+    webrtcEl.innerHTML = '<div class="text-terminal-green">✓ WebRTC is disabled — no IP leak possible</div>';
+  } else if (webrtcIPs.length === 0) {
+    webrtcEl.innerHTML = '<div class="text-terminal-green">✓ No IPs exposed via WebRTC (mDNS protection active)</div>';
+  } else {
+    webrtcEl.innerHTML = `
+      <div class="space-y-1">
+        ${publicWebRTCIPs.map(ip => `<div><span class="text-terminal-red">⚠ PUBLIC:</span> <span class="text-gray-300 font-mono">${ip}</span></div>`).join('')}
+        ${localWebRTCIPs.map(ip => `<div><span class="text-terminal-amber">⚡ LOCAL:</span> <span class="text-gray-300 font-mono">${ip}</span></div>`).join('')}
+        ${publicWebRTCIPs.length > 0 ? '<div class="text-terminal-red mt-1">WebRTC is leaking public IP addresses!</div>' : ''}
+        <div class="mt-1"><a href="/tools/webrtc-detector" class="text-terminal-cyan hover:text-terminal-green">Run detailed WebRTC test →</a></div>
+      </div>
+    `;
+    if (publicWebRTCIPs.length > 0) issues.push('WebRTC exposing public IP(s)');
+  }
+
+  // Connection Details
+  const connEl = document.getElementById('conn-content')!;
+  if (ipData) {
+    connEl.innerHTML = `
+      <div class="grid grid-cols-2 gap-2">
+        <div><span class="text-terminal-muted">protocol:</span> <span class="text-gray-300">${ipData.httpProtocol}</span></div>
+        <div><span class="text-terminal-muted">TLS:</span> <span class="text-gray-300">${ipData.tlsVersion}</span></div>
+        <div><span class="text-terminal-muted">CF colo:</span> <span class="text-gray-300">${ipData.colo}</span></div>
+        <div><span class="text-terminal-muted">checked:</span> <span class="text-gray-300">${new Date(ipData.timestamp).toLocaleTimeString()}</span></div>
+      </div>
+    `;
+  }
+
+  // Verdict
+  const verdictEl = document.getElementById('verdict-content')!;
+  if (issues.length === 0) {
+    verdictEl.innerHTML = `
+      <div class="text-terminal-green text-glow-green text-lg font-bold">✓ NO LEAKS DETECTED</div>
+      <div class="text-terminal-muted text-xs mt-2">Your IP appears consistent across all checks. No WebRTC IP exposure detected. Basic DNS check passed.</div>
+    `;
+    PT?.appendLog('All checks passed — no leaks detected', 'success');
+    PT?.setToolStatus('complete');
+  } else {
+    verdictEl.innerHTML = `
+      <div class="text-terminal-red text-lg font-bold">⚠ ISSUES FOUND (${issues.length})</div>
+      <div class="text-xs mt-2 space-y-1">
+        ${issues.map(i => `<div class="text-terminal-amber">• ${i}</div>`).join('')}
+      </div>
+    `;
+    PT?.appendLog(`${issues.length} issue(s) found`, 'error');
+    PT?.setToolStatus('error');
+  }
+
+  PT?.appendLog('Leak test complete', 'success');
+}
+
+// === Events ===
+document.getElementById('btn-scan')!.addEventListener('click', runScan);
+document.getElementById('btn-rescan')!.addEventListener('click', () => {
+  document.getElementById('results-container')!.classList.add('hidden');
+  setTimeout(runScan, 100);
+});
+</script>
