@@ -1,7 +1,7 @@
 # Privacy Terminal Security Policy
 # https://securitytxt.org/
 
-Contact: mailto:security@privacyterminal.com
+Contact: mailto:mansard.swanky_3o@icloud.com
 Expires: 2027-03-07T00:00:00.000Z
 Preferred-Languages: en
 Canonical: https://privacyterminal.com/.well-known/security.txt
