@@ -1,0 +1,84 @@
+---
+interface Props {
+  relatedTools?: string[];
+  relatedGuides?: string[];
+}
+
+const { relatedTools = [], relatedGuides = [] } = Astro.props;
+
+const toolMeta: Record<string, { title: string; desc: string }> = {
+  'fingerprint-analyzer': { title: 'Browser Fingerprint Analyzer', desc: 'See how websites identify you' },
+  'hash-generator': { title: 'Hash Generator & Verifier', desc: 'SHA-256, SHA-512, MD5 client-side' },
+  'threat-profiler': { title: 'Threat Model Profiler', desc: 'Interactive privacy assessment' },
+  'webrtc-detector': { title: 'WebRTC Leak Detector', desc: 'Test WebRTC IP exposure' },
+  'email-header-analyzer': { title: 'Email Header Analyzer', desc: 'Parse SPF/DKIM/DMARC' },
+  'metadata-stripper': { title: 'Metadata Stripper', desc: 'Remove EXIF/GPS from photos' },
+  'leak-tester': { title: 'IP & DNS Leak Tester', desc: 'Check VPN leak status' },
+  'dns-leak': { title: 'IP & DNS Leak Tester', desc: 'Check VPN leak status' },
+};
+
+const guideTitles: Record<string, string> = {
+  'how-youre-being-tracked': 'How You\'re Being Tracked',
+  'who-wants-your-data': 'Who Wants Your Data and Why',
+  'what-is-a-threat-model': 'What Is a Threat Model?',
+  'the-5-minute-privacy-checkup': 'The 5-Minute Privacy Checkup',
+  'browser-fingerprinting-explained': 'Browser Fingerprinting Explained',
+  'privacy-myths-debunked': 'Privacy Myths Debunked',
+  'choosing-a-browser-for-privacy': 'Choosing a Browser for Privacy',
+  'vpns-what-they-actually-protect': 'VPNs: What They Actually Protect',
+  'encrypted-messaging': 'Encrypted Messaging: Your Options',
+  'private-search-engines': 'Private Search Engines',
+  'social-media-privacy-settings': 'Social Media Privacy Settings',
+  'password-managers-account-security': 'Password Managers & Account Security',
+  'data-broker-opt-out': 'Data Broker Opt-Out Guide',
+  'email-privacy-beyond-gmail': 'Email Privacy: Beyond Gmail',
+  'dns-privacy-explained': 'DNS Privacy Explained',
+  'your-phone-is-tracking-you': 'Your Phone Is Tracking You',
+  'how-to-delete-your-digital-footprint': 'Delete Your Digital Footprint',
+  'operating-systems-for-privacy': 'Operating Systems for Privacy',
+};
+
+const hasContent = relatedTools.length > 0 || relatedGuides.length > 0;
+---
+
+{hasContent && (
+  <div class="mt-6">
+    <hr class="tui-hr" />
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-0">
+      {relatedTools.length > 0 && (
+        <div class="tui-box p-3">
+          <span class="tui-box-title text-terminal-green">┤ RELATED TOOLS ├</span>
+          <div class="mt-2 space-y-1">
+            {relatedTools.map((id) => {
+              const t = toolMeta[id];
+              if (!t) return null;
+              const href = `/tools/${id === 'dns-leak' ? 'leak-tester' : id}`;
+              return (
+                <a href={href} class="flex items-center gap-2 py-1 px-2 hover:bg-terminal-green/5 transition-colors group no-underline">
+                  <span class="text-terminal-green">▸</span>
+                  <div>
+                    <span class="text-gray-300 group-hover:text-terminal-green text-xs font-bold">{t.title}</span>
+                    <span class="text-terminal-muted text-[10px] block">{t.desc}</span>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      {relatedGuides.length > 0 && (
+        <div class="tui-box p-3">
+          <span class="tui-box-title text-terminal-cyan">┤ RELATED GUIDES ├</span>
+          <div class="mt-2 space-y-1">
+            {relatedGuides.map((id) => (
+              <a href={`/guides/${id}`} class="flex items-center gap-2 py-1 px-2 hover:bg-terminal-cyan/5 transition-colors group no-underline">
+                <span class="text-terminal-cyan">├─</span>
+                <span class="text-gray-300 group-hover:text-terminal-cyan text-xs">{guideTitles[id] || id}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+)}
