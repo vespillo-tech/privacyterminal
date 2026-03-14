@@ -1,6 +1,9 @@
 ---
 import { getCollection, render } from 'astro:content';
 import GuideLayout from '../../layouts/GuideLayout.astro';
+import RelatedContent from '../../components/RelatedContent.astro';
+
+export const prerender = true;
 
 export async function getStaticPaths() {
   const guides = await getCollection('guides');
@@ -28,4 +31,9 @@ const { Content, headings } = await render(guide);
   difficulty={guide.data.difficulty || 1}
 >
   <Content />
+
+  <RelatedContent
+    relatedTools={guide.data.relatedTools || []}
+    relatedGuides={guide.data.relatedGuides || []}
+  />
 </GuideLayout>
