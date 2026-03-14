@@ -4,8 +4,8 @@ description: "VPNs are the most overhyped and misunderstood privacy tool on the 
 category: "essentials"
 order: 2
 tags: ["vpn", "network-privacy", "encryption", "isp", "mullvad", "protonvpn", "ivpn", "wireguard"]
-relatedTools: ["dns-leak", "webrtc-detector"]
-relatedGuides: ["what-is-a-threat-model", "how-youre-being-tracked", "choosing-a-browser-for-privacy"]
+relatedTools: ["leak-tester", "webrtc-detector", "dns-leak"]
+relatedGuides: ["what-is-a-threat-model", "how-youre-being-tracked", "choosing-a-browser-for-privacy", "dns-privacy-explained"]
 difficulty: 2
 tldr: []
 draft: false

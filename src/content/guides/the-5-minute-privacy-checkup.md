@@ -4,8 +4,8 @@ description: "Five minutes. Five changes. Measurably less tracking. This is the 
 category: "foundations"
 order: 4
 tags: ["quick-start", "privacy-settings", "tracking", "ad-tracking", "phone-privacy", "browser-privacy"]
-relatedTools: ["fingerprint-analyzer", "dns-leak"]
-relatedGuides: ["how-youre-being-tracked", "what-is-a-threat-model"]
+relatedTools: ["fingerprint-analyzer", "leak-tester", "webrtc-detector"]
+relatedGuides: ["how-youre-being-tracked", "what-is-a-threat-model", "social-media-privacy-settings", "your-phone-is-tracking-you"]
 difficulty: 1
 tldr: []
 draft: false

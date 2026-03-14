@@ -4,8 +4,8 @@ description: "Plain-language definitions of every privacy and security term used
 category: "foundations"
 order: 7
 tags: ["glossary", "terminology", "definitions", "reference", "privacy-basics"]
-relatedTools: []
-relatedGuides: []
+relatedTools: ["fingerprint-analyzer", "leak-tester", "webrtc-detector", "hash-generator", "email-header-analyzer", "metadata-stripper", "threat-profiler"]
+relatedGuides: ["how-youre-being-tracked", "what-is-a-threat-model", "the-5-minute-privacy-checkup", "choosing-a-browser-for-privacy"]
 draft: false
 ---
 

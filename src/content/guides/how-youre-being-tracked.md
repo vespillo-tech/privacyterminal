@@ -4,8 +4,8 @@ description: "Every click, scroll, and keystroke pattern can identify you. Here'
 category: "foundations"
 order: 1
 tags: ["tracking", "fingerprinting", "cookies", "surveillance", "data-collection"]
-relatedTools: ["fingerprint-analyzer"]
-relatedGuides: ["who-wants-your-data"]
+relatedTools: ["fingerprint-analyzer", "webrtc-detector", "leak-tester"]
+relatedGuides: ["who-wants-your-data", "what-is-a-threat-model", "browser-fingerprinting-explained", "privacy-myths-debunked"]
 difficulty: 1
 tldr:
   - "You are tracked through cookies, fingerprinting, IP addresses, and behavioral patterns"

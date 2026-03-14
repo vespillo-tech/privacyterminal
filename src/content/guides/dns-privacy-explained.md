@@ -4,8 +4,8 @@ description: "Every website you visit starts with a DNS query — and by default
 category: "intermediate"
 order: 4
 tags: ["dns", "dns-over-https", "doh", "dot", "encrypted-dns", "isp", "cloudflare-dns", "quad9"]
-relatedTools: ["dns-leak"]
-relatedGuides: ["vpns-what-they-actually-protect", "how-youre-being-tracked", "choosing-a-browser-for-privacy"]
+relatedTools: ["leak-tester", "dns-leak"]
+relatedGuides: ["vpns-what-they-actually-protect", "how-youre-being-tracked", "choosing-a-browser-for-privacy", "network-security-at-home"]
 draft: false
 ---
 

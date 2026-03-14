@@ -4,8 +4,8 @@ description: "Every social media platform defaults to maximum exposure. Here is 
 category: "essentials"
 order: 5
 tags: ["social-media", "facebook", "instagram", "tiktok", "twitter", "linkedin", "privacy-settings", "meta"]
-relatedTools: ["fingerprint-analyzer"]
-relatedGuides: ["the-5-minute-privacy-checkup", "data-broker-opt-out", "how-youre-being-tracked"]
+relatedTools: ["fingerprint-analyzer", "metadata-stripper"]
+relatedGuides: ["the-5-minute-privacy-checkup", "data-broker-opt-out", "how-youre-being-tracked", "how-to-delete-your-digital-footprint"]
 draft: false
 ---
 

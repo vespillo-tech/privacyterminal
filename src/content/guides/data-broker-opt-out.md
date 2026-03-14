@@ -4,8 +4,8 @@ description: "Your name, address, phone number, and relatives are for sale right
 category: "intermediate"
 order: 2
 tags: ["data-brokers", "opt-out", "people-search", "spokeo", "whitepages", "beenverified", "privacy-rights", "ccpa", "gdpr"]
-relatedTools: []
-relatedGuides: ["who-wants-your-data", "what-is-a-threat-model", "the-5-minute-privacy-checkup"]
+relatedTools: ["fingerprint-analyzer", "leak-tester"]
+relatedGuides: ["who-wants-your-data", "what-is-a-threat-model", "the-5-minute-privacy-checkup", "how-to-delete-your-digital-footprint"]
 difficulty: 2
 tldr: []
 draft: false

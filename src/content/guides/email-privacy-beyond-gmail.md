@@ -4,8 +4,8 @@ description: "Gmail reads your email to sell ads. But switching providers is onl
 category: "intermediate"
 order: 3
 tags: ["email", "protonmail", "tuta", "aliases", "simplelogin", "addy", "encryption", "gmail-alternative"]
-relatedTools: ["email-header-analyzer"]
-relatedGuides: ["encrypted-messaging", "what-is-a-threat-model", "data-broker-opt-out"]
+relatedTools: ["email-header-analyzer", "metadata-stripper"]
+relatedGuides: ["encrypted-messaging", "what-is-a-threat-model", "data-broker-opt-out", "password-managers-account-security"]
 draft: false
 ---
 

@@ -4,8 +4,8 @@ description: "Privacy is personal. A threat model helps you decide what to prote
 category: "foundations"
 order: 3
 tags: ["threat-modeling", "risk-assessment", "privacy-planning", "opsec", "personal-security"]
-relatedTools: ["fingerprint-analyzer", "dns-leak"]
-relatedGuides: ["who-wants-your-data", "how-youre-being-tracked"]
+relatedTools: ["fingerprint-analyzer", "threat-profiler", "leak-tester"]
+relatedGuides: ["who-wants-your-data", "how-youre-being-tracked", "the-5-minute-privacy-checkup", "opsec-for-high-risk-individuals"]
 difficulty: 2
 tldr:
   - "A threat model answers: what are you protecting, from whom, and what are the consequences"

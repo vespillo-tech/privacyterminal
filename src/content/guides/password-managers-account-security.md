@@ -4,8 +4,8 @@ description: "Your accounts are only as strong as your weakest password. A passw
 category: "intermediate"
 order: 1
 tags: ["passwords", "password-manager", "bitwarden", "1password", "keepassxc", "2fa", "totp", "passkeys", "security-keys"]
-relatedTools: ["hash-generator"]
-relatedGuides: ["the-5-minute-privacy-checkup", "what-is-a-threat-model"]
+relatedTools: ["hash-generator", "leak-tester"]
+relatedGuides: ["the-5-minute-privacy-checkup", "what-is-a-threat-model", "email-privacy-beyond-gmail", "how-to-delete-your-digital-footprint"]
 difficulty: 2
 tldr: []
 draft: false

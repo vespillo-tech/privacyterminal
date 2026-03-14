@@ -4,8 +4,8 @@ description: "Your phone knows where you sleep, where you work, who you meet, an
 category: "intermediate"
 order: 5
 tags: ["mobile", "phone-tracking", "location", "advertising-id", "app-permissions", "android", "iphone", "gps"]
-relatedTools: ["fingerprint-analyzer"]
-relatedGuides: ["how-youre-being-tracked", "the-5-minute-privacy-checkup", "data-broker-opt-out"]
+relatedTools: ["fingerprint-analyzer", "leak-tester", "webrtc-detector"]
+relatedGuides: ["how-youre-being-tracked", "the-5-minute-privacy-checkup", "data-broker-opt-out", "social-media-privacy-settings"]
 draft: false
 ---
 

@@ -4,8 +4,8 @@ description: "Google processes 8.5 billion searches per day and builds advertisi
 category: "essentials"
 order: 4
 tags: ["search-engine", "duckduckgo", "brave-search", "startpage", "searxng", "mojeek", "google-alternative"]
-relatedTools: []
-relatedGuides: ["choosing-a-browser-for-privacy", "how-youre-being-tracked", "the-5-minute-privacy-checkup"]
+relatedTools: ["fingerprint-analyzer"]
+relatedGuides: ["choosing-a-browser-for-privacy", "how-youre-being-tracked", "the-5-minute-privacy-checkup", "privacy-myths-debunked"]
 draft: false
 ---
 

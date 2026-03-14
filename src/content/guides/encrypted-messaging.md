@@ -4,8 +4,8 @@ description: "End-to-end encryption protects your message content. But who you t
 category: "essentials"
 order: 3
 tags: ["messaging", "encryption", "signal", "whatsapp", "telegram", "session", "matrix", "metadata", "e2ee"]
-relatedTools: []
-relatedGuides: ["what-is-a-threat-model", "who-wants-your-data", "vpns-what-they-actually-protect"]
+relatedTools: ["email-header-analyzer"]
+relatedGuides: ["what-is-a-threat-model", "who-wants-your-data", "vpns-what-they-actually-protect", "email-privacy-beyond-gmail"]
 difficulty: 2
 tldr: []
 draft: false

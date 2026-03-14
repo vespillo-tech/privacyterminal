@@ -4,8 +4,8 @@ description: "Advertisers, data brokers, governments, hackers, and your own apps
 category: "foundations"
 order: 2
 tags: ["data-brokers", "surveillance", "advertising", "privacy-rights", "data-economy"]
-relatedTools: []
-relatedGuides: ["how-youre-being-tracked", "what-is-a-threat-model"]
+relatedTools: ["fingerprint-analyzer", "threat-profiler"]
+relatedGuides: ["how-youre-being-tracked", "what-is-a-threat-model", "data-broker-opt-out"]
 difficulty: 1
 tldr:
   - "Ad networks, data brokers, governments, and hackers all want your data for different reasons"

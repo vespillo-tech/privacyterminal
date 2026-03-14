@@ -4,8 +4,8 @@ description: "Your operating system sees everything. When mainstream options are
 category: "advanced"
 order: 1
 tags: ["os", "tails", "qubes", "whonix", "grapheneos", "linux", "anonymity", "isolation"]
-relatedTools: ["fingerprint-analyzer", "leak-tester"]
-relatedGuides: ["what-is-a-threat-model", "vpns-what-they-actually-protect", "your-phone-is-tracking-you"]
+relatedTools: ["fingerprint-analyzer", "leak-tester", "webrtc-detector"]
+relatedGuides: ["what-is-a-threat-model", "vpns-what-they-actually-protect", "your-phone-is-tracking-you", "opsec-for-high-risk-individuals"]
 draft: false
 ---
 
