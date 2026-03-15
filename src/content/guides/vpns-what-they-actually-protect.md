@@ -240,8 +240,8 @@ The most private VPN in the world cannot help you if you are logged into Chrome,
 
 After connecting to a VPN, verify it is actually doing what it should:
 
-- **[DNS Leak Test](/tools/dns-leak)** — Verify your DNS queries are going through the VPN, not leaking to your ISP
-- **[WebRTC Leak Detector](/tools/webrtc)** — Check if your real IP is leaking through WebRTC
+- **[DNS Leak Test](/tools/leak-tester)** — Verify your DNS queries are going through the VPN, not leaking to your ISP
+- **[WebRTC Leak Detector](/tools/webrtc-detector)** — Check if your real IP is leaking through WebRTC
 - **IP check** — Visit a site like `whatismyipaddress.com` and confirm it shows the VPN server\'s IP, not yours
 
 Do this check periodically, not just once. VPN connections can drop silently. Most quality VPNs include a "kill switch" that blocks all traffic if the VPN disconnects — make sure it is enabled.

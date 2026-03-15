@@ -77,7 +77,7 @@ Signal is the benchmark against which all other messaging apps should be measure
 ### Session — No Phone Number, No Central Server
 
 **End-to-end encrypted:** Yes, by default.
-**Protocol:** Modified Signal Protocol adapted for decentralized operation.
+**Protocol:** Session Protocol (purpose-built for decentralized operation; V2 adds perfect forward secrecy and post-quantum encryption).
 **Metadata collected:** Effectively none. No phone number, no email, no IP address logged.
 
 Session is what happens when you take Signal\'s encryption philosophy and remove the remaining trust dependencies. There is no central server. There is no phone number requirement.
