@@ -38,6 +38,18 @@ const statusLabels: Record<string, string> = {
   statusLeft={`tool: ${toolName}`}
   statusRight={`v${toolVersion}`}
 >
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": toolName,
+    "description": description,
+    "applicationCategory": "SecurityApplication",
+    "operatingSystem": "Web Browser",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "publisher": { "@type": "Organization", "name": "Privacy Terminal", "url": "https://privacyterminal.com" },
+    "softwareVersion": toolVersion,
+    "url": `https://privacyterminal.com${Astro.url.pathname}`
+  })} />
   <!-- Tool header -->
   <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
     <div class="text-terminal-green text-glow-green font-bold">
