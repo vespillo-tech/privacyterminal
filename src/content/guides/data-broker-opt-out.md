@@ -188,7 +188,7 @@ Set calendar reminders:
 
 **State registration requirements are expanding.** Vermont, California, Oregon, Texas, and New Jersey now require data brokers to register with the state and honor deletion requests. More states are following. This makes brokers more visible and accountable.
 
-**"Delete Act" legislation is emerging.** California\'s Delete Act (SB 362, signed 2023) created a single mechanism for Californians to request deletion from all registered brokers at once — a significant simplification. Other states are considering similar approaches.
+**California's DROP platform launches August 1, 2026.** California\'s Delete Act (SB 362, signed 2023) created the **Data Broker Requests and Opt-Out Platform (DROP)** at [privacy.ca.gov/drop](https://privacy.ca.gov/drop/) — a single portal where Californians can request deletion from all registered data brokers at once. Starting August 1, 2026, data brokers must process deletion requests submitted through DROP. Instead of opting out of hundreds of brokers individually, one request through DROP covers all registered brokers. Other states are considering similar centralized approaches.
 
 **Federal legislation remains stalled.** Despite bipartisan interest, a comprehensive federal privacy law has not passed. The patchwork of state laws continues to be the primary regulatory landscape.
 
