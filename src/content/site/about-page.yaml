@@ -1,54 +1,69 @@
 what_is_this:
   - "Privacy Terminal is an open-source collection of browser-based privacy tools and educational guides. We help you understand your digital footprint and take practical steps to reduce it."
   - "Every tool runs entirely in your browser. Your data never touches our servers. Every guide presents the full landscape of options. Every line of code is publicly auditable."
+  - "This site uses no analytics scripts, no cookies, and no tracking of any kind. We have zero visibility into individual visitor behavior. We don't know who you are, where you came from, or what you clicked. Verify this yourself — view source."
 principles:
   - title: Privacy by Architecture
-    description: "We don't ask you to trust us with your data. Tools run client-side. No server processing. No database. No logs."
+    description: "We don't ask you to trust us with your data. Tools run client-side. No server processing. No database. No logs. No analytics. No cookies."
+  - title: Zero Telemetry
+    description: "We use no analytics scripts — not even 'privacy-friendly' ones. The only metrics we see are Cloudflare's built-in aggregate dashboard (total requests, bandwidth). We cannot identify individual visitors."
   - title: The Landscape Principle
     description: "Every guide shows the full spectrum of options with honest trade-offs. We don't prescribe — we inform."
   - title: "Verify, Don't Trust"
-    description: "Source code is public. Tools run in your browser where you can inspect them. We cite our sources."
+    description: "Source code is public. Tools run in your browser where you can inspect them. We cite our sources. Open DevTools and check."
   - title: Education Over Products
     description: "Understanding why something matters is more durable than knowing which app to install."
 transparency:
-  - key: tracking_scripts
-    value: none
+  - key: analytics_scripts
+    value: "NONE — zero JavaScript analytics of any kind"
     color: red
   - key: cookies_set
-    value: none
+    value: "NONE — we set zero cookies"
+    color: red
+  - key: tracking_pixels
+    value: "NONE — no pixels, beacons, or fingerprinting"
     color: red
   - key: external_requests
-    value: none
+    value: "NONE — except leak tester (our own CF Worker, stores nothing)"
     color: red
   - key: third_party_js
-    value: none
+    value: "NONE — no external scripts loaded"
     color: red
   - key: user_accounts
-    value: none
-    color: red
+    value: "local only — stored in your browser's localStorage"
+    color: gray
   - key: data_collected
-    value: none
+    value: "NONE — we cannot see individual visitor behavior"
     color: red
   - key: server_logs
-    value: "Cloudflare standard (no IP storage by us)"
+    value: "Cloudflare standard CDN headers only (no IP storage by us)"
+    color: gray
+  - key: visitor_metrics
+    value: "Cloudflare dashboard aggregate only (total requests, bandwidth)"
     color: gray
   - key: source_code
     value: github.com/vespillo-tech/privacyterminal
     link: https://github.com/vespillo-tech/privacyterminal
+    color: cyan
+  - key: privacy_policy
+    value: /privacy
+    link: /privacy
     color: cyan
   - key: security_contact
     value: /.well-known/security.txt
     link: /.well-known/security.txt
     color: cyan
   - key: hosting
-    value: "Cloudflare Pages (static)"
+    value: "Cloudflare Pages (static site)"
     color: gray
   - key: monetization
     value: none currently
     color: gray
 verification_steps:
-  - "Open DevTools → Network tab while using any tool. Zero external requests."
-  - "Inspect the source code. No obfuscation."
-  - "Check CSP headers — external scripts/connections blocked by default."
+  - "Open DevTools → Network tab while browsing. Zero analytics requests."
+  - "Check Application → Cookies tab. Zero cookies set by this site."
+  - "Inspect the source code on GitHub. No obfuscation, no hidden scripts."
+  - "Check the CSP headers — external scripts/connections blocked by default."
   - "Use uBlock Origin or NoScript to verify no hidden requests."
+  - "Read our privacy policy at /privacy for the full statement."
 tech_stack: "Astro · Tailwind · Cloudflare Pages · JetBrains Mono · Web Crypto API · Client-side JS"

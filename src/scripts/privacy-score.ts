@@ -266,16 +266,7 @@ async function syncLocalToServer(): Promise<void> {
   // No-op: all data is stored client-side in localStorage
 }
 
-async function apiPost(path: string, body: Record<string, unknown>): Promise<void> {
-  const token = getToken();
-  if (!token) return;
-  const API_BASE = getGameData().apiBase;
-  await fetch(`${API_BASE}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify(body),
-  });
-}
+// No external API calls — all progress is stored client-side in localStorage
 
 // ── Score Calculation ──────────────────────────────────────────
 

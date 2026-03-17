@@ -1,0 +1,104 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+export const prerender = true;
+---
+<BaseLayout title="Privacy Policy — Zero Analytics, Zero Cookies, Zero Tracking | Privacy Terminal" description="Privacy Terminal collects no data. No analytics scripts, no cookies, no tracking pixels, no telemetry. Verify it yourself — view source." statusLeft="privacy policy" statusRight="zero data collection">
+  <div class="mb-4">
+    <div class="text-terminal-green text-glow-green font-bold mb-1">~/privacy</div>
+    <div class="text-terminal-muted text-xs">Last updated: 2026-03-17</div>
+  </div>
+
+  <div class="max-w-3xl space-y-0">
+    <!-- TL;DR -->
+    <div class="tui-box p-4">
+      <span class="tui-box-title text-terminal-green">├ TL;DR ┤</span>
+      <div class="mt-2 text-sm text-terminal-green text-glow-green leading-relaxed">
+        <p>This site uses <strong>no analytics scripts</strong>, <strong>no cookies</strong>, and <strong>no tracking of any kind</strong>. We have <strong>zero visibility</strong> into individual visitor behavior. We don't know who you are, where you came from, what you clicked, or how long you stayed.</p>
+        <p class="mt-2 text-terminal-cyan">Verify this yourself — view source.</p>
+      </div>
+    </div>
+
+    <!-- What We Don't Collect -->
+    <div class="tui-box p-4">
+      <span class="tui-box-title text-terminal-red">├ WHAT WE DON'T COLLECT ┤</span>
+      <div class="mt-2 text-xs font-mono space-y-1">
+        <div><span class="text-terminal-red">✗</span> <span class="text-gray-300">Analytics scripts</span> <span class="text-terminal-muted">— no Google Analytics, no Plausible, no Fathom, no Matomo, nothing</span></div>
+        <div><span class="text-terminal-red">✗</span> <span class="text-gray-300">Cookies</span> <span class="text-terminal-muted">— we set zero cookies of any kind</span></div>
+        <div><span class="text-terminal-red">✗</span> <span class="text-gray-300">Tracking pixels</span> <span class="text-terminal-muted">— no beacons, no pixels, no 1x1 images</span></div>
+        <div><span class="text-terminal-red">✗</span> <span class="text-gray-300">Fingerprinting</span> <span class="text-terminal-muted">— we don't fingerprint visitors (our fingerprint tool only runs on-demand for YOU)</span></div>
+        <div><span class="text-terminal-red">✗</span> <span class="text-gray-300">IP logging</span> <span class="text-terminal-muted">— we don't operate any server that logs your IP</span></div>
+        <div><span class="text-terminal-red">✗</span> <span class="text-gray-300">Session recording</span> <span class="text-terminal-muted">— no heatmaps, no replay tools</span></div>
+        <div><span class="text-terminal-red">✗</span> <span class="text-gray-300">Third-party scripts</span> <span class="text-terminal-muted">— no external JavaScript loaded</span></div>
+        <div><span class="text-terminal-red">✗</span> <span class="text-gray-300">Advertising</span> <span class="text-terminal-muted">— no ad networks, no retargeting</span></div>
+        <div><span class="text-terminal-red">✗</span> <span class="text-gray-300">Personal data</span> <span class="text-terminal-muted">— no forms that send data to us, no email collection</span></div>
+      </div>
+    </div>
+
+    <!-- How Tools Work -->
+    <div class="tui-box p-4">
+      <span class="tui-box-title text-terminal-cyan">├ HOW OUR TOOLS WORK ┤</span>
+      <div class="mt-2 text-xs text-gray-300 leading-relaxed space-y-2">
+        <p>All Privacy Terminal tools run <strong class="text-terminal-cyan">entirely in your browser</strong>. When you use the fingerprint analyzer, the threat profiler, the hash generator, or the metadata stripper — all computation happens client-side in JavaScript. No data is transmitted to any server.</p>
+        <p><strong class="text-terminal-cyan">Exception — Leak Tester:</strong> The leak tester tool communicates with our own Cloudflare Worker (<code class="text-terminal-green">privacyterminal-api.workers.dev</code>) to detect your visible IP address and DNS configuration. This is the only tool that makes an external request. The Worker processes the request in real-time and <strong>stores nothing</strong> — no logs, no IP addresses, no request data. The code is open source.</p>
+        <p><strong class="text-terminal-cyan">Progress System:</strong> The gamification/progress system (privacy score, achievements) is stored entirely in your browser's <code class="text-terminal-green">localStorage</code>. No progress data is sent to any server. If you clear your browser data, your progress is gone — we have no backup because we never had your data.</p>
+      </div>
+    </div>
+
+    <!-- Cloudflare -->
+    <div class="tui-box p-4">
+      <span class="tui-box-title text-terminal-amber">├ CLOUDFLARE HOSTING ┤</span>
+      <div class="mt-2 text-xs text-gray-300 leading-relaxed space-y-2">
+        <p>This site is hosted on <strong class="text-terminal-amber">Cloudflare Pages</strong> as a static site. Cloudflare, as our CDN and hosting provider, processes requests to deliver this site to you. This means:</p>
+        <div class="font-mono space-y-1 mt-2">
+          <div><span class="text-terminal-amber">→</span> Cloudflare sees standard HTTP headers (IP, User-Agent, etc.) to serve the page</div>
+          <div><span class="text-terminal-amber">→</span> Cloudflare provides aggregate analytics in their dashboard (total requests, bandwidth, country-level distribution)</div>
+          <div><span class="text-terminal-amber">→</span> We see aggregate numbers only — we cannot identify or track individual visitors</div>
+          <div><span class="text-terminal-amber">→</span> Cloudflare's own privacy policy applies to their infrastructure: <a href="https://www.cloudflare.com/privacypolicy/" class="text-terminal-cyan hover:text-terminal-green" rel="noopener noreferrer">cloudflare.com/privacypolicy</a></div>
+        </div>
+        <p class="mt-2">We chose Cloudflare Pages specifically because it requires <strong>zero code</strong> on our part to get basic traffic numbers. No JavaScript analytics needed. No cookies needed. The dashboard metrics come from Cloudflare's infrastructure, not from anything running in your browser.</p>
+      </div>
+    </div>
+
+    <!-- Open Source -->
+    <div class="tui-box p-4">
+      <span class="tui-box-title text-terminal-green">├ VERIFY OUR CLAIMS ┤</span>
+      <div class="mt-2 text-xs text-gray-300 leading-relaxed space-y-2">
+        <p>We don't ask you to trust us. We ask you to <strong class="text-terminal-green">verify</strong>.</p>
+        <div class="font-mono space-y-1 mt-2">
+          <div><span class="text-terminal-green">1.</span> <strong>View source</strong> — Right-click → View Page Source on any page. No hidden scripts.</div>
+          <div><span class="text-terminal-green">2.</span> <strong>DevTools → Network</strong> — Watch every request. No analytics endpoints, no tracking pixels.</div>
+          <div><span class="text-terminal-green">3.</span> <strong>DevTools → Application → Cookies</strong> — Zero cookies set by this domain.</div>
+          <div><span class="text-terminal-green">4.</span> <strong>Read the code</strong> — Full source on <a href="https://github.com/vespillo-tech/privacyterminal" class="text-terminal-cyan hover:text-terminal-green">GitHub</a>. MIT licensed. No obfuscation.</div>
+          <div><span class="text-terminal-green">5.</span> <strong>Use uBlock Origin</strong> — It will confirm: nothing to block.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LocalStorage -->
+    <div class="tui-box p-4">
+      <span class="tui-box-title text-terminal-cyan">├ LOCAL STORAGE ┤</span>
+      <div class="mt-2 text-xs text-gray-300 leading-relaxed space-y-2">
+        <p>The site uses your browser's <code class="text-terminal-green">localStorage</code> (not cookies) to remember:</p>
+        <div class="font-mono space-y-1 mt-2">
+          <div><span class="text-terminal-cyan">→</span> Your privacy score progress and achievements</div>
+          <div><span class="text-terminal-cyan">→</span> Boot animation state (so it doesn't replay every visit)</div>
+          <div><span class="text-terminal-cyan">→</span> Optional: your threat profile results (if you choose to save them)</div>
+        </div>
+        <p class="mt-2">This data <strong>never leaves your browser</strong>. We cannot read it. There is no sync, no backup, no server component. Clear your browser data and it's gone forever — because we never had it.</p>
+      </div>
+    </div>
+
+    <!-- Contact -->
+    <div class="tui-box p-4">
+      <span class="tui-box-title text-terminal-green">├ CONTACT ┤</span>
+      <div class="mt-2 text-xs text-gray-300 leading-relaxed">
+        <p>If you have questions about this policy or find something that contradicts our claims, please report it via our <a href="/.well-known/security.txt" class="text-terminal-cyan hover:text-terminal-green">security.txt</a> contact or open an issue on <a href="https://github.com/vespillo-tech/privacyterminal" class="text-terminal-cyan hover:text-terminal-green">GitHub</a>.</p>
+      </div>
+    </div>
+
+    <!-- Footer statement -->
+    <div class="text-xs text-terminal-muted py-3 text-center border-t border-terminal-border">
+      This privacy policy is as simple as our data collection: both are effectively zero.
+    </div>
+  </div>
+</BaseLayout>

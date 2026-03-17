@@ -27,16 +27,16 @@ boot_messages:
   - type: BOOT
     text: Privacy Terminal v0.1.0
   - type: INFO
-    text: No tracking · No cookies · No external requests
+    text: Zero analytics · Zero cookies · Zero tracking · View source to verify
   - type: READY
     text: All tools run client-side. Your data never leaves your browser.
 promises:
   - icon: ⊘
-    title: ZERO TRACKING
+    title: ZERO ANALYTICS
     color: green
     description: >-
-      No analytics. No fingerprinting. No cookies. Open your DevTools Network
-      tab — silence.
+      No analytics scripts. No cookies. No tracking pixels. No telemetry.
+      We have zero visibility into individual visitor behavior. View source to verify.
   - icon: ⊚
     title: CLIENT-SIDE
     color: cyan

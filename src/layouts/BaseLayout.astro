@@ -15,7 +15,7 @@ interface Props {
 
 const {
   title = 'Privacy Terminal',
-  description = 'Open-source privacy tools and education. Test your browser fingerprint, detect leaks, and learn to protect your digital identity.',
+  description = 'Open-source privacy tools and education. Zero analytics, zero cookies, zero tracking. Test your browser fingerprint, detect leaks, and learn to protect your digital identity.',  
   ogImage = '/og-default.png',
   statusLeft = 'system ready',
   statusRight = '',
@@ -72,6 +72,7 @@ const navItems = navData?.items ?? [
   { label: 'guides',   href: '/guides',   key: '2' },
   { label: 'terminal', href: '/terminal', key: '3' },
   { label: 'about',    href: '/about',    key: '4' },
+  { label: 'privacy',  href: '/privacy',  key: '5' },
 ];
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -167,9 +168,13 @@ function isActive(href: string) {
           {statusRight && <span class="text-terminal-muted">{statusRight}</span>}
           <PrivacyScore />
           <span class="text-terminal-muted hidden sm:inline">&#124;</span>
-          <span class="text-terminal-muted hidden sm:inline">no tracking</span>
+          <span class="text-terminal-muted hidden sm:inline">zero analytics</span>
           <span class="text-terminal-muted hidden sm:inline">&#124;</span>
-          <span class="text-terminal-muted hidden sm:inline">no cookies</span>
+          <span class="text-terminal-muted hidden sm:inline">zero cookies</span>
+          <span class="text-terminal-muted hidden sm:inline">&#124;</span>
+          <span class="text-terminal-muted hidden sm:inline">zero tracking</span>
+          <span class="text-terminal-muted hidden sm:inline">&#124;</span>
+          <a href="/privacy" class="text-terminal-muted hover:text-terminal-cyan hidden sm:inline">privacy</a>
           <span class="text-terminal-muted hidden sm:inline">&#124;</span>
           <a href={settings?.security_txt ?? '/.well-known/security.txt'} class="text-terminal-muted hover:text-terminal-cyan hidden sm:inline">security.txt</a>
         </span>

@@ -14,3 +14,6 @@ items:
   - label: about
     href: /about
     key: "4"
+  - label: privacy
+    href: /privacy
+    key: "5"
