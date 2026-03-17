@@ -205,7 +205,7 @@ This aggregated profile is bought and sold without your meaningful awareness or 
 
 ## Check Your Own Footprint
 
-The best way to understand tracking is to see it in action on your own browser. Our **Browser Fingerprint Analyzer** (coming soon) runs every test described in this guide on your own browser and shows you exactly what information you are broadcasting — which attributes make you unique, which tracking methods are effective against your current setup, and which protections are working.
+The best way to understand tracking is to see it in action on your own browser. Our **[Browser Fingerprint Analyzer](/tools/fingerprint-analyzer)** runs every test described in this guide on your own browser and shows you exactly what information you are broadcasting — which attributes make you unique, which tracking methods are effective against your current setup, and which protections are working.
 
 The results are often surprising, even for technically sophisticated users.
 

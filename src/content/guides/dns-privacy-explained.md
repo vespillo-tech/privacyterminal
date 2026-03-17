@@ -159,7 +159,7 @@ Note: Most consumer routers support custom DNS servers but not all support DoT/D
 
 ## Verify Your DNS Is Private
 
-- **[DNS Leak Test](/tools/dns-leak)** — Our tool checks whether your DNS queries are going through your chosen encrypted provider or leaking to your ISP
+- **[DNS Leak Test](/tools/leak-tester)** — Our tool checks whether your DNS queries are going through your chosen encrypted provider or leaking to your ISP
 - **dnsleaktest.com** — Independent DNS leak testing
 - **1.1.1.1/help** — Cloudflare\'s diagnostic page shows whether you are using encrypted DNS
 
@@ -179,7 +179,7 @@ Common causes of DNS leaks:
 - IPv6 DNS queries not routed through the VPN
 - Smart Multi-Homed Name Resolution (Windows feature that queries all available DNS servers)
 
-If you use a VPN, test for DNS leaks regularly using our [DNS Leak Test](/tools/dns-leak) or similar tools.
+If you use a VPN, test for DNS leaks regularly using our [DNS Leak Test](/tools/leak-tester) or similar tools.
 
 ---
 

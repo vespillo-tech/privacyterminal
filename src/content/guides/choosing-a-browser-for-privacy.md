@@ -236,8 +236,8 @@ Mobile browsers generally have fewer privacy customization options than their de
 
 After switching browsers, verify the change made a difference:
 
-- **[Browser Fingerprint Analyzer](/tools/fingerprint)** — Compare your fingerprint uniqueness before and after. See exactly what your new browser reveals.
-- **[DNS Leak Test](/tools/dns-leak)** — Ensure your DNS queries are not leaking outside your VPN or encrypted DNS.
+- **[Browser Fingerprint Analyzer](/tools/fingerprint-analyzer)** — Compare your fingerprint uniqueness before and after. See exactly what your new browser reveals.
+- **[DNS Leak Test](/tools/leak-tester)** — Ensure your DNS queries are not leaking outside your VPN or encrypted DNS.
 - **[EFF Cover Your Tracks](https://coveryourtracks.eff.org)** — The EFF\'s fingerprinting test, an excellent independent benchmark.
 
 ---
