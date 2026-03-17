@@ -22,3 +22,4 @@ Thumbs.db
 # Wrangler
 .wrangler/
 .dev.vars
+# Deployment trigger - env vars updated
