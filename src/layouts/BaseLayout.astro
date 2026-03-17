@@ -135,7 +135,7 @@ function isActive(href: string) {
           <span class="text-terminal-green font-bold">&#9656; PRIVACY TERMINAL</span>
           <span class="text-terminal-muted text-xs hidden sm:inline">{settings?.version ?? 'v0.1.0'}</span>
         </div>
-        <nav class="flex items-center gap-0">
+        <nav class="flex items-center gap-0 overflow-x-auto overflow-y-hidden min-w-0">
           {navItems.map((item) => (
             <a
               href={item.href}
@@ -144,7 +144,7 @@ function isActive(href: string) {
                 isActive(item.href) ? 'tui-tab-active' : '',
               ]}
             >
-              <span class="text-terminal-muted">{item.key}:</span>{item.label}
+              <span class="text-terminal-muted tui-tab-key">{item.key}:</span>{item.label}
             </a>
           ))}
         </nav>

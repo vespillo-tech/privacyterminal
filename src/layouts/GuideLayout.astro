@@ -137,6 +137,7 @@ const categoryColors: Record<string, string> = {
           </ul>
         </div>
       )}
+      </header>
 
       <hr class="tui-hr" />
 
@@ -414,7 +415,7 @@ const categoryColors: Record<string, string> = {
     function checkCompleted() {
       try {
         const cached = JSON.parse(localStorage.getItem('pt_progress') || '{}');
-        const completed = cached.completed_guides || [];
+        const completed = cached.guides_completed || [];
         if (completed.includes(guideId)) {
           showCompleted();
         }
@@ -436,10 +437,10 @@ const categoryColors: Record<string, string> = {
       } catch (e) {
         // Fallback: save to localStorage directly
         try {
-          const cached = JSON.parse(localStorage.getItem('pt_progress') || '{"completed_guides":[]}');
-          if (!cached.completed_guides) cached.completed_guides = [];
-          if (!cached.completed_guides.includes(guideId)) {
-            cached.completed_guides.push(guideId);
+          const cached = JSON.parse(localStorage.getItem('pt_progress') || '{"guides_completed":[]}');
+          if (!cached.guides_completed) cached.guides_completed = [];
+          if (!cached.guides_completed.includes(guideId)) {
+            cached.guides_completed.push(guideId);
           }
           localStorage.setItem('pt_progress', JSON.stringify(cached));
           showCompleted();
