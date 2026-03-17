@@ -23,3 +23,4 @@ Thumbs.db
 .wrangler/
 .dev.vars
 # Deployment trigger - env vars updated
+# Analytics Engine enabled
