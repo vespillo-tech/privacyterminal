@@ -1,36 +1,71 @@
 # Privacy Terminal — robots.txt
-# We respect privacy. We expect you to respect our resources.
+# Philosophy: We allow AI SEARCH engines that cite sources.
+# We block AI TRAINING scrapers that harvest content without attribution.
+# Our content is open source (CC BY-SA 4.0) — citation is welcome, silent training is not.
 
 User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /_astro/
-Disallow: /keystatic/
 
 # Sitemap
-Sitemap: https://privacyterminal.com/sitemap-index.xml
+Sitemap: https://privacyterminal.pages.dev/sitemap-index.xml
 
-# AI crawlers — we don't consent to training on our content
+# ============================================
+# AI SEARCH CRAWLERS — ALLOWED
+# These power search features that cite sources
+# ============================================
+
+# ChatGPT Search (cites sources with links)
 User-agent: GPTBot
-Disallow: /
+Allow: /
 
+# Perplexity (cites sources with footnotes)
+User-agent: PerplexityBot
+Allow: /
+
+# Google AI Overviews (cites sources inline)
 User-agent: Google-Extended
-Disallow: /
+Allow: /
 
+# Claude / Anthropic (search and citation)
+User-agent: anthropic-ai
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: Claude-Web
+Allow: /
+
+# Microsoft Copilot / Bing Chat
+User-agent: Bingbot
+Allow: /
+
+# ============================================
+# AI TRAINING SCRAPERS — BLOCKED
+# These harvest content for model training
+# without citation or attribution
+# ============================================
+
+# Common Crawl (bulk training data)
 User-agent: CCBot
 Disallow: /
 
-User-agent: anthropic-ai
-Disallow: /
-
-User-agent: Claude-Web
-Disallow: /
-
-User-agent: FacebookBot
-Disallow: /
-
+# ByteDance / TikTok (training scraper)
 User-agent: Bytespider
 Disallow: /
 
+# Meta / Facebook (training scraper)
+User-agent: FacebookBot
+Disallow: /
+
+# Cohere (training scraper)
 User-agent: cohere-ai
+Disallow: /
+
+# Apple AI training
+User-agent: Applebot-Extended
+Disallow: /
+
+# Amazon Alexa training
+User-agent: Amazonbot
 Disallow: /
