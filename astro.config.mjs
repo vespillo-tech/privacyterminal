@@ -4,7 +4,7 @@ import sitemap from '@astrojs/sitemap';
 import cloudflare from '@astrojs/cloudflare';
 
 export default defineConfig({
-  site: 'https://privacyterminal.pages.dev',
+  site: 'https://privacyterminal.com',
   output: 'static',
   adapter: cloudflare(),
   integrations: [
