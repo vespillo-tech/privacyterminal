@@ -1,11 +1,43 @@
 ---
-title: "Operating Systems for Privacy"
-description: "Your operating system sees everything. When mainstream options are not enough, privacy-focused operating systems offer isolation, anonymity, and forensic resistance. Here is the landscape."
-category: "advanced"
+title: Operating Systems for Privacy
+description: Your operating system sees everything. When mainstream options are not enough, privacy-focused operating systems offer isolation, anonymity, and forensic resistance. Here is the landscape.
+category: advanced
 order: 1
-tags: ["os", "tails", "qubes", "whonix", "grapheneos", "linux", "anonymity", "isolation"]
-relatedTools: ["fingerprint-analyzer", "leak-tester", "webrtc-detector"]
-relatedGuides: ["what-is-a-threat-model", "vpns-what-they-actually-protect", "your-phone-is-tracking-you", "opsec-for-high-risk-individuals"]
+publishedDate: '2026-03-17'
+updatedDate: '2026-03-20'
+tags:
+- os
+- tails
+- qubes
+- whonix
+- grapheneos
+- linux
+- anonymity
+- isolation
+relatedTools:
+- fingerprint-analyzer
+- leak-tester
+- webrtc-detector
+relatedGuides:
+- what-is-a-threat-model
+- vpns-what-they-actually-protect
+- your-phone-is-tracking-you
+- opsec-for-high-risk-individuals
+tldr:
+- Your operating system sees everything — it is the foundation of your privacy stack
+- Tails leaves no trace and routes everything through Tor — ideal for temporary sensitive sessions
+- Qubes OS uses hardware-level isolation to compartmentalize your digital life
+- GrapheneOS is a hardened Android for daily phone use without Google tracking
+faq:
+- question: What is the most private operating system?
+  answer: It depends on the use case. For anonymous browsing sessions, Tails (amnesic live OS routing everything through Tor) is unmatched. For daily desktop use with strong isolation, Qubes OS. For phones,
+    GrapheneOS. For general Linux desktop use, Fedora or Debian with hardened settings provide a solid foundation.
+- question: Is Linux more private than Windows or macOS?
+  answer: Generally yes. Windows sends extensive telemetry to Microsoft, and macOS phones home to Apple. Most Linux distributions collect no telemetry by default. However, Linux privacy depends on your
+    configuration — Ubuntu sends some data to Canonical, while Fedora and Debian collect essentially nothing.
+- question: Is GrapheneOS usable as a daily phone?
+  answer: Yes. GrapheneOS runs standard Android apps through a sandboxed Google Play compatibility layer. Most apps work normally, including banking apps. You lose Google Assistant and some Google-dependent
+    features, but gain dramatically reduced tracking. It only runs on Pixel phones due to their strong hardware security.
 draft: false
 ---
 

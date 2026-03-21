@@ -1,13 +1,44 @@
 ---
-title: "Data Broker Opt-Out Guide"
-description: "Your name, address, phone number, and relatives are for sale right now. Here is how to find your listings, remove them, and keep them from coming back."
-category: "intermediate"
+title: Data Broker Opt-Out Guide
+description: Your name, address, phone number, and relatives are for sale right now. Here is how to find your listings, remove them, and keep them from coming back.
+category: intermediate
 order: 2
-tags: ["data-brokers", "opt-out", "people-search", "spokeo", "whitepages", "beenverified", "privacy-rights", "ccpa", "gdpr"]
-relatedTools: ["fingerprint-analyzer", "leak-tester"]
-relatedGuides: ["who-wants-your-data", "what-is-a-threat-model", "the-5-minute-privacy-checkup", "how-to-delete-your-digital-footprint"]
+publishedDate: '2026-03-17'
+updatedDate: '2026-03-20'
+tags:
+- data-brokers
+- opt-out
+- people-search
+- spokeo
+- whitepages
+- beenverified
+- privacy-rights
+- ccpa
+- gdpr
+relatedTools:
+- fingerprint-analyzer
+- leak-tester
+relatedGuides:
+- who-wants-your-data
+- what-is-a-threat-model
+- the-5-minute-privacy-checkup
+- how-to-delete-your-digital-footprint
 difficulty: 2
-tldr: []
+tldr:
+- Your name, address, phone number, and relatives are likely for sale on people-search sites right now
+- You can opt out manually from major data brokers — it takes time but is free
+- Automated services like DeleteMe or Optery handle removals for $100-200 per year
+- Opt-outs are not permanent — data reappears and must be re-removed periodically
+faq:
+- question: How do data brokers get my information?
+  answer: Data brokers collect from public records (voter registration, property records, court filings), social media profiles, purchase history, app data, loyalty programs, and other data brokers. They
+    also buy data from apps that share user information with third parties.
+- question: How long does it take to remove my data from data brokers?
+  answer: Individual opt-out requests typically take 2-4 weeks to process. A complete first pass across major brokers takes 2-4 hours of active work. However, data often reappears within 3-6 months as brokers
+    re-acquire it from their sources, requiring periodic re-removal.
+- question: Are data removal services worth paying for?
+  answer: If your time is worth more than $100-200 per year, yes. Services like DeleteMe and Optery automate the tedious opt-out process across dozens of brokers and handle re-removal when data reappears.
+    They are especially worthwhile for people whose personal information poses safety risks if publicly available.
 draft: false
 ---
 

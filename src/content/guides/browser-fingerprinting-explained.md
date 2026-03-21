@@ -1,13 +1,39 @@
 ---
-title: "Browser Fingerprinting Explained"
-description: "Your browser reveals more about you than you think. Understand how canvas, WebGL, audio, and behavioral fingerprinting work — and what you can realistically do about each one."
-category: "foundations"
+title: Browser Fingerprinting Explained
+description: Your browser reveals more about you than you think. Understand how canvas, WebGL, audio, and behavioral fingerprinting work — and what you can realistically do about each one.
+category: foundations
 order: 5
-tags: ["fingerprinting", "canvas", "webgl", "audio-fingerprint", "browser-privacy", "tracking", "entropy"]
-relatedTools: ["fingerprint-analyzer"]
-relatedGuides: ["how-youre-being-tracked", "choosing-a-browser-for-privacy"]
+publishedDate: '2026-03-17'
+updatedDate: '2026-03-20'
+tags:
+- fingerprinting
+- canvas
+- webgl
+- audio-fingerprint
+- browser-privacy
+- tracking
+- entropy
+relatedTools:
+- fingerprint-analyzer
+relatedGuides:
+- how-youre-being-tracked
+- choosing-a-browser-for-privacy
 difficulty: 3
-tldr: []
+tldr:
+- Browser fingerprinting identifies you by combining dozens of device characteristics — no cookies needed
+- Canvas, WebGL, audio, and font fingerprinting are the most effective techniques
+- Research shows 80-90% of desktop fingerprints are unique enough to identify individual browsers
+- Tor Browser and Brave offer the strongest anti-fingerprinting protections
+faq:
+- question: What is browser fingerprinting?
+  answer: Browser fingerprinting is a tracking technique that identifies you by collecting your browser and device characteristics — screen resolution, installed fonts, GPU model, timezone, language settings,
+    and dozens more. Combined, these create a nearly unique identifier without storing anything on your device.
+- question: Can I prevent browser fingerprinting?
+  answer: You can reduce it but not eliminate it entirely. Tor Browser is the most effective defense because all Tor users share identical fingerprints. Brave Browser randomizes fingerprint signals. Firefox
+    with resistFingerprinting enabled also helps. Using common hardware and default settings reduces uniqueness.
+- question: Is fingerprinting worse than cookies?
+  answer: In some ways, yes. Cookies can be deleted, blocked, or expired. Fingerprinting reads your device characteristics — there is nothing to delete. It works in incognito mode and across cleared sessions.
+    However, fingerprints can change when you update software or change settings, making them less persistent than cookies over long periods.
 draft: false
 ---
 

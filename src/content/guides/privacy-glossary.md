@@ -1,11 +1,43 @@
 ---
-title: "Privacy Glossary"
-description: "Plain-language definitions of every privacy and security term used across Privacy Terminal guides and tools. Bookmark this page."
-category: "foundations"
+title: Privacy Glossary
+description: Plain-language definitions of every privacy and security term used across Privacy Terminal guides and tools. Bookmark this page.
+category: foundations
 order: 7
-tags: ["glossary", "terminology", "definitions", "reference", "privacy-basics"]
-relatedTools: ["fingerprint-analyzer", "leak-tester", "webrtc-detector", "hash-generator", "email-header-analyzer", "metadata-stripper", "threat-profiler"]
-relatedGuides: ["how-youre-being-tracked", "what-is-a-threat-model", "the-5-minute-privacy-checkup", "choosing-a-browser-for-privacy"]
+publishedDate: '2026-03-17'
+updatedDate: '2026-03-20'
+tags:
+- glossary
+- terminology
+- definitions
+- reference
+- privacy-basics
+relatedTools:
+- fingerprint-analyzer
+- leak-tester
+- webrtc-detector
+- hash-generator
+- email-header-analyzer
+- metadata-stripper
+- threat-profiler
+relatedGuides:
+- how-youre-being-tracked
+- what-is-a-threat-model
+- the-5-minute-privacy-checkup
+- choosing-a-browser-for-privacy
+tldr:
+- A comprehensive reference of privacy and security terms used across Privacy Terminal
+- Covers encryption, tracking, networking, authentication, and legal terminology
+- Each term links to relevant guides and tools for deeper learning
+faq:
+- question: What is end-to-end encryption?
+  answer: End-to-end encryption (E2EE) means messages are encrypted on the sender device and can only be decrypted on the recipient device. The service provider cannot read the content, even if compelled
+    by law enforcement. Signal, WhatsApp, and iMessage use E2EE.
+- question: What is the difference between a VPN and Tor?
+  answer: A VPN routes your traffic through one server, hiding your IP from websites but requiring trust in the VPN provider. Tor routes your traffic through three random servers run by volunteers, so no
+    single entity can see both who you are and what you access. Tor is slower but provides stronger anonymity.
+- question: What does zero-knowledge mean?
+  answer: Zero-knowledge means the service provider cannot access your data even if they wanted to. Your data is encrypted with keys only you hold. If you lose your password, the provider cannot recover
+    your data. ProtonMail and Bitwarden are examples of zero-knowledge services.
 draft: false
 ---
 

@@ -1,16 +1,40 @@
 ---
-title: "How You're Being Tracked Right Now"
-description: "Every click, scroll, and keystroke pattern can identify you. Here's exactly how websites, advertisers, and data brokers track you — and what data they collect."
-category: "foundations"
+title: How You're Being Tracked Right Now
+description: Every click, scroll, and keystroke pattern can identify you. Here's exactly how websites, advertisers, and data brokers track you — and what data they collect.
+category: foundations
 order: 1
-tags: ["tracking", "fingerprinting", "cookies", "surveillance", "data-collection"]
-relatedTools: ["fingerprint-analyzer", "webrtc-detector", "leak-tester"]
-relatedGuides: ["who-wants-your-data", "what-is-a-threat-model", "browser-fingerprinting-explained", "privacy-myths-debunked"]
+publishedDate: '2026-03-17'
+updatedDate: '2026-03-20'
+tags:
+- tracking
+- fingerprinting
+- cookies
+- surveillance
+- data-collection
+relatedTools:
+- fingerprint-analyzer
+- webrtc-detector
+- leak-tester
+relatedGuides:
+- who-wants-your-data
+- what-is-a-threat-model
+- browser-fingerprinting-explained
+- privacy-myths-debunked
 difficulty: 1
 tldr:
-  - "You are tracked through cookies, fingerprinting, IP addresses, and behavioral patterns"
-  - "First-party tracking comes from sites you visit; third-party tracking follows you across the web"
-  - "Your phone, browser, and apps all leak identifying data by default"
+- You are tracked through cookies, fingerprinting, IP addresses, and behavioral patterns
+- First-party tracking comes from sites you visit; third-party tracking follows you across the web
+- Your phone, browser, and apps all leak identifying data by default
+faq:
+- question: How do websites track me without cookies?
+  answer: Websites use browser fingerprinting, which combines your screen resolution, installed fonts, GPU, timezone, language, and dozens of other signals to create a unique identifier. Unlike cookies,
+    fingerprinting leaves nothing on your device and cannot be cleared.
+- question: Does incognito mode stop tracking?
+  answer: No. Incognito mode only prevents your browser from saving local history and cookies after you close the window. Websites can still see your IP address, fingerprint your browser, and track you
+    through other methods during your session.
+- question: What is the most common form of online tracking?
+  answer: Third-party cookies remain the most widespread tracking mechanism, used by advertising networks like Google and Meta to follow you across millions of websites. However, as browsers block cookies,
+    fingerprinting and server-side tracking are growing rapidly.
 draft: false
 ---
 

@@ -1,16 +1,40 @@
 ---
-title: "What Is a Threat Model? (And Why You Need One)"
-description: "Privacy is personal. A threat model helps you decide what to protect, from whom, and how far to go — without the paralysis of trying to defend against everything."
-category: "foundations"
+title: What Is a Threat Model? (And Why You Need One)
+description: Privacy is personal. A threat model helps you decide what to protect, from whom, and how far to go — without the paralysis of trying to defend against everything.
+category: foundations
 order: 3
-tags: ["threat-modeling", "risk-assessment", "privacy-planning", "opsec", "personal-security"]
-relatedTools: ["fingerprint-analyzer", "threat-profiler", "leak-tester"]
-relatedGuides: ["who-wants-your-data", "how-youre-being-tracked", "the-5-minute-privacy-checkup", "opsec-for-high-risk-individuals"]
+publishedDate: '2026-03-17'
+updatedDate: '2026-03-20'
+tags:
+- threat-modeling
+- risk-assessment
+- privacy-planning
+- opsec
+- personal-security
+relatedTools:
+- fingerprint-analyzer
+- threat-profiler
+- leak-tester
+relatedGuides:
+- who-wants-your-data
+- how-youre-being-tracked
+- the-5-minute-privacy-checkup
+- opsec-for-high-risk-individuals
 difficulty: 2
 tldr:
-  - "A threat model answers: what are you protecting, from whom, and what are the consequences"
-  - "Not everyone needs the same level of privacy — your model depends on your situation"
-  - "Start with your biggest realistic threats, not worst-case scenarios"
+- 'A threat model answers: what are you protecting, from whom, and what are the consequences'
+- Not everyone needs the same level of privacy — your model depends on your situation
+- Start with your biggest realistic threats, not worst-case scenarios
+faq:
+- question: What is a threat model in simple terms?
+  answer: A threat model is a personal assessment of what data you need to protect, who might want it, and what would happen if they got it. It helps you make rational privacy decisions instead of trying
+    to defend against everything.
+- question: Do I need a threat model if I have nothing to hide?
+  answer: Yes. Everyone has data worth protecting — financial information, medical records, private conversations, location history. A threat model helps you focus on realistic risks like identity theft,
+    data breaches, and corporate profiling rather than abstract surveillance fears.
+- question: How do I build my own threat model?
+  answer: 'Start by listing your digital assets (accounts, devices, data). For each, ask: who might want this, how could they get it, and what would happen if they did. Prioritize by likelihood and impact.
+    Our Threat Profiler tool automates this with 47 questions across 28 threat categories.'
 draft: false
 ---
 

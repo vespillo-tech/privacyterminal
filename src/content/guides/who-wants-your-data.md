@@ -1,16 +1,38 @@
 ---
-title: "Who Wants Your Data and Why"
-description: "Advertisers, data brokers, governments, hackers, and your own apps — understand who collects your data, what they do with it, and why it matters."
-category: "foundations"
+title: Who Wants Your Data and Why
+description: Advertisers, data brokers, governments, hackers, and your own apps — understand who collects your data, what they do with it, and why it matters.
+category: foundations
 order: 2
-tags: ["data-brokers", "surveillance", "advertising", "privacy-rights", "data-economy"]
-relatedTools: ["fingerprint-analyzer", "threat-profiler"]
-relatedGuides: ["how-youre-being-tracked", "what-is-a-threat-model", "data-broker-opt-out"]
+publishedDate: '2026-03-17'
+updatedDate: '2026-03-20'
+tags:
+- data-brokers
+- surveillance
+- advertising
+- privacy-rights
+- data-economy
+relatedTools:
+- fingerprint-analyzer
+- threat-profiler
+relatedGuides:
+- how-youre-being-tracked
+- what-is-a-threat-model
+- data-broker-opt-out
 difficulty: 1
 tldr:
-  - "Ad networks, data brokers, governments, and hackers all want your data for different reasons"
-  - "Your data is bought and sold on a massive market you never consented to"
-  - "Understanding who wants your data helps you decide what to protect"
+- Ad networks, data brokers, governments, and hackers all want your data for different reasons
+- Your data is bought and sold on a massive market you never consented to
+- Understanding who wants your data helps you decide what to protect
+faq:
+- question: Who are data brokers and how do they get my data?
+  answer: Data brokers are companies like Spokeo, Whitepages, and Acxiom that collect personal information from public records, social media, purchase history, and app data. They compile detailed profiles
+    and sell them to advertisers, employers, landlords, and anyone willing to pay.
+- question: Is my data really worth money?
+  answer: Yes. Individual data records sell for fractions of a cent, but a complete profile with demographics, interests, purchase history, and location data can be worth $0.50 to $2.00. The global data
+    broker market is worth over $250 billion annually.
+- question: Can the government access my online data?
+  answer: Yes. Governments can access your data through legal processes (subpoenas, warrants), bulk surveillance programs, or by purchasing it from data brokers — which requires no warrant. The legal threshold
+    varies by country and data type.
 draft: false
 ---
 

@@ -1,13 +1,44 @@
 ---
-title: "Password Managers and Account Security"
-description: "Your accounts are only as strong as your weakest password. A password manager eliminates the weakest link — and two-factor authentication adds a second lock. Here is how to set up both."
-category: "intermediate"
+title: Password Managers and Account Security
+description: Your accounts are only as strong as your weakest password. A password manager eliminates the weakest link — and two-factor authentication adds a second lock. Here is how to set up both.
+category: intermediate
 order: 1
-tags: ["passwords", "password-manager", "bitwarden", "1password", "keepassxc", "2fa", "totp", "passkeys", "security-keys"]
-relatedTools: ["hash-generator", "leak-tester"]
-relatedGuides: ["the-5-minute-privacy-checkup", "what-is-a-threat-model", "email-privacy-beyond-gmail", "how-to-delete-your-digital-footprint"]
+publishedDate: '2026-03-17'
+updatedDate: '2026-03-20'
+tags:
+- passwords
+- password-manager
+- bitwarden
+- 1password
+- keepassxc
+- 2fa
+- totp
+- passkeys
+- security-keys
+relatedTools:
+- hash-generator
+- leak-tester
+relatedGuides:
+- the-5-minute-privacy-checkup
+- what-is-a-threat-model
+- email-privacy-beyond-gmail
+- how-to-delete-your-digital-footprint
 difficulty: 2
-tldr: []
+tldr:
+- A password manager generates and stores unique, strong passwords for every account
+- Bitwarden (free, open source) and 1Password (paid, polished) are the top recommendations
+- Enable two-factor authentication on every account that supports it — TOTP apps over SMS
+- Your master password should be a long passphrase — 4+ random words, 20+ characters
+faq:
+- question: Is it safe to store all my passwords in one place?
+  answer: Yes, if you use a reputable password manager with zero-knowledge encryption. Your passwords are encrypted with your master password before leaving your device. The password manager company cannot
+    read them. This is far safer than reusing passwords or writing them on paper.
+- question: What if my password manager gets hacked?
+  answer: Reputable password managers use zero-knowledge architecture — your vault is encrypted with keys derived from your master password, which the company never sees. Even in a breach (like LastPass
+    in 2022), attackers get encrypted blobs they cannot read without your master password. Use a strong master passphrase and enable 2FA.
+- question: Is SMS two-factor authentication good enough?
+  answer: SMS 2FA is better than no 2FA, but it is vulnerable to SIM-swapping attacks where an attacker convinces your carrier to transfer your number. Use TOTP authenticator apps (Aegis, Ente Auth, or
+    Bitwarden built-in) instead. For high-value accounts, hardware security keys (YubiKey) provide the strongest protection.
 draft: false
 ---
 

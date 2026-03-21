@@ -1,11 +1,42 @@
 ---
-title: "DNS Privacy Explained"
-description: "Every website you visit starts with a DNS query — and by default, your ISP can see every one. Here is how DNS works, why it leaks your browsing history, and how to encrypt it."
-category: "intermediate"
+title: DNS Privacy Explained
+description: Every website you visit starts with a DNS query — and by default, your ISP can see every one. Here is how DNS works, why it leaks your browsing history, and how to encrypt it.
+category: intermediate
 order: 4
-tags: ["dns", "dns-over-https", "doh", "dot", "encrypted-dns", "isp", "cloudflare-dns", "quad9"]
-relatedTools: ["leak-tester", "dns-leak"]
-relatedGuides: ["vpns-what-they-actually-protect", "how-youre-being-tracked", "choosing-a-browser-for-privacy", "network-security-at-home"]
+publishedDate: '2026-03-17'
+updatedDate: '2026-03-20'
+tags:
+- dns
+- dns-over-https
+- doh
+- dot
+- encrypted-dns
+- isp
+- cloudflare-dns
+- quad9
+relatedTools:
+- leak-tester
+- dns-leak
+relatedGuides:
+- vpns-what-they-actually-protect
+- how-youre-being-tracked
+- choosing-a-browser-for-privacy
+- network-security-at-home
+tldr:
+- DNS queries reveal every domain you visit — and your ISP sees all of them by default
+- Encrypted DNS (DoH or DoT) prevents your ISP from logging your browsing history via DNS
+- Cloudflare (1.1.1.1), Quad9 (9.9.9.9), and Mullvad DNS are trusted encrypted DNS providers
+- Configure encrypted DNS in your browser or router for network-wide protection
+faq:
+- question: What is DNS and why does it matter for privacy?
+  answer: DNS (Domain Name System) translates domain names like example.com into IP addresses. Every website visit starts with a DNS query. By default, these queries are sent unencrypted to your ISP DNS
+    servers, giving your ISP a complete log of every domain you visit — even if the websites themselves use HTTPS.
+- question: Does HTTPS already protect my DNS queries?
+  answer: No. HTTPS encrypts the content of your connection to a website, but the initial DNS query happens before the HTTPS connection is established. Without encrypted DNS (DoH or DoT), your DNS queries
+    are sent in plain text, visible to your ISP and anyone on your network.
+- question: Should I use Cloudflare or Quad9 for DNS?
+  answer: Both are excellent choices. Cloudflare (1.1.1.1) is the fastest and most popular, with a strong privacy policy. Quad9 (9.9.9.9) adds malware domain blocking and is operated by a non-profit. Mullvad
+    DNS is another option if you already use Mullvad VPN. All three support encrypted DNS.
 draft: false
 ---
 

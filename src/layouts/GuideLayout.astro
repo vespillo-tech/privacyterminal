@@ -1,6 +1,11 @@
 ---
 import BaseLayout from './BaseLayout.astro';
 
+interface FaqItem {
+  question: string;
+  answer: string;
+}
+
 interface Props {
   title: string;
   description?: string;
@@ -10,6 +15,7 @@ interface Props {
   updatedDate?: string;
   headings?: Array<{ depth: number; slug: string; text: string }>;
   tldr?: string[];
+  faq?: FaqItem[];
   difficulty?: number;
 }
 
@@ -22,6 +28,7 @@ const {
   updatedDate = '',
   headings = [],
   tldr = [],
+  faq = [],
   difficulty = 1,
 } = Astro.props;
 
@@ -62,6 +69,20 @@ const categoryColors: Record<string, string> = {
       "@id": `https://privacyterminal.com${Astro.url.pathname}`
     }
   })} />
+  {faq.length > 0 && (
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": faq.map((item: FaqItem) => ({
+        "@type": "Question",
+        "name": item.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": item.answer
+        }
+      }))
+    })} />
+  )}
   <div class="flex flex-col lg:flex-row gap-4">
     <!-- Sidebar / Table of Contents -->
     <aside class="lg:w-48 shrink-0 order-2 lg:order-1">

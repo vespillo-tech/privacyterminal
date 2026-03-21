@@ -1,13 +1,43 @@
 ---
-title: "The 5-Minute Privacy Checkup"
-description: "Five minutes. Five changes. Measurably less tracking. This is the fastest way to meaningfully reduce your digital exposure — no new software required."
-category: "foundations"
+title: The 5-Minute Privacy Checkup
+description: Five minutes. Five changes. Measurably less tracking. This is the fastest way to meaningfully reduce your digital exposure — no new software required.
+category: foundations
 order: 4
-tags: ["quick-start", "privacy-settings", "tracking", "ad-tracking", "phone-privacy", "browser-privacy"]
-relatedTools: ["fingerprint-analyzer", "leak-tester", "webrtc-detector"]
-relatedGuides: ["how-youre-being-tracked", "what-is-a-threat-model", "social-media-privacy-settings", "your-phone-is-tracking-you"]
+publishedDate: '2026-03-17'
+updatedDate: '2026-03-20'
+tags:
+- quick-start
+- privacy-settings
+- tracking
+- ad-tracking
+- phone-privacy
+- browser-privacy
+relatedTools:
+- fingerprint-analyzer
+- leak-tester
+- webrtc-detector
+relatedGuides:
+- how-youre-being-tracked
+- what-is-a-threat-model
+- social-media-privacy-settings
+- your-phone-is-tracking-you
 difficulty: 1
-tldr: []
+tldr:
+- Delete your phone advertising ID — it is the single biggest cross-app tracking vector
+- Disable location access for apps that do not need it
+- Switch your default search engine away from Google
+- Review and revoke unnecessary app permissions
+- All changes take under 5 minutes and require no new software
+faq:
+- question: What is the single most impactful privacy change I can make right now?
+  answer: 'Delete your phone advertising ID. On Android: Settings > Privacy > Ads > Delete advertising ID. On iPhone: Settings > Privacy > Tracking > disable Allow Apps to Request to Track. This removes
+    the universal key that ties your behavior together across every app.'
+- question: Will these changes break any of my apps?
+  answer: No. Deleting your advertising ID, changing search engines, and restricting app permissions will not break any app functionality. Apps may show less targeted ads, but all features continue working
+    normally.
+- question: Is 5 minutes really enough to improve my privacy?
+  answer: Yes. These five changes address the most common and impactful tracking methods that affect nearly everyone. They eliminate your advertising ID, reduce location tracking, and limit data sharing
+    — covering roughly 60-70% of typical consumer tracking exposure.
 draft: false
 ---
 

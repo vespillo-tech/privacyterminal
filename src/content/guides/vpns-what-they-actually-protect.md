@@ -1,13 +1,44 @@
 ---
-title: "VPNs: What They Actually Protect"
-description: "VPNs are the most overhyped and misunderstood privacy tool on the internet. Here is what they genuinely protect, what they do not, and how to choose one honestly."
-category: "essentials"
+title: 'VPNs: What They Actually Protect'
+description: VPNs are the most overhyped and misunderstood privacy tool on the internet. Here is what they genuinely protect, what they do not, and how to choose one honestly.
+category: essentials
 order: 2
-tags: ["vpn", "network-privacy", "encryption", "isp", "mullvad", "protonvpn", "ivpn", "wireguard"]
-relatedTools: ["leak-tester", "webrtc-detector", "dns-leak"]
-relatedGuides: ["what-is-a-threat-model", "how-youre-being-tracked", "choosing-a-browser-for-privacy", "dns-privacy-explained"]
+publishedDate: '2026-03-17'
+updatedDate: '2026-03-20'
+tags:
+- vpn
+- network-privacy
+- encryption
+- isp
+- mullvad
+- protonvpn
+- ivpn
+- wireguard
+relatedTools:
+- leak-tester
+- webrtc-detector
+- dns-leak
+relatedGuides:
+- what-is-a-threat-model
+- how-youre-being-tracked
+- choosing-a-browser-for-privacy
+- dns-privacy-explained
 difficulty: 2
-tldr: []
+tldr:
+- A VPN encrypts your traffic and hides your IP — that is all it does
+- VPNs protect you from ISP surveillance, public Wi-Fi attacks, and IP-based geolocation
+- VPNs do NOT protect against fingerprinting, account tracking, or malware
+- Mullvad, IVPN, and ProtonVPN are the most trustworthy options based on audits and track record
+faq:
+- question: Do I need a VPN?
+  answer: It depends on your threat model. If you want to prevent your ISP from logging your browsing history, bypass geographic restrictions, or protect yourself on public Wi-Fi, a VPN helps. If your main
+    concern is website tracking, a VPN alone is insufficient — you also need browser hardening.
+- question: Can a VPN provider see my traffic?
+  answer: A VPN provider can see your traffic metadata (when you connect, how much data you transfer) and could theoretically log the sites you visit. This is why choosing a no-logs VPN with independent
+    audits is critical. Mullvad, IVPN, and ProtonVPN have all passed independent no-logs audits.
+- question: Are free VPNs safe to use?
+  answer: Generally no. Free VPNs must fund their operations somehow — usually by logging and selling your browsing data, injecting ads, or providing poor security. Some free VPNs have been caught selling
+    bandwidth or installing malware. The ProtonVPN free tier is one of the few trustworthy exceptions.
 draft: false
 ---
 

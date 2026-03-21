@@ -1,11 +1,44 @@
 ---
-title: "OPSEC for High-Risk Individuals"
-description: "If your privacy is not a preference but a necessity — if the wrong person seeing the wrong data could endanger you or someone you protect — this guide is for you."
-category: "advanced"
+title: OPSEC for High-Risk Individuals
+description: If your privacy is not a preference but a necessity — if the wrong person seeing the wrong data could endanger you or someone you protect — this guide is for you.
+category: advanced
 order: 3
-tags: ["opsec", "journalist", "activist", "whistleblower", "high-risk", "compartmentalization", "source-protection"]
-relatedTools: ["fingerprint-analyzer", "leak-tester", "webrtc-detector", "metadata-stripper", "email-header-analyzer"]
-relatedGuides: ["what-is-a-threat-model", "operating-systems-for-privacy", "encrypted-messaging", "vpns-what-they-actually-protect"]
+publishedDate: '2026-03-17'
+updatedDate: '2026-03-20'
+tags:
+- opsec
+- journalist
+- activist
+- whistleblower
+- high-risk
+- compartmentalization
+- source-protection
+relatedTools:
+- fingerprint-analyzer
+- leak-tester
+- webrtc-detector
+- metadata-stripper
+- email-header-analyzer
+relatedGuides:
+- what-is-a-threat-model
+- operating-systems-for-privacy
+- encrypted-messaging
+- vpns-what-they-actually-protect
+tldr:
+- OPSEC is a discipline, not a tool — it requires consistent behavior and compartmentalization
+- Never mix identities — personal, professional, and sensitive activities use separate devices and accounts
+- The weakest point in your security is usually human behavior, not technology
+- 'Source protection requires end-to-end planning: secure communication, metadata removal, air-gapped storage'
+faq:
+- question: Who needs high-risk OPSEC?
+  answer: Journalists protecting sources, activists in authoritarian countries, domestic abuse survivors, whistleblowers, security researchers, and anyone whose physical safety could be compromised by their
+    digital activity.
+- question: What is compartmentalization in OPSEC?
+  answer: Compartmentalization means keeping different areas of your life completely separate in the digital world — different devices, different accounts, different networks, different identities. If one
+    compartment is compromised, the others remain intact. This is the single most important OPSEC principle.
+- question: What device should I use for sensitive communications?
+  answer: A dedicated device used only for sensitive communications — ideally a Pixel phone running GrapheneOS or a laptop running Tails. This device should never be used for personal activities, should
+    connect through Tor or a trusted VPN, and should never be linked to your real identity.
 draft: false
 ---
 

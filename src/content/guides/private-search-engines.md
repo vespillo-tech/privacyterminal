@@ -1,11 +1,40 @@
 ---
-title: "Private Search Engines: Your Options"
-description: "Google processes 8.5 billion searches per day and builds advertising profiles from every one. Here is the full landscape of search engines that do not track you."
-category: "essentials"
+title: 'Private Search Engines: Your Options'
+description: Google processes 8.5 billion searches per day and builds advertising profiles from every one. Here is the full landscape of search engines that do not track you.
+category: essentials
 order: 4
-tags: ["search-engine", "duckduckgo", "brave-search", "startpage", "searxng", "mojeek", "google-alternative"]
-relatedTools: ["fingerprint-analyzer"]
-relatedGuides: ["choosing-a-browser-for-privacy", "how-youre-being-tracked", "the-5-minute-privacy-checkup", "privacy-myths-debunked"]
+publishedDate: '2026-03-17'
+updatedDate: '2026-03-20'
+tags:
+- search-engine
+- duckduckgo
+- brave-search
+- startpage
+- searxng
+- mojeek
+- google-alternative
+relatedTools:
+- fingerprint-analyzer
+relatedGuides:
+- choosing-a-browser-for-privacy
+- how-youre-being-tracked
+- the-5-minute-privacy-checkup
+- privacy-myths-debunked
+tldr:
+- Google logs every search and builds advertising profiles from your queries
+- DuckDuckGo, Brave Search, and Startpage are the strongest private alternatives
+- Brave Search and Mojeek have their own independent indexes — they do not rely on Google or Bing
+- SearXNG is a self-hosted metasearch engine for maximum control
+faq:
+- question: Does DuckDuckGo actually protect my privacy?
+  answer: Yes. DuckDuckGo does not log your searches, does not build user profiles, and does not track you across the web. However, it sources most results from Bing, so Microsoft sees anonymized queries.
+    For fully independent results, consider Brave Search or Mojeek.
+- question: Are private search engine results as good as Google?
+  answer: For most searches, the difference is minimal. DuckDuckGo and Startpage provide excellent results for general queries. Brave Search results are improving rapidly with its independent index. You
+    may notice a difference for highly localized or very recent queries, where Google aggregated data advantage shows.
+- question: What private search engine should I use?
+  answer: For most people, DuckDuckGo or Brave Search as a default, with Startpage (which serves Google results anonymously) as a fallback for queries where you want Google-quality results without the tracking.
+    Power users may prefer self-hosted SearXNG for maximum control.
 draft: false
 ---
 

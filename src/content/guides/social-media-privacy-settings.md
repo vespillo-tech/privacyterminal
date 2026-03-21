@@ -1,11 +1,42 @@
 ---
-title: "Social Media Privacy Settings: Platform-by-Platform Guide"
-description: "Every social media platform defaults to maximum exposure. Here is exactly what to change on Facebook, Instagram, TikTok, X, and LinkedIn — step by step."
-category: "essentials"
+title: 'Social Media Privacy Settings: Platform-by-Platform Guide'
+description: Every social media platform defaults to maximum exposure. Here is exactly what to change on Facebook, Instagram, TikTok, X, and LinkedIn — step by step.
+category: essentials
 order: 5
-tags: ["social-media", "facebook", "instagram", "tiktok", "twitter", "linkedin", "privacy-settings", "meta"]
-relatedTools: ["fingerprint-analyzer", "metadata-stripper"]
-relatedGuides: ["the-5-minute-privacy-checkup", "data-broker-opt-out", "how-youre-being-tracked", "how-to-delete-your-digital-footprint"]
+publishedDate: '2026-03-17'
+updatedDate: '2026-03-20'
+tags:
+- social-media
+- facebook
+- instagram
+- tiktok
+- twitter
+- linkedin
+- privacy-settings
+- meta
+relatedTools:
+- fingerprint-analyzer
+- metadata-stripper
+relatedGuides:
+- the-5-minute-privacy-checkup
+- data-broker-opt-out
+- how-youre-being-tracked
+- how-to-delete-your-digital-footprint
+tldr:
+- Every social media platform defaults to maximum data exposure — you must manually restrict settings
+- Facebook collects the most data — restrict off-Facebook activity tracking and ad personalization
+- Disable location tagging, facial recognition, and contact syncing on all platforms
+- Consider whether you need each platform at all — the most private setting is not having an account
+faq:
+- question: Which social media platform is worst for privacy?
+  answer: Facebook (Meta) collects the most data. It tracks you across the web via the Facebook Pixel embedded on millions of websites, builds detailed advertising profiles, uses facial recognition, and
+    shares data across Instagram, WhatsApp, and Messenger.
+- question: Can I use social media privately?
+  answer: You can reduce exposure significantly by hardening privacy settings, but you cannot eliminate tracking while using these platforms. They are designed to collect data. The most private approach
+    is limiting what you share, using pseudonyms where possible, and restricting off-platform tracking in settings.
+- question: Should I delete my social media accounts?
+  answer: That depends on your threat model. If social media provides genuine value (professional networking, community, family contact), hardening your settings is a reasonable compromise. If you rarely
+    use a platform, deleting the account removes a data collection vector. Consider downloading your data archive first.
 draft: false
 ---
 

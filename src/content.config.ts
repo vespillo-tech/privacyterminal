@@ -16,6 +16,10 @@ const guides = defineCollection({
     relatedGuides: z.array(z.string()).default([]),
     draft: z.boolean().default(false),
     tldr: z.array(z.string()).default([]),
+    faq: z.array(z.object({
+      question: z.string(),
+      answer: z.string(),
+    })).default([]),
     difficulty: z.number().min(1).max(5).default(1),
   }),
 });

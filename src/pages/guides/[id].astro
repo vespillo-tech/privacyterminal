@@ -28,6 +28,7 @@ const { Content, headings } = await render(guide);
   updatedDate={guide.data.updatedDate}
   headings={headings}
   tldr={guide.data.tldr || []}
+  faq={guide.data.faq || []}
   difficulty={guide.data.difficulty || 1}
 >
   <Content />

@@ -1,11 +1,41 @@
 ---
-title: "Network Security at Home"
-description: "Your home network is the foundation everything else runs on. DNS-level ad blocking, IoT segmentation, and router hardening protect every device — including the ones that cannot protect themselves."
-category: "advanced"
+title: Network Security at Home
+description: Your home network is the foundation everything else runs on. DNS-level ad blocking, IoT segmentation, and router hardening protect every device — including the ones that cannot protect themselves.
+category: advanced
 order: 2
-tags: ["network", "pi-hole", "adguard-home", "router", "vlan", "iot", "dns-blocking", "firewall"]
-relatedTools: ["dns-leak", "leak-tester"]
-relatedGuides: ["dns-privacy-explained", "vpns-what-they-actually-protect", "your-phone-is-tracking-you"]
+publishedDate: '2026-03-17'
+updatedDate: '2026-03-20'
+tags:
+- network
+- pi-hole
+- adguard-home
+- router
+- vlan
+- iot
+- dns-blocking
+- firewall
+relatedTools:
+- dns-leak
+- leak-tester
+relatedGuides:
+- dns-privacy-explained
+- vpns-what-they-actually-protect
+- your-phone-is-tracking-you
+tldr:
+- Your home network is the foundation — it protects every device including those that cannot protect themselves
+- DNS-level ad blocking (Pi-hole or AdGuard Home) blocks tracking across all devices on your network
+- Isolate IoT devices on a separate network segment to limit their access
+- Change your router default password and keep firmware updated
+faq:
+- question: What is Pi-hole and should I use it?
+  answer: Pi-hole is a network-wide DNS-level ad and tracker blocker that runs on a Raspberry Pi or any Linux device. It blocks ads, tracking domains, and malware for every device on your network — including
+    smart TVs, IoT devices, and phones that cannot run browser extensions.
+- question: Should I segment my IoT devices on a separate network?
+  answer: Yes. IoT devices (smart speakers, cameras, thermostats) often have poor security and phone home to manufacturer servers. Putting them on a separate VLAN or guest network prevents a compromised
+    IoT device from accessing your computers, phones, and personal files.
+- question: How do I secure my home router?
+  answer: Change the default admin password, update firmware regularly, disable WPS (Wi-Fi Protected Setup), use WPA3 or WPA2 encryption, disable remote management, change the default SSID, and configure
+    encrypted DNS. If your ISP router does not support these features, consider a third-party router.
 draft: false
 ---
 

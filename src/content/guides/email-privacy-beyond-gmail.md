@@ -1,11 +1,42 @@
 ---
-title: "Email Privacy: Beyond Gmail"
-description: "Gmail reads your email to sell ads. But switching providers is only half the solution — email aliases protect your address from ever being exposed. Here is the full landscape."
-category: "intermediate"
+title: 'Email Privacy: Beyond Gmail'
+description: Gmail reads your email to sell ads. But switching providers is only half the solution — email aliases protect your address from ever being exposed. Here is the full landscape.
+category: intermediate
 order: 3
-tags: ["email", "protonmail", "tuta", "aliases", "simplelogin", "addy", "encryption", "gmail-alternative"]
-relatedTools: ["email-header-analyzer", "metadata-stripper"]
-relatedGuides: ["encrypted-messaging", "what-is-a-threat-model", "data-broker-opt-out", "password-managers-account-security"]
+publishedDate: '2026-03-17'
+updatedDate: '2026-03-20'
+tags:
+- email
+- protonmail
+- tuta
+- aliases
+- simplelogin
+- addy
+- encryption
+- gmail-alternative
+relatedTools:
+- email-header-analyzer
+- metadata-stripper
+relatedGuides:
+- encrypted-messaging
+- what-is-a-threat-model
+- data-broker-opt-out
+- password-managers-account-security
+tldr:
+- Gmail scans your email for advertising data — encrypted alternatives exist
+- ProtonMail and Tuta offer zero-access encryption so the provider cannot read your email
+- Email aliases (SimpleLogin, addy.io) protect your real address from data breaches and spam
+- Use a unique alias for every service — if one leaks, the rest remain unaffected
+faq:
+- question: Can Gmail read my emails?
+  answer: Yes. Gmail encrypts email in transit, but Google can read your email content on their servers. They use this access for spam filtering, smart replies, and building advertising profiles. While
+    Google stopped scanning email for ad targeting in 2017, they still process email content for other features.
+- question: What is the best private email provider?
+  answer: ProtonMail is the most widely recommended — it uses zero-access encryption, is based in Switzerland, is open source, and has a usable free tier. Tuta (formerly Tutanota) is a strong alternative
+    with cheaper paid plans. Both encrypt stored email so the provider cannot read it.
+- question: What are email aliases and why should I use them?
+  answer: Email aliases are forwarding addresses that relay mail to your real inbox. Services like SimpleLogin and addy.io let you create unique aliases for every account. If an alias is compromised in
+    a data breach, you disable it without affecting other accounts.
 draft: false
 ---
 

@@ -1,11 +1,43 @@
 ---
-title: "Your Phone Is Tracking You"
-description: "Your phone knows where you sleep, where you work, who you meet, and what you care about — and it shares this with hundreds of companies. Here is exactly how, and how to limit it."
-category: "intermediate"
+title: Your Phone Is Tracking You
+description: Your phone knows where you sleep, where you work, who you meet, and what you care about — and it shares this with hundreds of companies. Here is exactly how, and how to limit it.
+category: intermediate
 order: 5
-tags: ["mobile", "phone-tracking", "location", "advertising-id", "app-permissions", "android", "iphone", "gps"]
-relatedTools: ["fingerprint-analyzer", "leak-tester", "webrtc-detector"]
-relatedGuides: ["how-youre-being-tracked", "the-5-minute-privacy-checkup", "data-broker-opt-out", "social-media-privacy-settings"]
+publishedDate: '2026-03-17'
+updatedDate: '2026-03-20'
+tags:
+- mobile
+- phone-tracking
+- location
+- advertising-id
+- app-permissions
+- android
+- iphone
+- gps
+relatedTools:
+- fingerprint-analyzer
+- leak-tester
+- webrtc-detector
+relatedGuides:
+- how-youre-being-tracked
+- the-5-minute-privacy-checkup
+- data-broker-opt-out
+- social-media-privacy-settings
+tldr:
+- Your phone shares your location, app usage, and behavior with hundreds of companies by default
+- The advertising ID is the single biggest cross-app tracking vector — delete it
+- App permissions control what data apps can access — review and restrict them regularly
+- Both Android and iOS leak data, but iOS gives slightly more control with App Tracking Transparency
+faq:
+- question: Does my phone track me even with location services off?
+  answer: Yes. Even with GPS/location off, your phone reveals your approximate location through Wi-Fi network names, cell tower connections, Bluetooth beacons, and IP address geolocation. Apps also infer
+    location from timezone, language settings, and barometric pressure sensors.
+- question: Is iPhone more private than Android?
+  answer: Somewhat. iPhone App Tracking Transparency gives you more control over cross-app tracking, and Apple collects less advertising data than Google. However, iPhones still share telemetry with Apple,
+    and apps can still collect data within their own ecosystem. Neither platform is truly private by default.
+- question: How do I stop my phone from tracking me?
+  answer: Start by deleting your advertising ID, disabling location for non-essential apps, revoking unnecessary permissions, and disabling Wi-Fi and Bluetooth scanning. For maximum privacy, consider GrapheneOS
+    (a de-Googled Android) or heavily hardened iOS settings. Our 5-Minute Privacy Checkup covers the essential steps.
 draft: false
 ---
 

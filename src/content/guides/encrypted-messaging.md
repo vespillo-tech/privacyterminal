@@ -1,13 +1,44 @@
 ---
-title: "Encrypted Messaging: Your Options"
-description: "End-to-end encryption protects your message content. But who you talk to, when, and how often can be just as revealing. Here is the full messaging landscape — encryption, metadata, and honest tradeoffs."
-category: "essentials"
+title: 'Encrypted Messaging: Your Options'
+description: End-to-end encryption protects your message content. But who you talk to, when, and how often can be just as revealing. Here is the full messaging landscape — encryption, metadata, and honest
+  tradeoffs.
+category: essentials
 order: 3
-tags: ["messaging", "encryption", "signal", "whatsapp", "telegram", "session", "matrix", "metadata", "e2ee"]
-relatedTools: ["email-header-analyzer"]
-relatedGuides: ["what-is-a-threat-model", "who-wants-your-data", "vpns-what-they-actually-protect", "email-privacy-beyond-gmail"]
+publishedDate: '2026-03-17'
+updatedDate: '2026-03-20'
+tags:
+- messaging
+- encryption
+- signal
+- whatsapp
+- telegram
+- session
+- matrix
+- metadata
+- e2ee
+relatedTools:
+- email-header-analyzer
+relatedGuides:
+- what-is-a-threat-model
+- who-wants-your-data
+- vpns-what-they-actually-protect
+- email-privacy-beyond-gmail
 difficulty: 2
-tldr: []
+tldr:
+- End-to-end encryption protects message content, but metadata reveals who you talk to and when
+- Signal is the gold standard for private messaging — minimal metadata, open source, audited
+- WhatsApp encrypts content but collects extensive metadata shared with Meta
+- Telegram is NOT end-to-end encrypted by default — only Secret Chats use E2EE
+faq:
+- question: Is WhatsApp private?
+  answer: Partially. WhatsApp uses end-to-end encryption for message content (based on the Signal Protocol), so Meta cannot read your messages. However, WhatsApp collects extensive metadata — who you message,
+    when, how often, your IP address, phone number, and device information — and shares this with Meta for advertising.
+- question: Is Telegram encrypted?
+  answer: Not by default. Regular Telegram chats use client-server encryption, meaning Telegram can read your messages. Only Secret Chats use end-to-end encryption, and these do not support group chats,
+    desktop access, or message search. Telegram also uses a custom encryption protocol that has faced criticism from cryptographers.
+- question: What is the most private messaging app?
+  answer: Signal is widely considered the most private mainstream messaging app. It uses end-to-end encryption by default, collects minimal metadata (only your phone number and last connection date), is
+    fully open source, and has been independently audited. Session and Briar offer even stronger anonymity but with fewer features.
 draft: false
 ---
 
