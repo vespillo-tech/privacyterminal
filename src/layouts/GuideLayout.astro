@@ -430,7 +430,7 @@ const categoryColors: Record<string, string> = {
     if (!btn) return;
 
     // Extract guide ID from URL path: /guides/some-guide-id/ → some-guide-id
-    const pathParts = window.location.pathname.replace(/^\/|\/$/, '').split('/');
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
     const guideId = pathParts.length >= 2 ? pathParts[pathParts.length - 1] : '';
     if (!guideId) return;
 
