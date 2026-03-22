@@ -36,6 +36,10 @@ faq:
   answer: For most people, DuckDuckGo or Brave Search as a default, with Startpage (which serves Google results anonymously) as a fallback for queries where you want Google-quality results without the tracking.
     Power users may prefer self-hosted SearXNG for maximum control.
 draft: false
+
+tier: hardening
+requires:
+  - choosing-a-browser-for-privacy
 ---
 
 # Private Search Engines: Your Options

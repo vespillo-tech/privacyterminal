@@ -37,6 +37,9 @@ faq:
   answer: Yes, browser compartmentalization is a strong privacy strategy. Use one browser for accounts where you are identified (banking, email) and a separate hardened browser for general browsing. This
     prevents sites from linking your anonymous browsing to your real identity.
 draft: false
+
+tier: hardening
+requiresRecon: 7
 ---
 
 # Choosing a Browser for Privacy

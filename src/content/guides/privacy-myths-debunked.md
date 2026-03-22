@@ -37,6 +37,8 @@ faq:
   answer: No. Privacy is about controlling your personal information. Everyone closes the bathroom door, uses envelopes for mail, and expects doctor-patient confidentiality. Digital privacy is the same
     principle applied to your online life — controlling who knows what about you and when.
 draft: false
+
+tier: recon
 ---
 
 # Privacy Myths Debunked

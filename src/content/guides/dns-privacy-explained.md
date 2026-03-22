@@ -38,6 +38,11 @@ faq:
   answer: Both are excellent choices. Cloudflare (1.1.1.1) is the fastest and most popular, with a strong privacy policy. Quad9 (9.9.9.9) adds malware domain blocking and is operated by a non-profit. Mullvad
     DNS is another option if you already use Mullvad VPN. All three support encrypted DNS.
 draft: false
+
+tier: hardening
+requiresAny:
+  - vpns-what-they-actually-protect
+  - choosing-a-browser-for-privacy
 ---
 
 # DNS Privacy Explained

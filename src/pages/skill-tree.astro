@@ -1,0 +1,277 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SkillNode from '../components/SkillNode.astro';
+import { getCollection } from 'astro:content';
+export const prerender = true;
+
+// ── Load & group guides by tier ─────────────────────────────────
+const allGuides = (await getCollection('guides')).filter(g => !g.data.draft);
+
+const tierOrder = ['recon', 'hardening', 'ops'] as const;
+
+const byTier = {
+  recon:     allGuides.filter(g => g.data.tier === 'recon').sort((a, b) => (a.data.order || 0) - (b.data.order || 0)),
+  hardening: allGuides.filter(g => g.data.tier === 'hardening').sort((a, b) => (a.data.order || 0) - (b.data.order || 0)),
+  ops:       allGuides.filter(g => g.data.tier === 'ops').sort((a, b) => (a.data.order || 0) - (b.data.order || 0)),
+};
+
+const tierMeta = {
+  recon: {
+    label: 'RECON',
+    desc: 'Understand the landscape. No dependencies \u2014 start anywhere.',
+    color: 'terminal-green',
+    glow: 'text-glow-green',
+  },
+  hardening: {
+    label: 'HARDENING',
+    desc: 'Lock down your digital presence. Each skill builds on recon knowledge.',
+    color: 'terminal-cyan',
+    glow: 'text-glow-cyan',
+  },
+  ops: {
+    label: 'OPS',
+    desc: 'Advanced operational security. Requires deep hardening mastery.',
+    color: 'terminal-amber',
+    glow: 'text-glow-amber',
+  },
+} as const;
+
+const totalGuides = allGuides.length;
+---
+
+<BaseLayout
+  title="Skill Tree \u2014 Privacy Terminal"
+  description="Track your privacy mastery. Progress through Recon, Hardening, and Ops tiers to reach full clearance."
+  statusLeft="skill-tree"
+  statusRight={`${totalGuides} skills mapped`}
+>
+  {/* ── Page header ────────────────────────────────────────────── */}
+  <div class="mb-4">
+    <h1 class="text-terminal-green text-glow-green font-bold mb-1 text-base">~/skill-tree</h1>
+    <p class="text-terminal-muted text-xs">
+      Your privacy mastery path. Guides unlock based on prerequisites \u2014
+      but links always work. This is a recommendation system, not a gate.
+    </p>
+  </div>
+
+  {/* ── Clearance + Progress summary ──────────────────────────── */}
+  <div class="tui-box p-3 mb-4">
+    <span class="tui-box-title text-terminal-green">\u2524 STATUS \u251c</span>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+      {/* Clearance level */}
+      <div>
+        <div class="text-terminal-muted text-[10px] mb-1">CLEARANCE LEVEL</div>
+        <div class="flex items-center gap-2">
+          <span id="st-clearance-level" class="text-lg font-bold text-gray-500">0</span>
+          <span id="st-clearance-name" class="text-sm font-bold text-gray-500">CIVILIAN</span>
+        </div>
+      </div>
+      {/* Progress bars */}
+      <div class="space-y-1">
+        <div class="flex items-center justify-between text-[10px]">
+          <span class="text-terminal-muted">guides:</span>
+          <span id="st-guide-progress" class="text-terminal-green">0/{totalGuides}</span>
+        </div>
+        <div class="progress-bar">
+          <div id="st-guide-bar" class="progress-fill" style="width: 0%"></div>
+        </div>
+        <div class="flex items-center justify-between text-[10px]">
+          <span class="text-terminal-muted">tools:</span>
+          <span id="st-tool-progress" class="text-terminal-cyan">0/7</span>
+        </div>
+        <div class="progress-bar">
+          <div id="st-tool-bar" class="progress-fill" style="width: 0%; background: #00d4ff;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* ── Tier sections ─────────────────────────────────────────── */}
+  {tierOrder.map((tier) => {
+    const meta = tierMeta[tier];
+    const guides = byTier[tier];
+    return (
+      <div class="mb-4" id={`tier-${tier}`}>
+        <div class="tui-box p-3">
+          <span class={`tui-box-title text-${meta.color} ${meta.glow}`}>
+            \u2524 {meta.label} \u2014 {guides.length} skills \u251c
+          </span>
+          <p class="text-terminal-muted text-[10px] mt-1 mb-3">{meta.desc}</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+            {guides.map((guide) => (
+              <SkillNode
+                slug={guide.id}
+                title={guide.data.title}
+                tier={tier}
+                category={guide.data.category}
+                difficulty={guide.data.difficulty}
+                requires={guide.data.requires}
+                requiresAny={guide.data.requiresAny}
+                requiresRecon={guide.data.requiresRecon}
+                requiresHardening={guide.data.requiresHardening}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  })}
+
+  {/* ── Legend ─────────────────────────────────────────────────── */}
+  <div class="tui-box p-3 mb-4">
+    <span class="tui-box-title text-terminal-muted">\u2524 LEGEND \u251c</span>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-1 text-xs">
+      <div class="flex items-center gap-2">
+        <span class="text-gray-500">\ud83d\udd12</span>
+        <div>
+          <span class="text-gray-500 font-bold">LOCKED</span>
+          <span class="text-terminal-muted"> \u2014 prerequisites not met</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-terminal-green">\u25b8</span>
+        <div>
+          <span class="text-terminal-green font-bold">AVAILABLE</span>
+          <span class="text-terminal-muted"> \u2014 ready to start</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-terminal-cyan">\u2713</span>
+        <div>
+          <span class="text-terminal-cyan font-bold">COMPLETE</span>
+          <span class="text-terminal-muted"> \u2014 guide finished</span>
+        </div>
+      </div>
+    </div>
+    <div class="text-terminal-muted/50 text-[10px] mt-2">
+      Note: All links work regardless of state. The skill tree is a
+      recommended progression path, not a restriction.
+    </div>
+  </div>
+
+  <hr class="tui-hr" />
+
+  {/* ── Client-side state engine ──────────────────────────────── */}
+  <script>
+    import {
+      RECON_GUIDES,
+      HARDENING_GUIDES,
+      ALL_GUIDES,
+      ALL_TOOLS,
+      getProgress,
+      calculateClearance,
+    } from '../scripts/gamification';
+
+    function updateSkillTree() {
+      const progress = getProgress();
+      const completed: string[] = progress.guides_completed || [];
+      const toolsUsed: string[] = progress.tools_used || [];
+      const clearance = calculateClearance(progress);
+
+      // ── Count completed per tier ────────────────────────────
+      const reconComplete = RECON_GUIDES.filter(
+        (g: string) => completed.includes(g)
+      );
+      const hardeningComplete = HARDENING_GUIDES.filter(
+        (g: string) => completed.includes(g)
+      );
+
+      // ── Update clearance display ────────────────────────────
+      const lvlEl = document.getElementById('st-clearance-level');
+      const nameEl = document.getElementById('st-clearance-name');
+      if (lvlEl) {
+        lvlEl.textContent = String(clearance.level);
+        lvlEl.className = `text-lg font-bold ${clearance.cssColor}`;
+      }
+      if (nameEl) {
+        nameEl.textContent = clearance.name;
+        nameEl.className = `text-sm font-bold ${clearance.cssColor}`;
+      }
+
+      // ── Update progress bars ────────────────────────────────
+      const guideDone = completed.filter(
+        (g: string) => (ALL_GUIDES as readonly string[]).includes(g)
+      ).length;
+      const toolDone = toolsUsed.filter(
+        (t: string) => (ALL_TOOLS as readonly string[]).includes(t)
+      ).length;
+      const totalG = ALL_GUIDES.length;
+      const totalT = ALL_TOOLS.length;
+
+      const gpEl = document.getElementById('st-guide-progress');
+      const gbEl = document.getElementById('st-guide-bar');
+      const tpEl = document.getElementById('st-tool-progress');
+      const tbEl = document.getElementById('st-tool-bar');
+      if (gpEl) gpEl.textContent = `${guideDone}/${totalG}`;
+      if (gbEl) gbEl.style.width = `${totalG > 0 ? (guideDone / totalG) * 100 : 0}%`;
+      if (tpEl) tpEl.textContent = `${toolDone}/${totalT}`;
+      if (tbEl) tbEl.style.width = `${totalT > 0 ? (toolDone / totalT) * 100 : 0}%`;
+
+      // ── Update each skill node ──────────────────────────────
+      const nodes = document.querySelectorAll<HTMLElement>('[data-skill-slug]');
+      nodes.forEach((node) => {
+        const slug = node.dataset.skillSlug || '';
+        const inner = node.querySelector('.skill-node-inner') as HTMLElement | null;
+        const iconEl = node.querySelector('.skill-status-icon') as HTMLElement | null;
+        const titleEl = node.querySelector('.skill-title') as HTMLElement | null;
+        const statusEl = node.querySelector('.skill-status-text') as HTMLElement | null;
+        if (!inner) return;
+
+        // Parse data attributes
+        let requires: string[] = [];
+        let requiresAny: string[] = [];
+        try { requires = JSON.parse(node.dataset.requires || '[]'); } catch {}
+        try { requiresAny = JSON.parse(node.dataset.requiresAny || '[]'); } catch {}
+        const reqRecon = parseInt(node.dataset.requiresRecon || '0', 10);
+        const reqHardening = parseInt(node.dataset.requiresHardening || '0', 10);
+
+        // Determine state
+        let state: 'complete' | 'available' | 'locked' = 'locked';
+
+        if (completed.includes(slug)) {
+          state = 'complete';
+        } else {
+          // Check all requirements
+          const andMet = requires.length === 0 || requires.every((r: string) => completed.includes(r));
+          const anyMet = requiresAny.length === 0 || requiresAny.some((r: string) => completed.includes(r));
+          const reconMet = reconComplete.length >= reqRecon;
+          const hardeningMet = hardeningComplete.length >= reqHardening;
+
+          if (andMet && anyMet && reconMet && hardeningMet) {
+            state = 'available';
+          }
+        }
+
+        // Apply state classes
+        node.classList.remove('skill-available', 'skill-complete');
+        if (state === 'complete') {
+          node.classList.add('skill-complete');
+          inner.classList.remove('opacity-50', 'hover:opacity-65');
+          inner.classList.add('opacity-100');
+          inner.style.borderColor = '#00d4ff';
+          if (iconEl) { iconEl.textContent = '\u2713'; iconEl.classList.add('text-terminal-cyan'); }
+          if (titleEl) { titleEl.classList.remove('text-gray-500'); titleEl.classList.add('text-terminal-cyan'); }
+          if (statusEl) { statusEl.textContent = '\u25b8 COMPLETE'; statusEl.classList.remove('text-terminal-muted/40'); statusEl.classList.add('text-terminal-cyan'); }
+        } else if (state === 'available') {
+          node.classList.add('skill-available');
+          inner.classList.remove('opacity-50', 'hover:opacity-65');
+          inner.classList.add('opacity-90', 'hover:opacity-100');
+          inner.style.borderColor = '#00ff41';
+          if (iconEl) { iconEl.textContent = '\u25b8'; iconEl.classList.add('text-terminal-green'); }
+          if (titleEl) { titleEl.classList.remove('text-gray-500'); titleEl.classList.add('text-terminal-green'); }
+          if (statusEl) { statusEl.textContent = '\u25b8 AVAILABLE'; statusEl.classList.remove('text-terminal-muted/40'); statusEl.classList.add('text-terminal-green'); }
+        }
+        // Locked is the default state from SSR, no changes needed
+      });
+    }
+
+    // Run on load
+    updateSkillTree();
+
+    // Listen for progress changes from other pages/tabs
+    window.addEventListener('pt:progress', updateSkillTree);
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'pt_progress') updateSkillTree();
+    });
+  </script>
+</BaseLayout>

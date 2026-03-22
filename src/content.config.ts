@@ -21,6 +21,11 @@ const guides = defineCollection({
       answer: z.string(),
     })).default([]),
     difficulty: z.number().min(1).max(5).default(1),
+    requires: z.array(z.string()).default([]),
+    requiresAny: z.array(z.string()).default([]),
+    requiresRecon: z.number().default(0),
+    requiresHardening: z.number().default(0),
+    tier: z.enum(['recon', 'hardening', 'ops']).default('recon'),
   }),
 });
 

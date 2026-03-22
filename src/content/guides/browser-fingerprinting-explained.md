@@ -35,6 +35,10 @@ faq:
   answer: In some ways, yes. Cookies can be deleted, blocked, or expired. Fingerprinting reads your device characteristics — there is nothing to delete. It works in incognito mode and across cleared sessions.
     However, fingerprints can change when you update software or change settings, making them less persistent than cookies over long periods.
 draft: false
+
+tier: hardening
+requires:
+  - choosing-a-browser-for-privacy
 ---
 
 # Browser Fingerprinting Explained

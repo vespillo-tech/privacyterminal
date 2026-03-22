@@ -39,6 +39,8 @@ faq:
   answer: Zero-knowledge means the service provider cannot access your data even if they wanted to. Your data is encrypted with keys only you hold. If you lose your password, the provider cannot recover
     your data. ProtonMail and Bitwarden are examples of zero-knowledge services.
 draft: false
+
+tier: recon
 ---
 
 # Privacy Glossary

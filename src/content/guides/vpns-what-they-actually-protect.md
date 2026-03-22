@@ -40,6 +40,10 @@ faq:
   answer: Generally no. Free VPNs must fund their operations somehow — usually by logging and selling your browsing data, injecting ads, or providing poor security. Some free VPNs have been caught selling
     bandwidth or installing malware. The ProtonVPN free tier is one of the few trustworthy exceptions.
 draft: false
+
+tier: hardening
+requires:
+  - what-is-a-threat-model
 ---
 
 # VPNs: What They Actually Protect

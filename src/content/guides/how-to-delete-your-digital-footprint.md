@@ -35,6 +35,11 @@ faq:
   answer: Yes. Inactive accounts are data liabilities — they contain your personal information, may be involved in data breaches, and continue to be indexed by search engines and data brokers. Download
     your data archive first, then delete the account completely rather than just deactivating it.
 draft: false
+
+tier: ops
+requires:
+  - data-broker-opt-out
+  - opsec-for-high-risk-individuals
 ---
 
 # How to Delete Your Digital Footprint

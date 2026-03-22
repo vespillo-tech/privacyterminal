@@ -36,6 +36,8 @@ faq:
   answer: Third-party cookies remain the most widespread tracking mechanism, used by advertising networks like Google and Meta to follow you across millions of websites. However, as browsers block cookies,
     fingerprinting and server-side tracking are growing rapidly.
 draft: false
+
+tier: recon
 ---
 
 # How You're Being Tracked Right Now

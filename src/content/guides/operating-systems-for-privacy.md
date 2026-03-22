@@ -39,6 +39,9 @@ faq:
   answer: Yes. GrapheneOS runs standard Android apps through a sandboxed Google Play compatibility layer. Most apps work normally, including banking apps. You lose Google Assistant and some Google-dependent
     features, but gain dramatically reduced tracking. It only runs on Pixel phones due to their strong hardware security.
 draft: false
+
+tier: hardening
+requiresHardening: 4
 ---
 
 # Operating Systems for Privacy

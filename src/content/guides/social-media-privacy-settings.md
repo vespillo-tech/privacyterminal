@@ -38,6 +38,9 @@ faq:
   answer: That depends on your threat model. If social media provides genuine value (professional networking, community, family contact), hardening your settings is a reasonable compromise. If you rarely
     use a platform, deleting the account removes a data collection vector. Consider downloading your data archive first.
 draft: false
+
+tier: hardening
+requiresHardening: 2
 ---
 
 # Social Media Privacy Settings: Platform-by-Platform Guide

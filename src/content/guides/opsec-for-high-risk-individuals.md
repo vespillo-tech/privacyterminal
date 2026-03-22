@@ -40,6 +40,9 @@ faq:
   answer: A dedicated device used only for sensitive communications — ideally a Pixel phone running GrapheneOS or a laptop running Tails. This device should never be used for personal activities, should
     connect through Tor or a trusted VPN, and should never be linked to your real identity.
 draft: false
+
+tier: ops
+requiresHardening: 11
 ---
 
 # OPSEC for High-Risk Individuals

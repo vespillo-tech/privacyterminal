@@ -37,6 +37,11 @@ faq:
   answer: Change the default admin password, update firmware regularly, disable WPS (Wi-Fi Protected Setup), use WPA3 or WPA2 encryption, disable remote management, change the default SSID, and configure
     encrypted DNS. If your ISP router does not support these features, consider a third-party router.
 draft: false
+
+tier: hardening
+requires:
+  - dns-privacy-explained
+  - vpns-what-they-actually-protect
 ---
 
 # Network Security at Home

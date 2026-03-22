@@ -40,6 +40,9 @@ faq:
   answer: If your time is worth more than $100-200 per year, yes. Services like DeleteMe and Optery automate the tedious opt-out process across dozens of brokers and handle re-removal when data reappears.
     They are especially worthwhile for people whose personal information poses safety risks if publicly available.
 draft: false
+
+tier: ops
+requiresHardening: 6
 ---
 
 # Data Broker Opt-Out Guide

@@ -40,6 +40,9 @@ faq:
   answer: SMS 2FA is better than no 2FA, but it is vulnerable to SIM-swapping attacks where an attacker convinces your carrier to transfer your number. Use TOTP authenticator apps (Aegis, Ente Auth, or
     Bitwarden built-in) instead. For high-value accounts, hardware security keys (YubiKey) provide the strongest protection.
 draft: false
+
+tier: hardening
+requiresRecon: 3
 ---
 
 # Password Managers and Account Security

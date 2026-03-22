@@ -34,6 +34,8 @@ faq:
   answer: Yes. Governments can access your data through legal processes (subpoenas, warrants), bulk surveillance programs, or by purchasing it from data brokers — which requires no warrant. The legal threshold
     varies by country and data type.
 draft: false
+
+tier: recon
 ---
 
 # Who Wants Your Data and Why

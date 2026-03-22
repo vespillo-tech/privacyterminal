@@ -39,6 +39,8 @@ faq:
   answer: Start by deleting your advertising ID, disabling location for non-essential apps, revoking unnecessary permissions, and disabling Wi-Fi and Bluetooth scanning. For maximum privacy, consider GrapheneOS
     (a de-Googled Android) or heavily hardened iOS settings. Our 5-Minute Privacy Checkup covers the essential steps.
 draft: false
+
+tier: recon
 ---
 
 # Your Phone Is Tracking You

@@ -40,6 +40,9 @@ faq:
   answer: Signal is widely considered the most private mainstream messaging app. It uses end-to-end encryption by default, collects minimal metadata (only your phone number and last connection date), is
     fully open source, and has been independently audited. Session and Briar offer even stronger anonymity but with fewer features.
 draft: false
+
+tier: hardening
+requiresRecon: 3
 ---
 
 # Encrypted Messaging: Your Options

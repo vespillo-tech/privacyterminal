@@ -36,6 +36,8 @@ faq:
   answer: 'Start by listing your digital assets (accounts, devices, data). For each, ask: who might want this, how could they get it, and what would happen if they did. Prioritize by likelihood and impact.
     Our Threat Profiler tool automates this with 47 questions across 28 threat categories.'
 draft: false
+
+tier: recon
 ---
 
 # What Is a Threat Model? (And Why You Need One)

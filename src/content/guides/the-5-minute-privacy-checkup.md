@@ -39,6 +39,8 @@ faq:
   answer: Yes. These five changes address the most common and impactful tracking methods that affect nearly everyone. They eliminate your advertising ID, reduce location tracking, and limit data sharing
     — covering roughly 60-70% of typical consumer tracking exposure.
 draft: false
+
+tier: recon
 ---
 
 # The 5-Minute Privacy Checkup

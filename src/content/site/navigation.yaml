@@ -5,6 +5,9 @@ items:
   - label: scan
     href: /scan
     key: "1"
+  - label: skill tree
+    href: /skill-tree
+    key: "1b"
   - label: tools
     href: /tools
     key: "2"

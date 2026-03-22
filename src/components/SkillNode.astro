@@ -1,0 +1,106 @@
+---
+/**
+ * SkillNode.astro — Single skill tree node component
+ * Terminal-style box showing guide status in the skill tree.
+ * Default state: LOCKED (dimmed). Client-side JS adds
+ * .skill-available or .skill-complete classes on the parent <a>.
+ */
+
+interface Props {
+  slug: string;
+  title: string;
+  tier: 'recon' | 'hardening' | 'ops';
+  category: string;
+  difficulty: number;
+  requires?: string[];
+  requiresAny?: string[];
+  requiresRecon?: number;
+  requiresHardening?: number;
+}
+
+const {
+  slug,
+  title,
+  tier,
+  category,
+  difficulty = 1,
+  requires = [],
+  requiresAny = [],
+  requiresRecon = 0,
+  requiresHardening = 0,
+} = Astro.props;
+
+// ── Tier display config ─────────────────────────────────────────
+const tierCfg = {
+  recon:     { label: 'RECON',     text: 'text-terminal-green', border: 'border-terminal-green/40' },
+  hardening: { label: 'HARDENING', text: 'text-terminal-cyan',  border: 'border-terminal-cyan/40' },
+  ops:       { label: 'OPS',       text: 'text-terminal-amber', border: 'border-terminal-amber/40' },
+} as const;
+
+const tc = tierCfg[tier];
+const diffBar = '\u2588'.repeat(difficulty) + '\u2591'.repeat(5 - difficulty);
+
+// ── Abbreviation map for dependency slugs ───────────────────────
+const ABBREV: Record<string, string> = {
+  'what-is-a-threat-model': 'Threat Model',
+  'choosing-a-browser-for-privacy': 'Browser',
+  'vpns-what-they-actually-protect': 'VPN',
+  'dns-privacy-explained': 'DNS',
+  'data-broker-opt-out': 'Data Brokers',
+  'opsec-for-high-risk-individuals': 'OPSEC',
+};
+
+function abbr(s: string): string {
+  return ABBREV[s] || s.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).slice(0, 2).join(' ');
+}
+
+// ── Build human-readable requirement description ────────────────
+const parts: string[] = [];
+if (requiresRecon >= 7) parts.push('all RECON');
+else if (requiresRecon > 0) parts.push(`${requiresRecon}\u00d7 RECON`);
+if (requiresHardening >= 11) parts.push('all HARDENING');
+else if (requiresHardening > 0) parts.push(`${requiresHardening}\u00d7 HARDENING`);
+if (requires.length > 0) parts.push(requires.map(abbr).join(' + '));
+if (requiresAny.length > 0) parts.push('any(' + requiresAny.map(abbr).join(' | ') + ')');
+
+const hasReqs = parts.length > 0;
+const reqDesc = hasReqs ? parts.join(' \u00b7 ') : 'no prerequisites';
+---
+
+<a
+  href={`/guides/${slug}`}
+  class="skill-node block no-underline"
+  data-skill-slug={slug}
+  data-requires={JSON.stringify(requires)}
+  data-requires-any={JSON.stringify(requiresAny)}
+  data-requires-recon={requiresRecon}
+  data-requires-hardening={requiresHardening}
+>
+  <div class="skill-node-inner border border-terminal-border p-3 h-full transition-all duration-200 opacity-50 hover:opacity-65">
+    {/* Status icon + Title */}
+    <div class="flex items-start gap-2 mb-2">
+      <span class="skill-status-icon text-sm leading-none mt-0.5 shrink-0" aria-hidden="true">&#x1f512;</span>
+      <span class="skill-title text-xs font-bold leading-tight text-gray-500 transition-colors">{title}</span>
+    </div>
+
+    {/* Tier badge + Difficulty bar */}
+    <div class="flex items-center justify-between mb-2">
+      <span class={`skill-tier-badge text-[10px] font-bold px-1.5 py-0.5 border ${tc.border} ${tc.text} opacity-60`}>
+        {tc.label}
+      </span>
+      <span class="text-terminal-muted text-[10px] font-mono" title={`Difficulty ${difficulty}/5`}>
+        {diffBar}
+      </span>
+    </div>
+
+    {/* Requirements */}
+    <div class="skill-req-text text-[10px] text-terminal-muted/60 leading-snug mb-2">
+      <span>{hasReqs ? `\u2514\u2500 req: ${reqDesc}` : `\u2514\u2500 ${reqDesc}`}</span>
+    </div>
+
+    {/* Status label */}
+    <div class="skill-status-text text-[10px] font-bold text-terminal-muted/40">
+      \u25a0 LOCKED
+    </div>
+  </div>
+</a>

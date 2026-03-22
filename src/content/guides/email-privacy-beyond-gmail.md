@@ -38,6 +38,9 @@ faq:
   answer: Email aliases are forwarding addresses that relay mail to your real inbox. Services like SimpleLogin and addy.io let you create unique aliases for every account. If an alias is compromised in
     a data breach, you disable it without affecting other accounts.
 draft: false
+
+tier: hardening
+requiresHardening: 2
 ---
 
 # Email Privacy: Beyond Gmail
