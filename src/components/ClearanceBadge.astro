@@ -1,0 +1,41 @@
+---
+// ClearanceBadge.astro — Displays current clearance level inline
+// Renders client-side from localStorage via gamification engine
+---
+
+<span id="pt-clearance-badge" class="inline-flex items-center gap-1 text-[10px] font-bold">
+  <span class="text-terminal-muted">CLEARANCE:</span>
+  <span id="pt-clearance-level" class="text-gray-500">LVL 0</span>
+  <span id="pt-clearance-name" class="text-gray-500">CIVILIAN</span>
+</span>
+
+<script>
+import { calculateClearance } from '../scripts/gamification';
+
+function renderClearance(): void {
+  const lvlEl = document.getElementById('pt-clearance-level');
+  const nameEl = document.getElementById('pt-clearance-name');
+  if (!lvlEl || !nameEl) return;
+
+  const cl = calculateClearance();
+
+  lvlEl.textContent = `LVL ${cl.level}`;
+  nameEl.textContent = cl.name;
+
+  // Apply color
+  const colorMap: Record<string, string> = {
+    gray:  'text-gray-500',
+    white: 'text-gray-200',
+    green: 'text-terminal-green',
+    cyan:  'text-terminal-cyan',
+    amber: 'text-terminal-amber',
+    red:   'text-terminal-red',
+  };
+  const cls = colorMap[cl.tailwindColor] || 'text-gray-500';
+  lvlEl.className = cls + ' font-bold';
+  nameEl.className = cls + ' font-bold';
+}
+
+renderClearance();
+window.addEventListener('pt:progress', renderClearance);
+</script>

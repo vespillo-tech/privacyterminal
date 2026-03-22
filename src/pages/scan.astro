@@ -1,0 +1,411 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+export const prerender = true;
+---
+
+<BaseLayout
+  title="Live Threat Assessment — Privacy Terminal"
+  description="Scan your browser in real-time. See exactly how exposed you are across fingerprinting, IP leaks, WebRTC, DNS, cookies, and more. All client-side, zero data collected."
+  statusLeft="module: threat-assessment"
+  statusRight="live scan"
+>
+  <!-- Structured data -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Live Threat Assessment",
+    "description": "Real-time browser privacy scanner that checks fingerprinting, WebRTC leaks, DNS resolver, IP visibility, and more. Runs entirely client-side.",
+    "applicationCategory": "SecurityApplication",
+    "operatingSystem": "Web Browser",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "publisher": { "@type": "Organization", "name": "Privacy Terminal", "url": "https://privacyterminal.com" },
+    "url": "https://privacyterminal.com/scan"
+  })} />
+
+  <!-- Page header -->
+  <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+    <div>
+      <div class="text-terminal-green text-glow-green font-bold">
+        ~/scan/<span class="text-white">threat-assessment</span>
+      </div>
+      <p class="text-terminal-muted text-xs mt-1">Real-time browser privacy scan — all processing runs locally</p>
+    </div>
+    <div class="flex items-center gap-2 text-xs">
+      <span class="flex items-center gap-1.5">
+        <span class="inline-block w-2 h-2 bg-terminal-cyan" id="scan-status-dot"></span>
+        <span class="text-terminal-cyan" id="scan-status-label">READY</span>
+      </span>
+    </div>
+  </div>
+
+  <hr class="tui-hr" />
+
+  <!-- Scan controls -->
+  <div class="mb-4">
+    <button id="btn-scan" class="px-4 py-2 border border-terminal-green text-terminal-green text-xs font-bold hover:bg-terminal-green/10 transition-colors">
+      $ run threat-assessment --full
+    </button>
+    <span id="scan-timer" class="text-terminal-muted text-[10px] ml-3 hidden"></span>
+  </div>
+
+  <!-- Progress bar (during scan) -->
+  <div id="scan-progress" class="hidden mb-4">
+    <div class="tui-box p-3">
+      <span class="tui-box-title text-terminal-amber">┤ SCANNING ├</span>
+      <div class="mt-2">
+        <div class="text-xs text-terminal-muted mb-1" id="scan-progress-label">Initializing...</div>
+        <div class="flex items-center gap-2">
+          <div class="flex-1 h-1.5 bg-terminal-border">
+            <div class="h-full bg-terminal-green transition-all duration-300" id="scan-progress-fill" style="width: 0%"></div>
+          </div>
+          <span class="text-terminal-green text-[10px] font-bold w-8 text-right" id="scan-progress-pct">0%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main results panel (hidden until scan completes) -->
+  <div id="scan-results" class="hidden">
+    <!-- ASCII-art threat surface box -->
+    <div class="tui-box p-4 mb-4" id="threat-surface-box">
+      <span class="tui-box-title text-terminal-green">┤ THREAT SURFACE ANALYSIS ├</span>
+      <div class="mt-3 space-y-2" id="threat-vectors">
+        <!-- Vectors injected by JS -->
+      </div>
+      <hr class="tui-hr my-3" />
+      <!-- Overall threat level -->
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="text-terminal-muted text-xs">OVERALL THREAT LEVEL:</span>
+          <span class="font-mono font-bold text-xs" id="overall-bar"></span>
+          <span class="font-bold text-xs" id="overall-label"></span>
+        </div>
+        <span class="text-xs font-bold" id="overall-pct"></span>
+      </div>
+      <!-- Clearance display -->
+      <div class="mt-3 flex items-center gap-2">
+        <span class="text-terminal-muted text-xs">CLEARANCE:</span>
+        <span class="font-bold text-xs" id="result-clearance"></span>
+      </div>
+    </div>
+
+    <!-- Detailed breakdown -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+      <!-- Leaks -->
+      <div class="tui-box p-3">
+        <span class="tui-box-title text-terminal-red">┤ LEAKS ├</span>
+        <div class="mt-2 space-y-1" id="detail-leaks"></div>
+      </div>
+      <!-- Fingerprints -->
+      <div class="tui-box p-3">
+        <span class="tui-box-title text-terminal-amber">┤ FINGERPRINTING ├</span>
+        <div class="mt-2 space-y-1" id="detail-fingerprints"></div>
+      </div>
+    </div>
+
+    <!-- Metadata -->
+    <div class="tui-box p-3 mb-4">
+      <span class="tui-box-title text-terminal-cyan">┤ METADATA ├</span>
+      <div class="mt-2 space-y-1" id="detail-metadata"></div>
+    </div>
+
+    <!-- Progress summary -->
+    <div class="tui-box p-3 mb-4">
+      <span class="tui-box-title text-terminal-green">┤ YOUR PROGRESS ├</span>
+      <div class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-xs">
+        <div>
+          <div class="text-terminal-green text-lg font-bold" id="stat-guides">0/21</div>
+          <div class="text-terminal-muted text-[10px]">GUIDES COMPLETE</div>
+        </div>
+        <div>
+          <div class="text-terminal-cyan text-lg font-bold" id="stat-tools">0/7</div>
+          <div class="text-terminal-muted text-[10px]">TOOLS USED</div>
+        </div>
+        <div>
+          <div class="text-terminal-amber text-lg font-bold" id="stat-recon">0/7</div>
+          <div class="text-terminal-muted text-[10px]">RECON TIER</div>
+        </div>
+        <div>
+          <div class="text-terminal-red text-lg font-bold" id="stat-hardening">0/11</div>
+          <div class="text-terminal-muted text-[10px]">HARDENING TIER</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommended next steps -->
+    <div class="tui-box p-3 mb-4">
+      <span class="tui-box-title text-terminal-amber">┤ RECOMMENDED ACTIONS ├</span>
+      <div class="mt-2 space-y-1" id="recommendations"></div>
+    </div>
+
+    <!-- Rescan button -->
+    <div class="text-center py-3">
+      <button id="btn-rescan" class="px-4 py-2 border border-terminal-cyan text-terminal-cyan text-xs font-bold hover:bg-terminal-cyan/10 transition-colors">
+        $ run threat-assessment --rescan
+      </button>
+    </div>
+  </div>
+
+  <!-- Educational footer -->
+  <div class="mt-6">
+    <hr class="tui-hr" />
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-terminal-muted py-3">
+      <div>
+        <span class="text-terminal-green font-bold">What does this scan do?</span>
+        <p class="mt-1">This scanner checks your browser across 11 privacy vectors in real-time. It detects IP leaks, WebRTC exposure, DNS resolver type, fingerprinting surfaces, and browser metadata. All checks run entirely in your browser — no data is sent to Privacy Terminal.</p>
+      </div>
+      <div>
+        <span class="text-terminal-green font-bold">How do I improve my score?</span>
+        <p class="mt-1">Follow our guides to reduce your attack surface. Start with the <a href="/guides/the-5-minute-privacy-checkup" class="text-terminal-cyan hover:text-terminal-green">5-Minute Privacy Checkup</a>, then work through the <a href="/guides" class="text-terminal-cyan hover:text-terminal-green">guides</a> to address each threat vector. Re-scan after making changes to see your improvement.</p>
+        <p class="mt-1"><span class="text-terminal-amber">Note:</span> IP and DNS checks use our <a href="/privacy" class="text-terminal-cyan hover:text-terminal-green">privacy-respecting API</a> to detect your resolver type. No data is logged or stored.</p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+import { runThreatScan, type ScanResult, type ScanVector } from '../scripts/threat-scanner';
+import {
+  calculateClearance, getProgressSummary, saveScanResults,
+  RECON_GUIDES, HARDENING_GUIDES, ALL_GUIDES, ALL_TOOLS,
+  CLEARANCE_LEVELS, renderBar, exposureLabel, exposureColor,
+  type ScanSnapshot
+} from '../scripts/gamification';
+import { trackTool, unlockAchievement, getCachedProgress } from '../scripts/privacy-score';
+
+// ── DOM refs ──
+const btnScan = document.getElementById('btn-scan') as HTMLButtonElement;
+const btnRescan = document.getElementById('btn-rescan') as HTMLButtonElement | null;
+const scanProgress = document.getElementById('scan-progress')!;
+const scanResults = document.getElementById('scan-results')!;
+const progressLabel = document.getElementById('scan-progress-label')!;
+const progressFill = document.getElementById('scan-progress-fill')!;
+const progressPct = document.getElementById('scan-progress-pct')!;
+const statusDot = document.getElementById('scan-status-dot')!;
+const statusLabel = document.getElementById('scan-status-label')!;
+const scanTimer = document.getElementById('scan-timer')!;
+
+// ── Read API base from game config ──
+let apiBase = 'https://privacyterminal-api.terinmain.workers.dev';
+try {
+  const el = document.getElementById('pt-game-data');
+  if (el?.textContent) {
+    const gd = JSON.parse(el.textContent);
+    if (gd.apiBase) apiBase = gd.apiBase;
+  }
+} catch { /* use default */ }
+
+// ── Helpers ──
+function setStatus(status: 'ready' | 'running' | 'complete' | 'error') {
+  const colors: Record<string, string> = {
+    ready: 'bg-terminal-cyan', running: 'bg-terminal-amber',
+    complete: 'bg-terminal-green', error: 'bg-terminal-red'
+  };
+  const textColors: Record<string, string> = {
+    ready: 'text-terminal-cyan', running: 'text-terminal-amber',
+    complete: 'text-terminal-green', error: 'text-terminal-red'
+  };
+  const labels: Record<string, string> = {
+    ready: 'READY', running: 'SCANNING...', complete: 'COMPLETE', error: 'ERROR'
+  };
+  statusDot.className = `inline-block w-2 h-2 ${colors[status]}${status === 'running' ? ' animate-pulse' : ''}`;
+  statusLabel.className = textColors[status];
+  statusLabel.textContent = labels[status];
+}
+
+function severityColor(sev: number): string {
+  if (sev >= 70) return 'text-terminal-red';
+  if (sev >= 40) return 'text-terminal-amber';
+  if (sev >= 15) return 'text-terminal-cyan';
+  return 'text-terminal-green';
+}
+
+function statusColor(status: string): string {
+  const s = status.toUpperCase();
+  if (s.includes('EXPOSED') || s.includes('ISP') || s.includes('UNIQUE') || s.includes('ENABLED') || s.includes('LEAKING')) return 'text-terminal-red';
+  if (s.includes('PROTECTED') || s.includes('HIDDEN') || s.includes('ENCRYPTED') || s.includes('VPN') || s.includes('TOR') || s.includes('CLEAN') || s.includes('STRICT') || s.includes('RANDOMIZED') || s.includes('BLOCKED')) return 'text-terminal-green';
+  if (s.includes('ON')) return 'text-terminal-green';
+  if (s.includes('OFF')) return 'text-terminal-amber';
+  return 'text-terminal-amber';
+}
+
+function renderVectorRow(v: ScanVector): string {
+  const bar = renderBar(v.severity, 100, 14);
+  const sCol = severityColor(v.severity);
+  const stCol = statusColor(v.status);
+  return `<div class="flex items-center gap-2 text-xs py-0.5">
+    <span class="text-terminal-muted w-[140px] shrink-0 truncate">${v.label}</span>
+    <span class="${sCol} font-mono text-[11px] hidden sm:inline">${bar}</span>
+    <span class="${stCol} font-bold shrink-0 text-right ml-auto">${v.status}</span>
+  </div>`;
+}
+
+function renderDetailRow(v: ScanVector): string {
+  const stCol = statusColor(v.status);
+  return `<div class="flex items-start justify-between gap-2 py-1 text-xs border-b border-terminal-border/30 last:border-0">
+    <div class="min-w-0">
+      <div class="flex items-center gap-2">
+        <span class="${stCol} font-bold text-[10px] shrink-0">[${v.status}]</span>
+        <span class="text-gray-300 font-bold">${v.label}</span>
+      </div>
+      <div class="text-terminal-muted text-[10px] mt-0.5">${v.detail}</div>
+    </div>
+    <div class="shrink-0 text-right">
+      <span class="${severityColor(v.severity)} font-bold text-[10px]">${v.severity}%</span>
+    </div>
+  </div>`;
+}
+
+function guideNameFromSlug(slug: string): string {
+  return slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+// ── Render results ──
+function displayResults(result: ScanResult) {
+  // Threat vectors summary
+  const vectorsEl = document.getElementById('threat-vectors')!;
+  vectorsEl.innerHTML = result.vectors.map(renderVectorRow).join('');
+
+  // Overall bar
+  const overall = result.overall_exposure;
+  const oBar = renderBar(overall, 100, 14);
+  const oLabel = exposureLabel(overall);
+  const oColor = exposureColor(overall);
+  document.getElementById('overall-bar')!.innerHTML = `<span class="${oColor}">${oBar}</span>`;
+  document.getElementById('overall-label')!.innerHTML = `<span class="${oColor}">${oLabel}</span>`;
+  document.getElementById('overall-pct')!.innerHTML = `<span class="${oColor}">${overall}%</span>`;
+
+  // Clearance
+  const cl = calculateClearance();
+  const clEl = document.getElementById('result-clearance')!;
+  const colorMap: Record<string, string> = {
+    gray: 'text-gray-500', white: 'text-gray-200', green: 'text-terminal-green',
+    cyan: 'text-terminal-cyan', amber: 'text-terminal-amber', red: 'text-terminal-red',
+  };
+  clEl.innerHTML = `<span class="${colorMap[cl.tailwindColor] || 'text-gray-500'}">LEVEL ${cl.level} / ${cl.name}</span>`;
+
+  // Category breakdowns
+  const leaks = result.vectors.filter(v => v.category === 'leak');
+  const fps = result.vectors.filter(v => v.category === 'fingerprint');
+  const meta = result.vectors.filter(v => v.category === 'metadata');
+  document.getElementById('detail-leaks')!.innerHTML = leaks.map(renderDetailRow).join('');
+  document.getElementById('detail-fingerprints')!.innerHTML = fps.map(renderDetailRow).join('');
+  document.getElementById('detail-metadata')!.innerHTML = meta.map(renderDetailRow).join('');
+
+  // Progress stats
+  const summary = getProgressSummary();
+  document.getElementById('stat-guides')!.textContent = `${summary.totalGuides.completed}/${summary.totalGuides.total}`;
+  document.getElementById('stat-tools')!.textContent = `${summary.tools.used.length}/${summary.tools.total}`;
+  document.getElementById('stat-recon')!.textContent = `${summary.recon.completed.length}/${summary.recon.total}`;
+  document.getElementById('stat-hardening')!.textContent = `${summary.hardening.completed.length}/${summary.hardening.total}`;
+
+  // Recommendations
+  const recs: string[] = [];
+  const recVectors = result.vectors.filter(v => v.severity >= 40).sort((a, b) => b.severity - a.severity);
+  const vectorGuideMap: Record<string, string> = {
+    webrtc: 'browser-fingerprinting-explained',
+    dns: 'dns-privacy-explained',
+    ip: 'vpns-what-they-actually-protect',
+    canvas: 'browser-fingerprinting-explained',
+    webgl: 'browser-fingerprinting-explained',
+    fonts: 'browser-fingerprinting-explained',
+    cookies: 'choosing-a-browser-for-privacy',
+    javascript: 'choosing-a-browser-for-privacy',
+    referrer: 'choosing-a-browser-for-privacy',
+    dnt: 'the-5-minute-privacy-checkup',
+    screen: 'browser-fingerprinting-explained',
+  };
+
+  for (const v of recVectors.slice(0, 5)) {
+    const guide = vectorGuideMap[v.id];
+    const link = guide ? ` → <a href="/guides/${guide}" class="text-terminal-cyan hover:text-terminal-green">${guideNameFromSlug(guide)}</a>` : '';
+    recs.push(`<div class="text-xs py-0.5"><span class="text-terminal-green">▸</span> <span class="text-gray-300">Fix <strong class="${severityColor(v.severity)}">${v.label}</strong> (${v.severity}% exposure)</span>${link}</div>`);
+  }
+
+  // Add tier recommendations
+  if (summary.recon.completed.length < summary.recon.total) {
+    const remaining = RECON_GUIDES.filter(g => !summary.recon.completed.includes(g));
+    if (remaining.length > 0) {
+      recs.push(`<div class="text-xs py-0.5"><span class="text-terminal-green">▸</span> <span class="text-gray-300">Complete Recon tier: <a href="/guides/${remaining[0]}" class="text-terminal-cyan hover:text-terminal-green">${guideNameFromSlug(remaining[0])}</a> (+${remaining.length - 1} more)</span></div>`);
+    }
+  }
+
+  if (recs.length === 0) {
+    recs.push('<div class="text-xs text-terminal-green py-1">✓ No critical recommendations — your privacy posture is strong!</div>');
+  }
+
+  document.getElementById('recommendations')!.innerHTML = recs.join('');
+}
+
+// ── Scan handler ──
+let isScanning = false;
+
+async function executeScan() {
+  if (isScanning) return;
+  isScanning = true;
+
+  btnScan.disabled = true;
+  btnScan.textContent = 'scanning...';
+  setStatus('running');
+  scanProgress.classList.remove('hidden');
+  scanResults.classList.add('hidden');
+  scanTimer.classList.remove('hidden');
+
+  const startTime = performance.now();
+  const timerInterval = setInterval(() => {
+    const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+    scanTimer.textContent = `${elapsed}s elapsed`;
+  }, 100);
+
+  try {
+    const result = await runThreatScan(apiBase, (msg, pct) => {
+      progressLabel.textContent = msg;
+      progressFill.style.width = `${pct}%`;
+      progressPct.textContent = `${pct}%`;
+    });
+
+    clearInterval(timerInterval);
+    const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+    scanTimer.textContent = `completed in ${elapsed}s`;
+
+    // Save scan to localStorage
+    const snapshot: ScanSnapshot = {
+      overall_exposure: result.overall_exposure,
+      timestamp: result.timestamp,
+      vectors: result.vectors.map(v => ({
+        id: v.id,
+        severity: v.severity,
+        status: v.status,
+      })),
+    };
+    saveScanResults(snapshot);
+
+    // Display results
+    displayResults(result);
+    scanProgress.classList.add('hidden');
+    scanResults.classList.remove('hidden');
+    setStatus('complete');
+
+    // Track tool usage
+    try {
+      await trackTool('leak-tester');
+      await trackTool('fingerprint-analyzer');
+      await trackTool('webrtc-detector');
+      await unlockAchievement('FIRST_SCAN');
+      await unlockAchievement('THREAT_ASSESSED');
+    } catch { /* gamification optional */ }
+
+  } catch (err) {
+    clearInterval(timerInterval);
+    setStatus('error');
+    progressLabel.textContent = `Error: ${err instanceof Error ? err.message : 'Scan failed'}`;
+  } finally {
+    isScanning = false;
+    btnScan.disabled = false;
+    btnScan.textContent = '$ run threat-assessment --full';
+  }
+}
+
+btnScan.addEventListener('click', executeScan);
+btnRescan?.addEventListener('click', executeScan);
+</script>

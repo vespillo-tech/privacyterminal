@@ -1,0 +1,18 @@
+---
+// ThreatBar.astro — Reusable terminal-style exposure bar
+// Used in scan results. All rendering is handled client-side by scan page.
+// This component just provides the structural template.
+
+interface Props {
+  label?: string;
+  barId?: string;
+}
+
+const { label = '', barId = '' } = Astro.props;
+---
+
+<div class="flex items-center justify-between gap-2 py-1 text-xs" id={barId}>
+  <span class="text-terminal-muted shrink-0 w-[140px] truncate">{label}</span>
+  <span class="flex-1 font-mono text-terminal-green" data-bar></span>
+  <span class="shrink-0 w-[100px] text-right font-bold" data-status></span>
+</div>

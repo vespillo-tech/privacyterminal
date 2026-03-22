@@ -2,6 +2,7 @@
 import { getCollection, getEntry } from 'astro:content';
 import '../styles/global.css';
 import PrivacyScore from '../components/PrivacyScore.astro';
+import ClearanceBadge from '../components/ClearanceBadge.astro';
 import AuthModal from '../components/AuthModal.astro';
 import AchievementToast from '../components/AchievementToast.astro';
 
@@ -166,6 +167,8 @@ function isActive(href: string) {
         </span>
         <span class="flex items-center gap-3">
           {statusRight && <span class="text-terminal-muted">{statusRight}</span>}
+          <ClearanceBadge />
+          <span class="text-terminal-muted hidden sm:inline">&#124;</span>
           <PrivacyScore />
           <span class="text-terminal-muted hidden sm:inline">&#124;</span>
           <a href="/privacy" class="text-terminal-muted hover:text-terminal-cyan hidden sm:inline">privacy</a>

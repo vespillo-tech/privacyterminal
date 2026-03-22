@@ -2,18 +2,21 @@ items:
   - label: home
     href: /
     key: "0"
+  - label: scan
+    href: /scan
+    key: "1"
   - label: tools
     href: /tools
-    key: "1"
+    key: "2"
   - label: guides
     href: /guides
-    key: "2"
+    key: "3"
   - label: terminal
     href: /terminal
-    key: "3"
+    key: "4"
   - label: about
     href: /about
-    key: "4"
+    key: "5"
   - label: privacy
     href: /privacy
-    key: "5"
+    key: "6"

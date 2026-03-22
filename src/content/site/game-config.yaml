@@ -1,3 +1,4 @@
+# Points-based scoring (existing system)
 levels:
   - level: 1
     name: NEWBIE
@@ -21,4 +22,13 @@ levels:
     max: 9999
 guide_points: 15
 tool_points: 10
-api_base: https://privacyterminal-api.workers.dev
+api_base: https://privacyterminal-api.terinmain.workers.dev
+
+# Clearance level system (new gamification layer)
+# Computed client-side by gamification.ts based on actual progress
+# Level 0: CIVILIAN  — new visitor
+# Level 1: AWARE     — 3+ recon guides
+# Level 2: GUARDED   — all recon + 3 tools used
+# Level 3: HARDENED  — 8+ hardening guides
+# Level 4: OPERATOR  — all guides + all tools
+# Level 5: GHOST     — level 4 + live scan < 20% exposure
