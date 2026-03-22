@@ -46,6 +46,13 @@ async function safeFetch(url: string): Promise<any | null> {
 
 // ── Individual Scanners ─────────────────────────────────────────
 
+function classifyIP(ip: string): 'private' | 'public' | 'loopback' {
+  if (ip.startsWith('10.') || ip.startsWith('192.168.') || /^172\.(1[6-9]|2\d|3[01])\./.test(ip) || ip.startsWith('169.254.')) return 'private';
+  if (ip.startsWith('127.') || ip === '0.0.0.0' || ip === '::1') return 'loopback';
+  if (ip.startsWith('fd') || ip.startsWith('fe80')) return 'private';
+  return 'public';
+}
+
 async function scanWebRTC(): Promise<ScanVector> {
   const vec: ScanVector = {
     id: 'webrtc',
@@ -64,17 +71,26 @@ async function scanWebRTC(): Promise<ScanVector> {
     }
     const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
     const candidates: string[] = [];
+    let hasMDNS = false;
     const timeout = new Promise<void>(r => setTimeout(r, 3000));
     const gather = new Promise<void>(resolve => {
       pc.onicecandidate = (e) => {
         if (!e.candidate) { resolve(); return; }
         const c = e.candidate.candidate;
-        const ipMatch = c.match(/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/);
-        if (ipMatch) {
-          const ip = ipMatch[1];
+        // Detect mDNS candidates (.local addresses)
+        if (c.includes('.local')) { hasMDNS = true; }
+        // Match IPv4
+        const ipv4Match = c.match(/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/);
+        if (ipv4Match) {
+          const ip = ipv4Match[1];
           if (!ip.startsWith('0.') && ip !== '0.0.0.0') {
             candidates.push(ip);
           }
+        }
+        // Match IPv6
+        const ipv6Match = c.match(/([0-9a-f]{1,4}(:[0-9a-f]{1,4}){2,7})/i);
+        if (ipv6Match) {
+          candidates.push(ipv6Match[1]);
         }
       };
     });
@@ -84,14 +100,26 @@ async function scanWebRTC(): Promise<ScanVector> {
     await Promise.race([gather, timeout]);
     pc.close();
 
-    const realIPs = candidates.filter(ip =>
-      !ip.startsWith('0.') && !ip.startsWith('127.') && ip !== '0.0.0.0'
-    );
+    const realIPs = candidates.filter(ip => classifyIP(ip) !== 'loopback');
+    const privateIPs = realIPs.filter(ip => classifyIP(ip) === 'private');
+    const publicIPs = realIPs.filter(ip => classifyIP(ip) === 'public');
 
-    if (realIPs.length > 0) {
+    if (publicIPs.length > 0 && privateIPs.length > 0) {
+      vec.status = 'EXPOSED';
+      vec.severity = 90;
+      vec.detail = `Public and private IPs leaked via WebRTC (${publicIPs.length} public, ${privateIPs.length} private)`;
+    } else if (publicIPs.length > 0) {
       vec.status = 'EXPOSED';
       vec.severity = 85;
-      vec.detail = `Local IP leaked via WebRTC (${realIPs.length} candidate${realIPs.length > 1 ? 's' : ''})`;
+      vec.detail = `Public IP leaked via WebRTC (${publicIPs.length} candidate${publicIPs.length > 1 ? 's' : ''})`;
+    } else if (privateIPs.length > 0) {
+      vec.status = 'PRIVATE IP LEAK';
+      vec.severity = 40;
+      vec.detail = `Private/local IP leaked via WebRTC (${privateIPs.length} candidate${privateIPs.length > 1 ? 's' : ''}) — not directly routable but aids network fingerprinting`;
+    } else if (hasMDNS) {
+      vec.status = 'MDNS ONLY';
+      vec.severity = 10;
+      vec.detail = 'Only mDNS (.local) candidates observed — real IP is obfuscated, minimal leak risk';
     } else {
       vec.status = 'PROTECTED';
       vec.severity = 5;
@@ -228,8 +256,8 @@ function scanJavaScript(): ScanVector {
     id: 'javascript',
     label: 'JavaScript',
     status: 'ENABLED',
-    severity: 40,
-    detail: 'JavaScript is active — enables fingerprinting and tracking scripts',
+    severity: 20,
+    detail: 'JavaScript is active (required to run this scanner). Mitigate tracking with uBlock Origin or NoScript for untrusted sites.',
     category: 'metadata',
   };
 }
@@ -342,7 +370,11 @@ function scanCookies(): ScanVector {
       localStorage.setItem('__pt_test', '1');
       localStorage.removeItem('__pt_test');
       lsAccessible = true;
-      lsCount = localStorage.length;
+      lsCount = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && !key.startsWith('pt_') && !key.startsWith('__pt_')) lsCount++;
+      }
     } catch {
       lsAccessible = false;
     }
@@ -376,20 +408,19 @@ function scanCookies(): ScanVector {
       findings.push('StorageManager API available');
     }
 
-    // 6. Check IndexedDB accessibility (often blocked in hardened browsers)
+    // 6. Check IndexedDB accessibility
     let idbAccessible = false;
     try {
-      const testDB = indexedDB.open('__pt_test');
-      // We don't await — just check if the call didn't throw
-      idbAccessible = true;
-      testDB.onsuccess = () => {
-        try {
-          const db = testDB.result;
-          db.close();
-          indexedDB.deleteDatabase('__pt_test');
-        } catch { /* cleanup best effort */ }
-      };
-      testDB.onerror = () => { idbAccessible = false; };
+      if (typeof indexedDB === 'undefined') {
+        idbAccessible = false;
+      } else {
+        // In hardened browsers, just calling open() throws SecurityError
+        const req = indexedDB.open('__pt_idb_test');
+        idbAccessible = true;
+        // Schedule cleanup (non-blocking)
+        req.onsuccess = () => { try { req.result.close(); indexedDB.deleteDatabase('__pt_idb_test'); } catch {} };
+        req.onerror = () => {};
+      }
     } catch {
       idbAccessible = false;
     }
@@ -445,11 +476,11 @@ function scanReferrer(): ScanVector {
     return {
       id: 'referrer',
       label: 'Referrer Policy',
-      status: isStrict ? 'STRICT' : 'LEAKING',
-      severity: isStrict ? 5 : 45,
+      status: isStrict ? 'STRICT' : 'PERMISSIVE',
+      severity: isStrict ? 10 : 30,
       detail: isStrict
-        ? `Policy: ${policyValue} — referrer data restricted${hasReferrer ? ' (referrer present from navigation)' : ''}`
-        : `Policy: ${policyValue} — may leak browsing history to third-party sites`,
+        ? `This site sets a strict referrer policy (${policyValue}). Your browser's global referrer policy may differ — check browser settings for site-independent protection.`
+        : `This site's referrer policy is ${policyValue}. Note: this reflects the site's setting, not your browser's global policy.`,
       category: 'metadata',
     };
   } catch {
@@ -555,9 +586,9 @@ function scanCanvasFingerprint(): ScanVector {
       return {
         id: 'canvas',
         label: 'Canvas Fingerprint',
-        status: 'UNIQUE',
-        severity: 75,
-        detail: 'Canvas produces consistent unique output — trackable across sites',
+        status: 'CONSISTENT',
+        severity: 60,
+        detail: 'Canvas produces consistent output — likely trackable, but session-stable randomization (Firefox RFP) cannot be ruled out from a single session',
         category: 'fingerprint',
       };
     }
@@ -617,9 +648,9 @@ function scanWebGL(): ScanVector {
     const vendor = gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) || 'unknown';
 
     // Check for spoofed/generic values
-    const isSpoofed = renderer === 'Mesa' || renderer.includes('llvmpipe') ||
-      renderer === 'unknown' || vendor === 'unknown' ||
-      renderer === 'WebKit WebGL' || renderer === 'Mozilla';
+    const genericRenderers = ['WebKit WebGL', 'Mozilla', 'unknown', 'Generic Renderer', 'ANGLE'];
+    const isSpoofed = genericRenderers.some(g => renderer === g || vendor === g) ||
+      (renderer === 'unknown' && vendor === 'unknown');
 
     if (isSpoofed) {
       return {
@@ -745,7 +776,12 @@ function scanScreen(): ScanVector {
     // Detect letterboxed/spoofed resolution (common in Tor/Mullvad Browser)
     const innerW = window.innerWidth;
     const innerH = window.innerHeight;
-    const isLetterboxed = (innerW % 200 === 0) && (innerH % 100 === 0);
+    // Tor/Mullvad letterboxing: rounded inner dimensions + significant gap from screen size
+    const wGap = w - innerW;
+    const hGap = h - innerH;
+    const isRounded = (innerW % 200 === 0) && (innerH % 100 === 0);
+    const hasSignificantGap = wGap > 100 || hGap > 100;
+    const isLetterboxed = isRounded && hasSignificantGap;
 
     if (isLetterboxed) {
       return {
