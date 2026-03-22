@@ -223,6 +223,7 @@ function severityColor(sev: number): string {
 function statusColor(status: string): string {
   const s = status.toUpperCase();
   if (s.includes('EXPOSED') || s.includes('ISP') || s.includes('UNIQUE') || s.includes('ENABLED') || s.includes('LEAKING')) return 'text-terminal-red';
+  if (s.includes('VPN IP LEAK') || s.includes('CONSISTENT') || s.includes('UNVERIFIED') || s.includes('PERMISSIVE') || s.includes('DATACENTER') || s.includes('PRIVATE IP')) return 'text-terminal-amber';
   if (s.includes('PROTECTED') || s.includes('HIDDEN') || s.includes('ENCRYPTED') || s.includes('VPN') || s.includes('TOR') || s.includes('CLEAN') || s.includes('STRICT') || s.includes('RANDOMIZED') || s.includes('BLOCKED') || s.includes('HARDENED') || s.includes('RESTRICTED') || s.includes('MDNS') || s.includes('MINIMAL')) return 'text-terminal-green';
   if (s.includes('ON')) return 'text-terminal-green';
   if (s.includes('OFF')) return 'text-terminal-amber';

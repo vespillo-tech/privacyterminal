@@ -907,6 +907,31 @@ export async function runThreatScan(
     }
   }
 
+  // ── Post-scan cross-referencing ────────────────────────────────
+  // Cross-reference WebRTC results with IP scan to detect VPN IP leaks
+  const ipVec = vectors.find(v => v.id === 'ip');
+  const webrtcVec = vectors.find(v => v.id === 'webrtc');
+  if (ipVec && webrtcVec) {
+    const onVPN = ipVec.status === 'VPN ACTIVE' || ipVec.status === 'TOR EXIT NODE' || ipVec.status === 'PROXY DETECTED';
+    const webrtcExposed = webrtcVec.status === 'EXPOSED' || webrtcVec.status === 'PRIVATE IP LEAK';
+    if (onVPN && webrtcExposed) {
+      // WebRTC is leaking an IP, but user is on VPN — the leaked IP is likely the VPN's
+      webrtcVec.severity = Math.max(webrtcVec.severity - 40, 10);
+      webrtcVec.status = 'VPN IP LEAK';
+      webrtcVec.detail += ' ⚠ Your VPN is active, so the leaked IP is likely your VPN\'s address, not your real IP. Verify by comparing the IP shown here with your known real IP. While less severe, WebRTC ideally should not leak any IP.';
+    }
+  }
+
+  // Add accuracy notes for vectors affected by private setups
+  const dnsVec = vectors.find(v => v.id === 'dns');
+  if (dnsVec && dnsVec.status !== 'BLOCKED BY BROWSER') {
+    dnsVec.detail += ' ℹ Note: server-side DNS detection has inherent limitations. The most reliable way to verify your DNS resolver is to use a dedicated DNS leak test site like dnsleaktest.com.';
+  }
+  const canvasVec = vectors.find(v => v.id === 'canvas');
+  if (canvasVec && canvasVec.status === 'CONSISTENT') {
+    canvasVec.detail += ' ℹ Some privacy browsers (Firefox with resistFingerprinting) apply per-session randomization that appears consistent within one visit. Re-scan in a new session to compare.';
+  }
+
   // Check for hardened browser and append if detected
   const hardenedVec = detectHardenedBrowser(vectors);
   if (hardenedVec) {
