@@ -146,7 +146,7 @@ const categoryColors: Record<string, string> = {
           </div>
         )}
       {tldr.length > 0 && (
-        <div class="tui-box p-3 mb-2">
+        <div class="tui-box p-3 mb-2 mt-4">
           <span class="tui-box-title text-terminal-green">┤ TL;DR ├</span>
           <ul class="mt-1 space-y-1">
             {tldr.map((point) => (
@@ -422,9 +422,11 @@ const categoryColors: Record<string, string> = {
 <script>
   // Guide completion tracking
   (function() {
-    const btn = document.getElementById('btn-complete-guide');
+    const PROGRESS_KEY = 'pt_progress';
+
+    const btn = document.getElementById('btn-complete-guide') as HTMLButtonElement | null;
     const doneEl = document.getElementById('completion-done');
-    const completionSection = document.querySelector('#guide-completion > div:first-child');
+    const completionSection = document.querySelector('#guide-completion > div:first-child') as HTMLElement | null;
     if (!btn) return;
 
     // Extract guide ID from URL path: /guides/some-guide-id/ → some-guide-id
@@ -432,43 +434,91 @@ const categoryColors: Record<string, string> = {
     const guideId = pathParts.length >= 2 ? pathParts[pathParts.length - 1] : '';
     if (!guideId) return;
 
-    // Check if already completed (from localStorage cache)
-    function checkCompleted() {
+    function getProgress() {
       try {
-        const cached = JSON.parse(localStorage.getItem('pt_progress') || '{}');
-        const completed = cached.guides_completed || [];
-        if (completed.includes(guideId)) {
-          showCompleted();
+        const raw = localStorage.getItem(PROGRESS_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch { /* ignore */ }
+      return { score: 0, level: 1, level_name: 'NEWBIE', guides_completed: [], tools_used: [], achievements_unlocked: [] };
+    }
+
+    function recalcAndSave(p: any) {
+      // Read game data from DOM or use defaults
+      let guidePoints = 15, toolPoints = 10;
+      let achievements: Record<string, { points: number }> = {};
+      try {
+        const el = document.getElementById('pt-game-data');
+        if (el?.textContent) {
+          const gd = JSON.parse(el.textContent);
+          guidePoints = gd.guidePoints || 15;
+          toolPoints = gd.toolPoints || 10;
+          achievements = gd.achievements || {};
         }
-      } catch (e) {}
+      } catch { /* use defaults */ }
+
+      let score = 0;
+      score += (p.guides_completed || []).length * guidePoints;
+      score += (p.tools_used || []).length * toolPoints;
+      for (const id of (p.achievements_unlocked || [])) {
+        score += achievements[id]?.points ?? 0;
+      }
+
+      // Calculate level
+      const levels = [
+        { level: 1, name: 'NEWBIE',   min: 0 },
+        { level: 2, name: 'AWARE',    min: 100 },
+        { level: 3, name: 'CAUTIOUS', min: 250 },
+        { level: 4, name: 'HARDENED', min: 500 },
+        { level: 5, name: 'GHOST',    min: 1000 },
+      ];
+      let lvl = levels[0];
+      for (let i = levels.length - 1; i >= 0; i--) {
+        if (score >= levels[i].min) { lvl = levels[i]; break; }
+      }
+
+      p.score = score;
+      p.level = lvl.level;
+      p.level_name = lvl.name;
+
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify(p));
+      // Dispatch progress event so score bar and other UI updates
+      window.dispatchEvent(new CustomEvent('pt:progress', { detail: p }));
     }
 
     function showCompleted() {
-      if (completionSection) completionSection.classList.add('hidden');
-      if (doneEl) doneEl.classList.remove('hidden');
+      if (completionSection) completionSection.style.display = 'none';
+      if (doneEl) {
+        doneEl.classList.remove('hidden');
+        doneEl.style.display = '';
+      }
     }
 
-    btn.addEventListener('click', async function() {
+    // Check if already completed on page load
+    function checkCompleted() {
+      const p = getProgress();
+      const completed = p.guides_completed || [];
+      if (completed.includes(guideId)) {
+        showCompleted();
+      }
+    }
+
+    btn.addEventListener('click', function() {
+      // Immediate visual feedback
       btn.disabled = true;
       btn.textContent = 'Saving...';
+
       try {
-        const { completeGuide } = await import('../scripts/privacy-score');
-        await completeGuide(guideId);
+        const p = getProgress();
+        if (!p.guides_completed) p.guides_completed = [];
+        if (!p.guides_completed.includes(guideId)) {
+          p.guides_completed.push(guideId);
+        }
+        recalcAndSave(p);
         showCompleted();
       } catch (e) {
-        // Fallback: save to localStorage directly
-        try {
-          const cached = JSON.parse(localStorage.getItem('pt_progress') || '{"guides_completed":[]}');
-          if (!cached.guides_completed) cached.guides_completed = [];
-          if (!cached.guides_completed.includes(guideId)) {
-            cached.guides_completed.push(guideId);
-          }
-          localStorage.setItem('pt_progress', JSON.stringify(cached));
-          showCompleted();
-        } catch (e2) {
-          btn.textContent = '✓ Mark Complete';
-          btn.disabled = false;
-        }
+        console.error('Failed to save guide completion:', e);
+        btn.textContent = '✓ Mark Complete';
+        btn.disabled = false;
       }
     });
 
