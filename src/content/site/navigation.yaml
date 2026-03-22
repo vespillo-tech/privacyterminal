@@ -5,21 +5,15 @@ items:
   - label: scan
     href: /scan
     key: "1"
-  - label: skill tree
-    href: /skill-tree
-    key: "1b"
   - label: tools
     href: /tools
     key: "2"
   - label: guides
     href: /guides
     key: "3"
-  - label: terminal
+  - label: resources
     href: /terminal
     key: "4"
   - label: about
     href: /about
     key: "5"
-  - label: privacy
-    href: /privacy
-    key: "6"

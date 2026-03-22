@@ -161,19 +161,17 @@ function isActive(href: string) {
     <!-- BOTTOM STATUS BAR -->
     <footer class="tui-bottombar">
       <div class="flex items-center justify-between w-full px-2 md:px-4">
-        <span>
+        <span class="flex items-center gap-2">
           <span class="text-terminal-green">&#9679;</span>
-          <span class="text-terminal-muted ml-1">{statusLeft}</span>
+          <span class="text-terminal-muted">{statusLeft}</span>
+          {statusRight && <span class="text-terminal-muted hidden sm:inline">&#124; {statusRight}</span>}
         </span>
         <span class="flex items-center gap-3">
-          {statusRight && <span class="text-terminal-muted">{statusRight}</span>}
-          <ClearanceBadge />
-          <span class="text-terminal-muted hidden sm:inline">&#124;</span>
           <PrivacyScore />
           <span class="text-terminal-muted hidden sm:inline">&#124;</span>
-          <a href="/privacy" class="text-terminal-muted hover:text-terminal-cyan hidden sm:inline">privacy</a>
+          <ClearanceBadge />
           <span class="text-terminal-muted hidden sm:inline">&#124;</span>
-          <a href={settings?.security_txt ?? '/.well-known/security.txt'} class="text-terminal-muted hover:text-terminal-cyan hidden sm:inline">security.txt</a>
+          <a href="/privacy" class="text-terminal-muted hover:text-terminal-cyan hidden sm:inline text-[10px]">privacy</a>
         </span>
       </div>
     </footer>

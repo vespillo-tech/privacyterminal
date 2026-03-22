@@ -109,26 +109,14 @@ export const prerender = true;
       <div class="mt-2 space-y-1" id="detail-metadata"></div>
     </div>
 
-    <!-- Progress summary -->
+    <!-- Progress link -->
     <div class="tui-box p-3 mb-4">
-      <span class="tui-box-title text-terminal-green">┤ YOUR PROGRESS ├</span>
-      <div class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-xs">
-        <div>
-          <div class="text-terminal-green text-lg font-bold" id="stat-guides">0/21</div>
-          <div class="text-terminal-muted text-[10px]">GUIDES COMPLETE</div>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-terminal-green">▸</span>
+          <span class="text-terminal-muted text-xs">Track your progress and see recommended learning path</span>
         </div>
-        <div>
-          <div class="text-terminal-cyan text-lg font-bold" id="stat-tools">0/7</div>
-          <div class="text-terminal-muted text-[10px]">TOOLS USED</div>
-        </div>
-        <div>
-          <div class="text-terminal-amber text-lg font-bold" id="stat-recon">0/7</div>
-          <div class="text-terminal-muted text-[10px]">RECON TIER</div>
-        </div>
-        <div>
-          <div class="text-terminal-red text-lg font-bold" id="stat-hardening">0/11</div>
-          <div class="text-terminal-muted text-[10px]">HARDENING TIER</div>
-        </div>
+        <a href="/skill-tree" class="text-terminal-cyan text-xs hover:text-terminal-green">View Skill Tree →</a>
       </div>
     </div>
 
@@ -166,8 +154,8 @@ export const prerender = true;
 <script>
 import { runThreatScan, type ScanResult, type ScanVector } from '../scripts/threat-scanner';
 import {
-  calculateClearance, getProgressSummary, saveScanResults,
-  RECON_GUIDES, HARDENING_GUIDES, ALL_GUIDES, ALL_TOOLS,
+  calculateClearance, saveScanResults,
+  RECON_GUIDES, HARDENING_GUIDES,
   CLEARANCE_LEVELS, renderBar, exposureLabel, exposureColor,
   type ScanSnapshot
 } from '../scripts/gamification';
@@ -293,12 +281,7 @@ function displayResults(result: ScanResult) {
   document.getElementById('detail-fingerprints')!.innerHTML = fps.map(renderDetailRow).join('');
   document.getElementById('detail-metadata')!.innerHTML = meta.map(renderDetailRow).join('');
 
-  // Progress stats
-  const summary = getProgressSummary();
-  document.getElementById('stat-guides')!.textContent = `${summary.totalGuides.completed}/${summary.totalGuides.total}`;
-  document.getElementById('stat-tools')!.textContent = `${summary.tools.used.length}/${summary.tools.total}`;
-  document.getElementById('stat-recon')!.textContent = `${summary.recon.completed.length}/${summary.recon.total}`;
-  document.getElementById('stat-hardening')!.textContent = `${summary.hardening.completed.length}/${summary.hardening.total}`;
+  // Progress tracked in /skill-tree
 
   // Recommendations
   const recs: string[] = [];
