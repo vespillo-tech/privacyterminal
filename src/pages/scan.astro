@@ -154,7 +154,7 @@ export const prerender = true;
 <script>
 import { runThreatScan, type ScanResult, type ScanVector } from '../scripts/threat-scanner';
 import {
-  calculateClearance, saveScanResults,
+  calculateClearance, getProgressSummary, saveScanResults,
   RECON_GUIDES, HARDENING_GUIDES,
   CLEARANCE_LEVELS, renderBar, exposureLabel, exposureColor,
   type ScanSnapshot
@@ -281,7 +281,8 @@ function displayResults(result: ScanResult) {
   document.getElementById('detail-fingerprints')!.innerHTML = fps.map(renderDetailRow).join('');
   document.getElementById('detail-metadata')!.innerHTML = meta.map(renderDetailRow).join('');
 
-  // Progress tracked in /skill-tree
+  // Progress summary for recommendations
+  const summary = getProgressSummary();
 
   // Recommendations
   const recs: string[] = [];
