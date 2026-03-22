@@ -8,8 +8,8 @@ items:
   - label: tools
     href: /tools
     key: "2"
-  - label: guides
-    href: /guides
+  - label: skill tree
+    href: /skill-tree
     key: "3"
   - label: resources
     href: /terminal
