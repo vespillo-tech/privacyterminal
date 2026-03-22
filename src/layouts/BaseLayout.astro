@@ -168,12 +168,6 @@ function isActive(href: string) {
           {statusRight && <span class="text-terminal-muted">{statusRight}</span>}
           <PrivacyScore />
           <span class="text-terminal-muted hidden sm:inline">&#124;</span>
-          <span class="text-terminal-muted hidden sm:inline">zero analytics</span>
-          <span class="text-terminal-muted hidden sm:inline">&#124;</span>
-          <span class="text-terminal-muted hidden sm:inline">zero cookies</span>
-          <span class="text-terminal-muted hidden sm:inline">&#124;</span>
-          <span class="text-terminal-muted hidden sm:inline">zero tracking</span>
-          <span class="text-terminal-muted hidden sm:inline">&#124;</span>
           <a href="/privacy" class="text-terminal-muted hover:text-terminal-cyan hidden sm:inline">privacy</a>
           <span class="text-terminal-muted hidden sm:inline">&#124;</span>
           <a href={settings?.security_txt ?? '/.well-known/security.txt'} class="text-terminal-muted hover:text-terminal-cyan hidden sm:inline">security.txt</a>
