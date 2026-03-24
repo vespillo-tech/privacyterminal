@@ -57,4 +57,17 @@ const site = defineCollection({
   schema: z.record(z.unknown()),
 });
 
-export const collections = { guides, achievements, tools, site };
+const challenges = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/challenges' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    category: z.enum(['hardening', 'recon', 'operations']),
+    difficulty: z.number().min(1).max(5),
+    verificationTool: z.string(),
+    verificationTarget: z.string(),
+    reward: z.number(),
+  })
+});
+
+export const collections = { guides, achievements, tools, site, challenges };

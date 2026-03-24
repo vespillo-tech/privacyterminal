@@ -1,0 +1,544 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+export const prerender = true;
+
+const challengeEntries = await getCollection('challenges');
+const challengesJson = JSON.stringify(challengeEntries.map(c => ({
+  id: c.id,
+  title: c.data.title,
+  category: c.data.category,
+  difficulty: c.data.difficulty,
+  reward: c.data.reward,
+})));
+---
+
+<BaseLayout
+  title="Privacy Dossier — Privacy Terminal"
+  description="Your personal privacy assessment dossier. See your clearance level, threat scan results, progress, and improvement over time. Share your privacy posture."
+  statusLeft="module: dossier"
+  statusRight="classified"
+>
+  <!-- Structured data -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Privacy Dossier",
+    "description": "Personal privacy assessment dossier generator. Shows clearance level, threat scan results, skill progress, and improvement tracking.",
+    "applicationCategory": "SecurityApplication",
+    "operatingSystem": "Web Browser",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "publisher": { "@type": "Organization", "name": "Privacy Terminal", "url": "https://privacyterminal.com" },
+    "url": "https://privacyterminal.com/dossier"
+  })} />
+
+  <!-- Challenges data for client -->
+  <script id="pt-dossier-challenges" type="application/json" set:html={challengesJson} />
+
+  <!-- Page header -->
+  <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+    <div>
+      <h1 class="text-terminal-green text-glow-green font-bold">
+        ~/dossier/<span class="text-white">privacy-report</span>
+      </h1>
+      <p class="text-terminal-muted text-xs mt-1">Your personal privacy assessment — generated from local data only</p>
+    </div>
+  </div>
+
+  <hr class="tui-hr" />
+
+  <!-- Empty state -->
+  <div id="dossier-empty" class="hidden">
+    <div class="tui-box p-6 text-center">
+      <span class="tui-box-title text-terminal-amber">┤ NO DATA ├</span>
+      <div class="mt-4 space-y-3">
+        <p class="text-terminal-muted text-sm">No scan data found. Run your first threat assessment to generate your dossier.</p>
+        <a href="/scan" class="inline-block px-4 py-2 border border-terminal-green text-terminal-green text-xs font-bold hover:bg-terminal-green/10 transition-colors">
+          $ run threat-assessment --full
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dossier content -->
+  <div id="dossier-content" class="hidden">
+    <!-- Main dossier box -->
+    <div id="dossier-render" class="mt-3">
+      <div class="tui-box p-4 mb-4">
+        <div class="text-center mb-3">
+          <div class="text-terminal-green text-glow-green font-bold text-sm tracking-[0.3em]">P R I V A C Y &nbsp; D O S S I E R</div>
+          <div class="text-terminal-muted text-[10px] mt-1" id="d-generated"></div>
+          <div class="text-xs font-bold mt-1" id="d-classification"></div>
+        </div>
+
+        <hr class="tui-hr" />
+
+        <!-- Progress section -->
+        <div class="mt-3">
+          <div class="text-terminal-green text-[10px] font-bold mb-2">─ PROGRESS ─</div>
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-terminal-muted w-[140px]">MODULES COMPLETE:</span>
+              <span class="font-mono text-terminal-green" id="d-guides-bar"></span>
+              <span class="text-white ml-2" id="d-guides-count"></span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-terminal-muted w-[140px]">TOOLS USED:</span>
+              <span class="font-mono text-terminal-cyan" id="d-tools-bar"></span>
+              <span class="text-white ml-2" id="d-tools-count"></span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-terminal-muted w-[140px]">CHALLENGES CLEARED:</span>
+              <span class="font-mono text-terminal-amber" id="d-challenges-bar"></span>
+              <span class="text-white ml-2" id="d-challenges-count"></span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-terminal-muted w-[140px]">ACHIEVEMENT POINTS:</span>
+              <span class="text-terminal-green font-bold" id="d-points"></span>
+            </div>
+          </div>
+        </div>
+
+        <hr class="tui-hr my-3" />
+
+        <!-- Threat Assessment -->
+        <div>
+          <div class="text-terminal-green text-[10px] font-bold mb-2">─ THREAT ASSESSMENT ─</div>
+          <div class="space-y-1" id="d-vectors"></div>
+          <div class="flex items-center justify-between text-xs mt-2">
+            <span class="text-terminal-muted">OVERALL:</span>
+            <span class="font-mono" id="d-overall-bar"></span>
+            <span class="font-bold ml-2" id="d-overall-label"></span>
+          </div>
+        </div>
+
+        <hr class="tui-hr my-3" />
+
+        <!-- Improvement -->
+        <div id="d-improvement-section" class="hidden">
+          <div class="text-terminal-green text-[10px] font-bold mb-2">─ IMPROVEMENT ─</div>
+          <div class="text-xs" id="d-improvement"></div>
+          <hr class="tui-hr my-3" />
+        </div>
+
+        <!-- Skill Path -->
+        <div>
+          <div class="text-terminal-green text-[10px] font-bold mb-2">─ SKILL PATH ─</div>
+          <div class="space-y-1">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-terminal-muted w-[100px]">RECON:</span>
+              <span class="font-mono text-terminal-green" id="d-recon-bar"></span>
+              <span class="text-white ml-2" id="d-recon-status"></span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-terminal-muted w-[100px]">HARDENING:</span>
+              <span class="font-mono text-terminal-cyan" id="d-hard-bar"></span>
+              <span class="text-white ml-2" id="d-hard-status"></span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-terminal-muted w-[100px]">OPERATIONS:</span>
+              <span class="font-mono text-terminal-amber" id="d-ops-bar"></span>
+              <span class="text-white ml-2" id="d-ops-status"></span>
+            </div>
+          </div>
+        </div>
+
+        <hr class="tui-hr my-3" />
+
+        <!-- Recommended Next -->
+        <div>
+          <div class="text-terminal-green text-[10px] font-bold mb-2">─ RECOMMENDED NEXT ─</div>
+          <div class="space-y-0.5" id="d-recommendations"></div>
+        </div>
+
+        <hr class="tui-hr my-3" />
+
+        <!-- Footer -->
+        <div class="text-center">
+          <div class="text-terminal-green text-xs font-bold">privacyterminal.com</div>
+          <div class="text-terminal-muted text-[10px]">zero analytics · zero tracking</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Share buttons -->
+    <div class="flex items-center justify-center gap-3 mb-4">
+      <button id="btn-copy-text" class="px-4 py-2 border border-terminal-green text-terminal-green text-xs font-bold hover:bg-terminal-green/10 transition-colors">
+        ⎘ Copy as Text
+      </button>
+      <button id="btn-save-image" class="px-4 py-2 border border-terminal-cyan text-terminal-cyan text-xs font-bold hover:bg-terminal-cyan/10 transition-colors">
+        ⤓ Save as Image
+      </button>
+    </div>
+    <p class="text-terminal-muted text-[10px] text-center mb-4">Share on Reddit, Discord, Mastodon, or anywhere you like</p>
+
+    <!-- Re-scan CTA -->
+    <div class="tui-box p-3 mb-4">
+      <div class="flex items-center justify-between">
+        <span class="text-terminal-muted text-xs">Want to update your dossier?</span>
+        <a href="/scan" class="text-terminal-cyan text-xs hover:text-terminal-green">Run new scan →</a>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+import {
+  getProgressSummary, getInitialScan, getLastScan, getCompletedChallenges,
+  calculateClearance, renderBar, exposureLabel, exposureColor,
+  RECON_GUIDES, HARDENING_GUIDES, OPS_GUIDES, ALL_GUIDES, ALL_TOOLS,
+  type ScanSnapshot, type ChallengeData
+} from '../scripts/gamification';
+import { getCachedProgress } from '../scripts/privacy-score';
+
+// ── Load challenge metadata ──
+let challengesMeta: Array<{ id: string; title: string; category: string; difficulty: number; reward: number }> = [];
+try {
+  const el = document.getElementById('pt-dossier-challenges');
+  if (el?.textContent) challengesMeta = JSON.parse(el.textContent);
+} catch { /* ignore */ }
+
+// ── Check if we have data ──
+const scan = getLastScan();
+const emptyEl = document.getElementById('dossier-empty')!;
+const contentEl = document.getElementById('dossier-content')!;
+
+if (!scan) {
+  emptyEl.classList.remove('hidden');
+  contentEl.classList.add('hidden');
+} else {
+  emptyEl.classList.add('hidden');
+  contentEl.classList.remove('hidden');
+  renderDossier(scan);
+}
+
+function tierStatus(done: number, total: number): string {
+  if (done === 0) return 'LOCKED';
+  if (done === total) return 'COMPLETE';
+  return 'IN PROGRESS';
+}
+
+function tierStatusColor(done: number, total: number): string {
+  if (done === 0) return 'text-terminal-muted';
+  if (done === total) return 'text-terminal-green';
+  return 'text-terminal-amber';
+}
+
+function renderDossier(scan: ScanSnapshot) {
+  const summary = getProgressSummary();
+  const progress = getCachedProgress();
+  const clearance = summary.clearance;
+  const initial = getInitialScan();
+  const completedChallenges = getCompletedChallenges();
+  const totalChallenges = challengesMeta.length;
+
+  // Generated timestamp
+  const now = new Date();
+  document.getElementById('d-generated')!.textContent =
+    `Generated: ${now.toISOString().replace('T', ' ').slice(0, 16)} UTC`;
+
+  // Classification
+  const colorMap: Record<string, string> = {
+    gray: 'text-gray-500', white: 'text-gray-200', green: 'text-terminal-green',
+    cyan: 'text-terminal-cyan', amber: 'text-terminal-amber', red: 'text-terminal-red',
+  };
+  const clEl = document.getElementById('d-classification')!;
+  clEl.className = `text-xs font-bold mt-1 ${colorMap[clearance.tailwindColor] || 'text-gray-500'}`;
+  clEl.textContent = `Classification: ${clearance.name} (Level ${clearance.level})`;
+
+  // Progress bars
+  const gDone = summary.totalGuides.completed;
+  const gTotal = summary.totalGuides.total;
+  document.getElementById('d-guides-bar')!.textContent = renderBar(gDone, gTotal, 14);
+  document.getElementById('d-guides-count')!.textContent = `${gDone} / ${gTotal}`;
+
+  const tDone = summary.tools.used.length;
+  const tTotal = summary.tools.total;
+  document.getElementById('d-tools-bar')!.textContent = renderBar(tDone, tTotal, 14);
+  document.getElementById('d-tools-count')!.textContent = `${tDone} / ${tTotal}`;
+
+  const chDone = completedChallenges.length;
+  document.getElementById('d-challenges-bar')!.textContent = renderBar(chDone, totalChallenges, 14);
+  document.getElementById('d-challenges-count')!.textContent = `${chDone} / ${totalChallenges}`;
+
+  document.getElementById('d-points')!.textContent = String(progress.score);
+
+  // Threat vectors
+  const vectorsEl = document.getElementById('d-vectors')!;
+  const keyVectors = ['webrtc', 'dns', 'ip', 'canvas', 'cookies'];
+  const vectorRows = scan.vectors
+    .filter(v => keyVectors.includes(v.id))
+    .map(v => {
+      const bar = renderBar(v.severity, 100, 14);
+      const sevColor = v.severity >= 50 ? 'text-terminal-red' : v.severity >= 25 ? 'text-terminal-amber' : 'text-terminal-green';
+      const statusBadge = v.severity <= 10 ? '✓ SECURE' : v.severity <= 25 ? '~ MODERATE' : '⚠ EXPOSED';
+      const badgeColor = v.severity <= 10 ? 'text-terminal-green' : v.severity <= 25 ? 'text-terminal-amber' : 'text-terminal-red';
+      const label = v.id.toUpperCase().replace(/_/g, ' ');
+      return `<div class="flex items-center justify-between text-xs">
+        <span class="text-terminal-muted w-[100px]">${label}:</span>
+        <span class="${sevColor} font-mono">${bar}</span>
+        <span class="${sevColor} w-[30px] text-right">${v.severity}%</span>
+        <span class="${badgeColor} ml-2 text-[10px] w-[70px] text-right">${statusBadge}</span>
+      </div>`;
+    });
+  vectorsEl.innerHTML = vectorRows.join('');
+
+  // Overall
+  const overall = scan.overall_exposure;
+  const oBar = renderBar(overall, 100, 14);
+  const oColor = exposureColor(overall);
+  const oLabel = exposureLabel(overall);
+  document.getElementById('d-overall-bar')!.innerHTML = `<span class="${oColor}">${oBar}</span>`;
+  document.getElementById('d-overall-label')!.innerHTML = `<span class="${oColor}">${overall}%  ${oLabel}</span>`;
+
+  // Improvement section
+  if (initial && initial.timestamp !== scan.timestamp && initial.overall_exposure !== scan.overall_exposure) {
+    const delta = initial.overall_exposure - scan.overall_exposure;
+    const color = delta > 0 ? 'text-terminal-green' : 'text-terminal-red';
+    const arrow = delta > 0 ? '▼' : '▲';
+    document.getElementById('d-improvement')!.innerHTML =
+      `<span class="${color}">Since first scan: ${initial.overall_exposure}% → ${scan.overall_exposure}%  ${arrow}${Math.abs(delta)}% ${delta > 0 ? 'improvement' : 'regression'}</span>`;
+    document.getElementById('d-improvement-section')!.classList.remove('hidden');
+  }
+
+  // Skill path
+  const rDone = summary.recon.completed.length;
+  const rTotal = summary.recon.total;
+  document.getElementById('d-recon-bar')!.textContent = renderBar(rDone, rTotal, 14);
+  const rStatus = document.getElementById('d-recon-status')!;
+  rStatus.textContent = `${rDone}/${rTotal}  ${tierStatus(rDone, rTotal)}`;
+  rStatus.className = `text-white ml-2 ${tierStatusColor(rDone, rTotal)}`;
+
+  const hDone = summary.hardening.completed.length;
+  const hTotal = summary.hardening.total;
+  document.getElementById('d-hard-bar')!.textContent = renderBar(hDone, hTotal, 14);
+  const hStatus = document.getElementById('d-hard-status')!;
+  hStatus.textContent = `${hDone}/${hTotal}  ${tierStatus(hDone, hTotal)}`;
+  hStatus.className = `text-white ml-2 ${tierStatusColor(hDone, hTotal)}`;
+
+  const oDone = summary.ops.completed.length;
+  const oTotal = summary.ops.total;
+  document.getElementById('d-ops-bar')!.textContent = renderBar(oDone, oTotal, 14);
+  const oStatus = document.getElementById('d-ops-status')!;
+  oStatus.textContent = `${oDone}/${oTotal}  ${tierStatus(oDone, oTotal)}`;
+  oStatus.className = `text-white ml-2 ${tierStatusColor(oDone, oTotal)}`;
+
+  // Recommendations
+  const recsEl = document.getElementById('d-recommendations')!;
+  const recs: string[] = [];
+  // Find high-severity vectors
+  const highVectors = scan.vectors.filter(v => v.severity >= 40).sort((a, b) => b.severity - a.severity);
+  const vectorGuideMap: Record<string, string> = {
+    webrtc: 'Browser Fingerprinting Guide', dns: 'DNS Privacy Guide',
+    ip: 'VPN Guide', canvas: 'Fingerprinting Guide', cookies: 'Browser Privacy Guide',
+  };
+  for (const v of highVectors.slice(0, 2)) {
+    const guide = vectorGuideMap[v.id] || 'Privacy Guides';
+    recs.push(`<div class="text-xs"><span class="text-terminal-green">→</span> <span class="text-gray-300">${guide}</span></div>`);
+  }
+  // Incomplete challenges
+  const incompleteCh = challengesMeta.filter(ch => !completedChallenges.includes(ch.id)).slice(0, 1);
+  for (const ch of incompleteCh) {
+    recs.push(`<div class="text-xs"><span class="text-terminal-green">→</span> <span class="text-gray-300">${ch.title} Challenge</span></div>`);
+  }
+  if (recs.length === 0) {
+    recs.push('<div class="text-xs text-terminal-green">✓ All recommended actions complete!</div>');
+  }
+  recsEl.innerHTML = recs.join('');
+}
+
+// ── Copy as Text ──
+function generateTextDossier(): string {
+  const summary = getProgressSummary();
+  const progress = getCachedProgress();
+  const clearance = summary.clearance;
+  const scan = getLastScan()!;
+  const initial = getInitialScan();
+  const completedChallenges = getCompletedChallenges();
+  const totalChallenges = challengesMeta.length;
+  const now = new Date();
+
+  const bar = (val: number, max: number, w: number = 14) => {
+    const pct = max > 0 ? Math.min(val / max, 1) : 0;
+    const filled = Math.round(pct * w);
+    return '█'.repeat(filled) + '░'.repeat(w - filled);
+  };
+
+  const lines: string[] = [];
+  lines.push('┌─────────────────────────────────────────────────────┐');
+  lines.push('│            P R I V A C Y   D O S S I E R            │');
+  lines.push('│                                                     │');
+  lines.push(`│  Generated: ${now.toISOString().replace('T', ' ').slice(0, 16)} UTC`.padEnd(54) + '│');
+  lines.push(`│  Classification: ${clearance.name} (Level ${clearance.level})`.padEnd(54) + '│');
+  lines.push('│                                                     │');
+  lines.push('├─ PROGRESS ──────────────────────────────────────────┤');
+  lines.push('│                                                     │');
+  lines.push(`│  MODULES COMPLETE:   ${bar(summary.totalGuides.completed, summary.totalGuides.total)}  ${summary.totalGuides.completed} / ${summary.totalGuides.total}`.padEnd(54) + '│');
+  lines.push(`│  TOOLS USED:         ${bar(summary.tools.used.length, summary.tools.total)}  ${summary.tools.used.length} / ${summary.tools.total}`.padEnd(54) + '│');
+  lines.push(`│  CHALLENGES CLEARED: ${bar(completedChallenges.length, totalChallenges)}  ${completedChallenges.length} / ${totalChallenges}`.padEnd(54) + '│');
+  lines.push(`│  ACHIEVEMENT POINTS: ${progress.score}`.padEnd(54) + '│');
+  lines.push('│                                                     │');
+  lines.push('├─ THREAT ASSESSMENT ─────────────────────────────────┤');
+  lines.push('│                                                     │');
+
+  const keyVectors = ['webrtc', 'dns', 'ip', 'canvas', 'cookies'];
+  for (const v of scan.vectors.filter(v => keyVectors.includes(v.id))) {
+    const label = v.id.toUpperCase().padEnd(12);
+    const vBar = bar(v.severity, 100, 14);
+    const badge = v.severity <= 10 ? '✓ SECURE' : v.severity <= 25 ? '~ OK' : '⚠ EXPOSED';
+    lines.push(`│  ${label} ${vBar}  ${String(v.severity).padStart(3)}%  ${badge}`.padEnd(54) + '│');
+  }
+
+  const overall = scan.overall_exposure;
+  const oLabel = overall >= 75 ? 'CRITICAL' : overall >= 50 ? 'HIGH' : overall >= 25 ? 'MODERATE' : 'LOW';
+  lines.push(`│  OVERALL:      ${bar(overall, 100, 14)}  ${String(overall).padStart(3)}%  ${oLabel}`.padEnd(54) + '│');
+  lines.push('│                                                     │');
+
+  if (initial && initial.timestamp !== scan.timestamp && initial.overall_exposure !== scan.overall_exposure) {
+    const delta = initial.overall_exposure - scan.overall_exposure;
+    const arrow = delta > 0 ? '▼' : '▲';
+    lines.push('├─ IMPROVEMENT ───────────────────────────────────────┤');
+    lines.push('│                                                     │');
+    lines.push(`│  Since first scan: ${initial.overall_exposure}% → ${scan.overall_exposure}%  ${arrow}${Math.abs(delta)}% ${delta > 0 ? 'improvement' : 'regression'}`.padEnd(54) + '│');
+    lines.push('│                                                     │');
+  }
+
+  lines.push('├─ SKILL PATH ────────────────────────────────────────┤');
+  lines.push('│                                                     │');
+  const rDone = summary.recon.completed.length;
+  const rTotal = summary.recon.total;
+  lines.push(`│  RECON:       ${bar(rDone, rTotal, 14)}  ${rDone}/${rTotal}  ${tierStatus(rDone, rTotal)}`.padEnd(54) + '│');
+  const hDone = summary.hardening.completed.length;
+  const hTotal = summary.hardening.total;
+  lines.push(`│  HARDENING:   ${bar(hDone, hTotal, 14)}  ${hDone}/${hTotal}  ${tierStatus(hDone, hTotal)}`.padEnd(54) + '│');
+  const oDone = summary.ops.completed.length;
+  const oTotal = summary.ops.total;
+  lines.push(`│  OPERATIONS:  ${bar(oDone, oTotal, 14)}  ${oDone}/${oTotal}  ${tierStatus(oDone, oTotal)}`.padEnd(54) + '│');
+  lines.push('│                                                     │');
+  lines.push('│              privacyterminal.com                     │');
+  lines.push('│         zero analytics · zero tracking               │');
+  lines.push('└─────────────────────────────────────────────────────┘');
+
+  return lines.join('\n');
+}
+
+// Copy handler
+document.getElementById('btn-copy-text')?.addEventListener('click', async () => {
+  const text = generateTextDossier();
+  try {
+    await navigator.clipboard.writeText(text);
+    const btn = document.getElementById('btn-copy-text')!;
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('border-terminal-green', 'text-terminal-green');
+    setTimeout(() => {
+      btn.textContent = orig;
+    }, 2000);
+  } catch {
+    // Fallback: select from textarea
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;left:-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn = document.getElementById('btn-copy-text')!;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => { btn.textContent = '⎘ Copy as Text'; }, 2000);
+  }
+});
+
+// Save as image handler — uses html2canvas-lite approach via canvas
+document.getElementById('btn-save-image')?.addEventListener('click', async () => {
+  const btn = document.getElementById('btn-save-image')!;
+  const origText = btn.textContent;
+  btn.textContent = 'Generating...';
+
+  try {
+    // Dynamic import html2canvas only when needed
+    // Fall back to a simple approach if not available
+    const target = document.getElementById('dossier-render')!;
+
+    // Try using the browser's built-in capabilities
+    if (typeof (window as any).html2canvas !== 'undefined') {
+      const canvas = await (window as any).html2canvas(target, {
+        backgroundColor: '#0a0a0a',
+        scale: 2,
+      });
+      downloadCanvas(canvas);
+    } else {
+      // Lightweight fallback: create a styled canvas from text
+      const text = generateTextDossier();
+      const lines = text.split('\n');
+      const lineHeight = 18;
+      const padding = 24;
+      const charWidth = 9.6;
+      const maxWidth = Math.max(...lines.map(l => l.length)) * charWidth + padding * 2;
+      const height = lines.length * lineHeight + padding * 2;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = maxWidth * 2;
+      canvas.height = height * 2;
+      const ctx = canvas.getContext('2d')!;
+      ctx.scale(2, 2);
+
+      // Background
+      ctx.fillStyle = '#0a0a0a';
+      ctx.fillRect(0, 0, maxWidth, height);
+
+      // Text
+      ctx.font = '13px "JetBrains Mono", "Fira Code", "Courier New", monospace';
+      ctx.textBaseline = 'top';
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const y = padding + i * lineHeight;
+
+        // Color based on content
+        if (line.includes('P R I V A C Y') || line.includes('privacyterminal')) {
+          ctx.fillStyle = '#00ff41';
+        } else if (line.includes('PROGRESS') || line.includes('THREAT') || line.includes('IMPROVEMENT') || line.includes('SKILL PATH')) {
+          ctx.fillStyle = '#00ff41';
+        } else if (line.includes('✓')) {
+          ctx.fillStyle = '#00ff41';
+        } else if (line.includes('⚠') || line.includes('CRITICAL') || line.includes('HIGH')) {
+          ctx.fillStyle = '#ff3333';
+        } else if (line.includes('█') || line.includes('░')) {
+          ctx.fillStyle = '#00d4ff';
+        } else if (line.startsWith('│') || line.startsWith('┌') || line.startsWith('├') || line.startsWith('└')) {
+          ctx.fillStyle = '#3a3a3a';
+          ctx.fillText(line.charAt(0), padding, y);
+          if (line.endsWith('│')) {
+            ctx.fillText('│', padding + (line.length - 1) * charWidth, y);
+          }
+          // Inner content
+          ctx.fillStyle = '#e0e0e0';
+          ctx.fillText(line.slice(1, -1), padding + charWidth, y);
+          continue;
+        } else {
+          ctx.fillStyle = '#e0e0e0';
+        }
+        ctx.fillText(line, padding, y);
+      }
+
+      downloadCanvas(canvas);
+    }
+  } catch (err) {
+    console.error('Image generation failed:', err);
+    btn.textContent = '⚠ Failed';
+    setTimeout(() => { btn.textContent = origText; }, 2000);
+    return;
+  }
+
+  btn.textContent = '✓ Saved!';
+  setTimeout(() => { btn.textContent = origText; }, 2000);
+});
+
+function downloadCanvas(canvas: HTMLCanvasElement) {
+  const link = document.createElement('a');
+  link.download = `privacy-dossier-${new Date().toISOString().slice(0, 10)}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+</script>

@@ -204,6 +204,125 @@ export function getProgressSummary(progress?: any): ProgressSummary {
   };
 }
 
+// ── Challenge Tracking ──────────────────────────────────────────
+
+const CHALLENGES_KEY = 'pt_challenges_completed';
+
+export interface ChallengeData {
+  id: string;
+  title: string;
+  description: string;
+  category: 'hardening' | 'recon' | 'operations';
+  difficulty: number;
+  verificationTool: string;
+  verificationTarget: string;
+  reward: number;
+}
+
+export function getCompletedChallenges(): string[] {
+  try {
+    const raw = localStorage.getItem(CHALLENGES_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch { /* ignore */ }
+  return [];
+}
+
+export function completeChallenge(challengeId: string): boolean {
+  const completed = getCompletedChallenges();
+  if (completed.includes(challengeId)) return false;
+  completed.push(challengeId);
+  try {
+    localStorage.setItem(CHALLENGES_KEY, JSON.stringify(completed));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('pt:challenge-complete', { detail: challengeId }));
+    }
+  } catch { /* ignore */ }
+  return true;
+}
+
+/**
+ * Check all challenges against current progress/scan data and auto-complete.
+ * Returns array of newly completed challenge IDs.
+ */
+export function evaluateChallenges(challenges: ChallengeData[]): string[] {
+  const progress = getProgress();
+  const completed: string[] = progress.guides_completed || [];
+  const toolsUsed: string[] = progress.tools_used || [];
+  const scan = getLastScan();
+  const alreadyDone = getCompletedChallenges();
+  const clearance = calculateClearance(progress);
+  const newlyCompleted: string[] = [];
+
+  for (const ch of challenges) {
+    if (alreadyDone.includes(ch.id)) continue;
+
+    let pass = false;
+
+    switch (ch.id) {
+      case 'full-scan':
+        pass = scan !== null;
+        break;
+      case 'full-recon':
+        pass = RECON_GUIDES.every(g => completed.includes(g));
+        break;
+      case 'ghost-protocol':
+        pass = clearance.level >= 5;
+        break;
+      case 'threat-modeler':
+        pass = toolsUsed.includes('threat-profiler');
+        break;
+      case 'metadata-ghost':
+        pass = toolsUsed.includes('metadata-stripper');
+        break;
+      case 'zero-fingerprint':
+        if (scan) {
+          const fpVec = scan.vectors.find(v => v.id === 'canvas');
+          const fontsVec = scan.vectors.find(v => v.id === 'fonts');
+          const webglVec = scan.vectors.find(v => v.id === 'webgl');
+          const fpAvg = [
+            fpVec?.severity ?? 100,
+            fontsVec?.severity ?? 100,
+            webglVec?.severity ?? 100,
+          ].reduce((a, b) => a + b, 0) / 3;
+          pass = fpAvg < 20;
+        }
+        break;
+      case 'dns-lockdown':
+        if (scan) {
+          const dnsVec = scan.vectors.find(v => v.id === 'dns');
+          pass = dnsVec !== undefined && dnsVec.severity <= 10;
+        }
+        break;
+      case 'webrtc-shield':
+        if (scan) {
+          const rtcVec = scan.vectors.find(v => v.id === 'webrtc');
+          pass = rtcVec !== undefined && rtcVec.severity <= 10;
+        }
+        break;
+      default:
+        break;
+    }
+
+    if (pass) {
+      completeChallenge(ch.id);
+      newlyCompleted.push(ch.id);
+    }
+  }
+
+  return newlyCompleted;
+}
+
+// ── Reset Baseline ──────────────────────────────────────────────
+
+export function resetBaseline(): void {
+  const latest = getLastScan();
+  if (latest) {
+    try {
+      localStorage.setItem(INITIAL_SCAN_KEY, JSON.stringify(latest));
+    } catch { /* ignore */ }
+  }
+}
+
 // ── Bar Rendering Helpers ───────────────────────────────────────
 
 export function renderBar(value: number, max: number, width: number = 14): string {

@@ -11,9 +11,12 @@ items:
   - label: skill tree
     href: /skill-tree
     key: "3"
+  - label: dossier
+    href: /dossier
+    key: "4"
   - label: resources
     href: /terminal
-    key: "4"
+    key: "5"
   - label: about
     href: /about
-    key: "5"
+    key: "6"
