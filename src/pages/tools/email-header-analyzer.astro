@@ -265,7 +265,7 @@ function resultColor(r: string): string {
 }
 
 // === ANALYZE ===
-function analyze() {
+async function analyze() {
   const raw = (document.getElementById('header-input') as HTMLTextAreaElement).value.trim();
   if (!raw) { PT?.appendLog('No headers provided', 'warn'); return; }
 
@@ -368,6 +368,12 @@ function analyze() {
 
   PT?.appendLog('Analysis complete', 'success');
   PT?.setToolStatus(warnings.length > 0 ? 'error' : 'complete');
+
+  // Track tool usage for gamification
+  try {
+    const { trackTool } = await import('../../scripts/privacy-score');
+    await trackTool('email-header-analyzer');
+  } catch { /* gamification optional */ }
 }
 
 // === EVENTS ===

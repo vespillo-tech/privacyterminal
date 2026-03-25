@@ -6,7 +6,7 @@
 <span id="pt-score-wrap" class="flex items-center gap-1"></span>
 
 <script>
-import { getCachedProgress, buildProgressBar, getLevelInfo, isLoggedIn } from '../scripts/privacy-score';
+import { getCachedProgress, buildProgressBar, getLevelInfo } from '../scripts/privacy-score';
 
 function renderScore(): void {
   const el = document.getElementById('pt-score-wrap');
@@ -17,27 +17,10 @@ function renderScore(): void {
   const bar = buildProgressBar(p.score, 10);
 
   // Always show score
-  let html =
+  el.innerHTML =
     '<span class="text-terminal-muted">score: </span>' +
     '<span class="text-terminal-green font-bold">' + String(p.score) + '</span>' +
     '<span class="text-terminal-muted hidden sm:inline"> ' + bar + ' LVL ' + String(lvl.level) + ': ' + lvl.name + '</span>';
-
-  // Add save link when not logged in
-  if (!isLoggedIn()) {
-    html += '<span class="text-terminal-muted hidden sm:inline"> │</span> ' +
-      '<a href="#" id="pt-save-link" class="text-terminal-cyan hover:text-terminal-green transition-colors text-[10px]">[save]</a>';
-  }
-
-  el.innerHTML = html;
-
-  // Attach click handler for save link if present
-  const saveLink = document.getElementById('pt-save-link');
-  if (saveLink) {
-    saveLink.addEventListener('click', (e: MouseEvent) => {
-      e.preventDefault();
-      window.dispatchEvent(new CustomEvent('pt:open-auth'));
-    });
-  }
 }
 
 renderScore();

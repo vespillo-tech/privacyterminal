@@ -1,7 +1,7 @@
 ---
 title: Your Phone Is Tracking You
 description: Your phone knows where you sleep, where you work, who you meet, and what you care about — and it shares this with hundreds of companies. Here is exactly how, and how to limit it.
-category: intermediate
+category: foundations
 order: 5
 publishedDate: '2026-03-17'
 updatedDate: '2026-03-20'

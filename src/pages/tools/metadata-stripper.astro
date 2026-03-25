@@ -417,6 +417,12 @@ document.getElementById('btn-strip')!.addEventListener('click', async () => {
 
   document.getElementById('btn-download')!.classList.remove('hidden');
   PT?.setToolStatus('complete');
+
+  // Track tool usage for gamification
+  try {
+    const { trackTool } = await import('../../scripts/privacy-score');
+    await trackTool('metadata-stripper');
+  } catch { /* gamification optional */ }
 });
 
 // === DOWNLOAD ===

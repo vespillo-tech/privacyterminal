@@ -1,7 +1,7 @@
 ---
 title: Browser Fingerprinting Explained
 description: Your browser reveals more about you than you think. Understand how canvas, WebGL, audio, and behavioral fingerprinting work — and what you can realistically do about each one.
-category: foundations
+category: essentials
 order: 5
 publishedDate: '2026-03-17'
 updatedDate: '2026-03-20'

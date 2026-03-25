@@ -335,6 +335,56 @@ function parseHTML(html, siteHostname) {
   return resources;
 }
 
+// ── SSRF Protection ─────────────────────────────────────────────
+
+function isBlockedHost(hostname) {
+  const h = hostname.toLowerCase();
+
+  // Block localhost variants
+  if (h === 'localhost' || h === '0.0.0.0' || h === '[::]' || h === '[::1]') return true;
+
+  // Block our own domains
+  const blockedDomains = [
+    'privacyterminal-api.terinmain.workers.dev',
+    'privacyterminal.com',
+    'www.privacyterminal.com',
+    'privacyterminal.pages.dev',
+  ];
+  if (blockedDomains.includes(h)) return true;
+
+  // Block IP-based hostnames in private/reserved ranges
+  // IPv4 patterns
+  const ipv4 = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (ipv4) {
+    const [, a, b, c, d] = ipv4.map(Number);
+    const first = Number(a);
+    const second = Number(b);
+    // 127.x.x.x (loopback)
+    if (first === 127) return true;
+    // 10.x.x.x (private)
+    if (first === 10) return true;
+    // 172.16.0.0 - 172.31.255.255 (private)
+    if (first === 172 && second >= 16 && second <= 31) return true;
+    // 192.168.x.x (private)
+    if (first === 192 && second === 168) return true;
+    // 169.254.x.x (link-local / cloud metadata)
+    if (first === 169 && second === 254) return true;
+    // 0.x.x.x
+    if (first === 0) return true;
+  }
+
+  // Block IPv6 loopback/private in bracket notation
+  if (h.startsWith('[')) {
+    const inner = h.slice(1, -1).toLowerCase();
+    if (inner === '::1' || inner === '::' || inner.startsWith('fc') || inner.startsWith('fd') || inner.startsWith('fe80')) return true;
+  }
+
+  // Block cloud metadata hostnames
+  if (h === '169.254.169.254' || h === 'metadata.google.internal' || h === 'metadata.google.com') return true;
+
+  return false;
+}
+
 async function handleTrackerMap(request, corsHeaders) {
   if (request.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'POST required' }), {
@@ -358,25 +408,48 @@ async function handleTrackerMap(request, corsHeaders) {
     });
   }
 
-  // Normalize URL
+  // Only allow http:// and https:// schemes
   if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
     targetUrl = 'https://' + targetUrl;
   }
 
-  let siteHostname;
+  let parsedUrl;
   try {
-    siteHostname = new URL(targetUrl).hostname.toLowerCase();
+    parsedUrl = new URL(targetUrl);
   } catch {
     return new Response(JSON.stringify({ error: 'Invalid URL' }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 
-  // Fetch the target page
+  // Validate scheme strictly (reject ftp://, file://, data:, etc.)
+  if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+    return new Response(JSON.stringify({ error: 'Only HTTP and HTTPS URLs are allowed' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  const siteHostname = parsedUrl.hostname.toLowerCase();
+
+  // SSRF protection: block private/reserved/internal hosts
+  if (isBlockedHost(siteHostname)) {
+    return new Response(JSON.stringify({ error: 'URL target is not allowed (private/reserved address)' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  // Block non-standard ports (only 80/443/implicit)
+  if (parsedUrl.port && parsedUrl.port !== '80' && parsedUrl.port !== '443') {
+    return new Response(JSON.stringify({ error: 'Only standard HTTP ports (80/443) are allowed' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  // Fetch the target page with SSRF-safe timeout
   let html;
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    const timeout = setTimeout(() => controller.abort(), 5000);
     const resp = await fetch(targetUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -396,7 +469,7 @@ async function handleTrackerMap(request, corsHeaders) {
 
     html = await resp.text();
   } catch (err) {
-    const msg = err.name === 'AbortError' ? 'Request timed out (10s)' : `Failed to fetch: ${err.message}`;
+    const msg = err.name === 'AbortError' ? 'Request timed out (5s)' : `Failed to fetch: ${err.message}`;
     return new Response(JSON.stringify({ error: msg }), {
       status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });

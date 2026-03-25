@@ -3,7 +3,7 @@ import { getCollection, getEntry } from 'astro:content';
 import '../styles/global.css';
 import PrivacyScore from '../components/PrivacyScore.astro';
 import ClearanceBadge from '../components/ClearanceBadge.astro';
-import AuthModal from '../components/AuthModal.astro';
+
 import AchievementToast from '../components/AchievementToast.astro';
 
 interface Props {
@@ -176,7 +176,6 @@ function isActive(href: string) {
       </div>
     </footer>
 
-    <AuthModal />
     <AchievementToast />
 
     <script>

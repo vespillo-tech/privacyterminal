@@ -5,7 +5,6 @@
  * via the #pt-game-data <script type="application/json"> element injected by BaseLayout.
  */
 
-const SESSION_KEY   = 'pt_session';
 const PROGRESS_KEY  = 'pt_progress';
 const HASH_COUNT_KEY = 'pt_hash_count';
 
@@ -87,7 +86,7 @@ function getGameData(): GameData {
     ],
     guidePoints: 15,
     toolPoints: 10,
-    apiBase: 'https://privacyterminal-api.workers.dev',
+    apiBase: 'https://privacyterminal-api.terinmain.workers.dev',
   };
   return _gameData;
 }
@@ -146,77 +145,7 @@ function defaultProgress(): ProgressData {
   };
 }
 
-// ── Session ────────────────────────────────────────────────────
-
-export function isLoggedIn(): boolean {
-  try { return !!localStorage.getItem(SESSION_KEY); } catch { return false; }
-}
-
-export function getToken(): string | null {
-  try { return localStorage.getItem(SESSION_KEY); } catch { return null; }
-}
-
-export function logout(): void {
-  try {
-    localStorage.removeItem(SESSION_KEY);
-    dispatchProgressUpdate(getCachedProgress());
-  } catch { /* ignore */ }
-}
-
-// ── Auth API ────────────────────────────────────────────────────
-
-export async function register(): Promise<{ user_id: string; recovery_code: string }> {
-  // Fully client-side registration — no API needed
-  const words = ['ALPHA','BRAVO','CHARLIE','DELTA','ECHO','FOXTROT','GOLF','HOTEL',
-    'INDIA','JULIET','KILO','LIMA','MIKE','NOVEMBER','OSCAR','PAPA','QUEBEC',
-    'ROMEO','SIERRA','TANGO','UNIFORM','VICTOR','WHISKEY','XRAY','YANKEE','ZULU',
-    'CIPHER','GHOST','PROXY','ONION','SHIELD','VAULT','PIXEL','EMBER','FROST',
-    'NEXUS','DRIFT','HAVEN','PRISM','SPARK','PULSE','FLARE','STORM','BLADE'];
-  const pick = () => words[Math.floor(Math.random() * words.length)];
-  const num = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-  const recovery_code = `${pick()}-${pick()}-${pick()}-${num}`;
-
-  // Generate user_id and session token
-  const arr = new Uint8Array(16);
-  crypto.getRandomValues(arr);
-  const user_id = Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
-  const sessArr = new Uint8Array(32);
-  crypto.getRandomValues(sessArr);
-  const session_token = Array.from(sessArr).map(b => b.toString(16).padStart(2, '0')).join('');
-
-  // Hash the recovery code for storage (so we can verify on login)
-  const encoder = new TextEncoder();
-  const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(recovery_code));
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const codeHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-
-  try {
-    localStorage.setItem(SESSION_KEY, session_token);
-    localStorage.setItem('pt_user_id', user_id);
-    localStorage.setItem('pt_code_hash', codeHash);
-  } catch { /* ignore */ }
-  return { user_id, recovery_code };
-}
-
-export async function login(code: string): Promise<boolean> {
-  // Fully client-side login — verify recovery code against stored hash
-  try {
-    const storedHash = localStorage.getItem('pt_code_hash');
-    if (!storedHash) return false;
-    const encoder = new TextEncoder();
-    const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(code.trim().toUpperCase()));
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const inputHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    if (inputHash !== storedHash) return false;
-    // Restore session
-    const sessArr = new Uint8Array(32);
-    crypto.getRandomValues(sessArr);
-    const session_token = Array.from(sessArr).map(b => b.toString(16).padStart(2, '0')).join('');
-    localStorage.setItem(SESSION_KEY, session_token);
-    dispatchProgressUpdate(getCachedProgress());
-    return true;
-  } catch { return false; }
-}
+// ── Auth (removed — was client-only simulation with no backend) ─
 
 // ── Progress Cache ─────────────────────────────────────────────
 
@@ -250,23 +179,9 @@ export function dispatchAchievement(achievementId: string): void {
   }
 }
 
-// ── Server Sync ────────────────────────────────────────────────
-
-export async function getProgress(): Promise<ProgressData> {
-  if (!isLoggedIn()) return getCachedProgress();
-  return refreshProgress();
-}
-
-async function refreshProgress(): Promise<ProgressData> {
-  // All progress is local — just return cached data
-  return getCachedProgress();
-}
-
-async function syncLocalToServer(): Promise<void> {
-  // No-op: all data is stored client-side in localStorage
-}
-
-// No external API calls — all progress is stored client-side in localStorage
+// ── Server Sync (removed — all progress is client-side) ───────
+// getProgress() was removed to eliminate duplication with gamification.ts.
+// Use getCachedProgress() for synchronous access to progress data.
 
 // ── Score Calculation ──────────────────────────────────────────
 
@@ -289,7 +204,27 @@ export async function completeGuide(guideId: string): Promise<void> {
   if (p.guides_completed.includes(guideId)) return;
   p.guides_completed.push(guideId);
   setCachedProgress(recalcScore(p));
-  // Progress saved to localStorage automatically
+
+  // Check guide-based achievements
+  try {
+    const { RECON_GUIDES, HARDENING_GUIDES } = await import('./gamification');
+    const completed = p.guides_completed;
+
+    // FOUNDATION_COMPLETE: all recon guides done
+    if (RECON_GUIDES.every((g: string) => completed.includes(g))) {
+      await unlockAchievement('FOUNDATION_COMPLETE');
+    }
+
+    // ESSENTIALS_COMPLETE: all hardening guides done
+    if (HARDENING_GUIDES.every((g: string) => completed.includes(g))) {
+      await unlockAchievement('ESSENTIALS_COMPLETE');
+    }
+
+    // SPEED_RUN: completed the 5-minute privacy checkup
+    if (guideId === 'the-5-minute-privacy-checkup') {
+      await unlockAchievement('SPEED_RUN');
+    }
+  } catch { /* gamification optional */ }
 }
 
 export async function trackTool(toolId: string): Promise<void> {
@@ -297,7 +232,15 @@ export async function trackTool(toolId: string): Promise<void> {
   if (p.tools_used.includes(toolId)) return;
   p.tools_used.push(toolId);
   setCachedProgress(recalcScore(p));
-  // Progress saved to localStorage automatically
+
+  // Check tool-based achievements
+  try {
+    const { ALL_TOOLS } = await import('./gamification');
+    // FULL_AUDIT: all tools used
+    if (ALL_TOOLS.every((t: string) => p.tools_used.includes(t))) {
+      await unlockAchievement('FULL_AUDIT');
+    }
+  } catch { /* gamification optional */ }
 }
 
 export async function unlockAchievement(achievementId: string): Promise<void> {
@@ -330,5 +273,13 @@ export function incrementHashCount(): number {
 
 export function initPrivacyScore(): void {
   if (typeof window === 'undefined') return;
-  dispatchProgressUpdate(getCachedProgress());
+  const p = getCachedProgress();
+  dispatchProgressUpdate(p);
+
+  // FIRST_BOOT: trigger on very first visit (no progress saved yet)
+  try {
+    if (!localStorage.getItem(PROGRESS_KEY)) {
+      unlockAchievement('FIRST_BOOT').catch(() => {});
+    }
+  } catch { /* ignore */ }
 }

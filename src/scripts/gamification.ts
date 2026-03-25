@@ -235,9 +235,6 @@ export function completeChallenge(challengeId: string): boolean {
   completed.push(challengeId);
   try {
     localStorage.setItem(CHALLENGES_KEY, JSON.stringify(completed));
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('pt:challenge-complete', { detail: challengeId }));
-    }
   } catch { /* ignore */ }
   return true;
 }

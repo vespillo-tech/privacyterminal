@@ -437,7 +437,6 @@ async function executeScan() {
       await trackTool('fingerprint-analyzer');
       await trackTool('webrtc-detector');
       await unlockAchievement('FIRST_SCAN');
-      await unlockAchievement('THREAT_ASSESSED');
     } catch { /* gamification optional */ }
 
     // Show Before/After comparison

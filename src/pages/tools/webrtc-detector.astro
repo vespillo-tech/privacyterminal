@@ -329,6 +329,12 @@ async function runScan() {
 
   PT?.appendLog(`Scan complete: ${allIPs.size} IPs found, ${rawCandidates.length} ICE candidates`, 'success');
   PT?.setToolStatus(hasLeak ? 'error' : 'complete');
+
+  // Track tool usage for gamification
+  try {
+    const { trackTool } = await import('../../scripts/privacy-score');
+    await trackTool('webrtc-detector');
+  } catch { /* gamification optional */ }
 }
 
 // === Event listeners ===

@@ -277,6 +277,12 @@ async function runScan() {
   }
 
   PT?.appendLog('Leak test complete', 'success');
+
+  // Track tool usage for gamification
+  try {
+    const { trackTool } = await import('../../scripts/privacy-score');
+    await trackTool('leak-tester');
+  } catch { /* gamification optional */ }
 }
 
 // === Events ===

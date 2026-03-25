@@ -14,7 +14,8 @@ const toolMeta: Record<string, { title: string; desc: string }> = {
   'email-header-analyzer': { title: 'Email Header Analyzer', desc: 'Parse SPF/DKIM/DMARC' },
   'metadata-stripper': { title: 'Metadata Stripper', desc: 'Remove EXIF/GPS from photos' },
   'leak-tester': { title: 'IP & DNS Leak Tester', desc: 'Check VPN leak status' },
-  'dns-leak': { title: 'IP & DNS Leak Tester', desc: 'Check VPN leak status' },
+  'tracker-map': { title: 'Tracker Map Visualizer', desc: 'See who tracks you on any site' },
+  'hardening-wizard': { title: 'Browser Hardening Wizard', desc: 'Step-by-step browser security' },
 };
 
 const guideTitles: Record<string, string> = {
@@ -24,6 +25,7 @@ const guideTitles: Record<string, string> = {
   'the-5-minute-privacy-checkup': 'The 5-Minute Privacy Checkup',
   'browser-fingerprinting-explained': 'Browser Fingerprinting Explained',
   'privacy-myths-debunked': 'Privacy Myths Debunked',
+  'privacy-glossary': 'Privacy Glossary',
   'choosing-a-browser-for-privacy': 'Choosing a Browser for Privacy',
   'vpns-what-they-actually-protect': 'VPNs: What They Actually Protect',
   'encrypted-messaging': 'Encrypted Messaging: Your Options',
@@ -36,6 +38,8 @@ const guideTitles: Record<string, string> = {
   'your-phone-is-tracking-you': 'Your Phone Is Tracking You',
   'how-to-delete-your-digital-footprint': 'Delete Your Digital Footprint',
   'operating-systems-for-privacy': 'Operating Systems for Privacy',
+  'network-security-at-home': 'Network Security at Home',
+  'opsec-for-high-risk-individuals': 'OPSEC for High-Risk Individuals',
 };
 
 const hasContent = relatedTools.length > 0 || relatedGuides.length > 0;
@@ -52,7 +56,7 @@ const hasContent = relatedTools.length > 0 || relatedGuides.length > 0;
             {relatedTools.map((id) => {
               const t = toolMeta[id];
               if (!t) return null;
-              const href = `/tools/${id === 'dns-leak' ? 'leak-tester' : id}`;
+              const href = `/tools/${id}`;
               return (
                 <a href={href} class="flex items-center gap-2 py-1 px-2 hover:bg-terminal-green/5 transition-colors group no-underline">
                   <span class="text-terminal-green">▸</span>
