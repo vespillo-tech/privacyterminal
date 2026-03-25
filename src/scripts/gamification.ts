@@ -50,6 +50,8 @@ export const ALL_TOOLS = [
   'email-header-analyzer',
   'metadata-stripper',
   'threat-profiler',
+  'tracker-map',
+  'hardening-wizard',
 ] as const;
 
 // ── Clearance Level Definitions ─────────────────────────────────

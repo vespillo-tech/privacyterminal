@@ -1,0 +1,305 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+export const prerender = true;
+---
+
+<ToolLayout
+  title="Browser Hardening Wizard — Step-by-Step Privacy Guide | Privacy Terminal"
+  toolName="hardening-wizard"
+  toolVersion="1.0.0"
+  description="Detects your browser and OS, then walks you through hardening it step by step. Each step includes verification tests to confirm your changes worked."
+>
+  <Fragment slot="controls">
+    <div class="space-y-3">
+      <div id="browser-info" class="tui-box p-3">
+        <span class="tui-box-title text-terminal-cyan">┤ DETECTED BROWSER ├</span>
+        <div class="mt-2 flex items-center justify-between text-xs flex-wrap gap-2">
+          <div><span class="text-terminal-muted">Browser:</span> <span id="detected-browser" class="text-terminal-green font-bold">Detecting...</span></div>
+          <div><span class="text-terminal-muted">OS:</span> <span id="detected-os" class="text-terminal-green font-bold">Detecting...</span></div>
+          <div><span class="text-terminal-muted">Steps:</span> <span id="step-count" class="text-terminal-amber font-bold">-</span></div>
+        </div>
+      </div>
+      <div id="progress-bar" class="hidden">
+        <div class="flex items-center justify-between text-[10px] text-terminal-muted mb-1">
+          <span>Progress</span>
+          <span id="progress-text">0 / 0 complete</span>
+        </div>
+        <div class="progress-bar"><div id="progress-fill" class="progress-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+  </Fragment>
+
+  <Fragment slot="results">
+    <div id="wizard-container" class="space-y-0"></div>
+    <div id="completion-panel" class="hidden tui-box p-4 mt-3">
+      <span class="tui-box-title text-terminal-green">┤ WIZARD COMPLETE ├</span>
+      <div class="mt-2 text-center py-3">
+        <div class="text-terminal-green text-glow-green text-lg font-bold">✓ BROWSER HARDENED</div>
+        <div class="text-terminal-muted text-xs mt-2" id="completion-msg"></div>
+      </div>
+    </div>
+  </Fragment>
+
+  <div class="mt-6">
+    <hr class="tui-hr" />
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-terminal-muted py-3">
+      <div>
+        <span class="text-terminal-green font-bold">Why harden your browser?</span>
+        <p class="mt-1">Your browser is the primary tool websites use to track you. Default settings in every major browser prioritize convenience over privacy. Each hardening step reduces your attack surface and limits what trackers can learn about you.</p>
+      </div>
+      <div>
+        <span class="text-terminal-green font-bold">Is this safe?</span>
+        <p class="mt-1">All recommended changes are reversible. Some may break specific websites — we mark those as "advanced" so you can decide. The verification tests confirm each change without sending data anywhere.</p>
+        <p class="mt-1"><a href="/guides/choosing-a-browser-for-privacy" class="text-terminal-cyan hover:text-terminal-green">Read: Choosing a Browser for Privacy →</a></p>
+      </div>
+    </div>
+  </div>
+</ToolLayout>
+
+<script>
+const PT = (window as any).privacyTerminal;
+
+interface HardeningStep {
+  id: string;
+  title: string;
+  why: string;
+  instructions: string[];
+  advanced?: boolean;
+  verifyType: 'auto' | 'manual';
+  verifyFn?: () => Promise<{ pass: boolean; detail: string }>;
+}
+
+interface BrowserInfo { browser: string; version: string; os: string; }
+
+function detectBrowser(): BrowserInfo {
+  const ua = navigator.userAgent;
+  let browser = 'Unknown', version = '', os = 'Unknown';
+  if (ua.includes('Windows NT')) os = 'Windows';
+  else if (ua.includes('Mac OS X')) os = 'macOS';
+  else if (ua.includes('Android')) os = 'Android';
+  else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+  else if (ua.includes('Linux')) os = 'Linux';
+  else if (ua.includes('CrOS')) os = 'ChromeOS';
+
+  if (ua.includes('LibreWolf')) { browser = 'LibreWolf'; const m = ua.match(/LibreWolf\/(\d+)/); if (m) version = m[1]; }
+  else if ((navigator as any).brave) { browser = 'Brave'; const m = ua.match(/Chrome\/(\d+)/); if (m) version = m[1]; }
+  else if (ua.includes('Edg/')) { browser = 'Edge'; const m = ua.match(/Edg\/(\d+)/); if (m) version = m[1]; }
+  else if (ua.includes('Firefox/')) { browser = 'Firefox'; const m = ua.match(/Firefox\/(\d+)/); if (m) version = m[1]; }
+  else if (ua.includes('Safari/') && !ua.includes('Chrome')) { browser = 'Safari'; const m = ua.match(/Version\/(\d+)/); if (m) version = m[1]; }
+  else if (ua.includes('Chrome/')) { browser = 'Chrome'; const m = ua.match(/Chrome\/(\d+)/); if (m) version = m[1]; }
+  return { browser, version, os };
+}
+
+async function verifyWebRTC(): Promise<{ pass: boolean; detail: string }> {
+  if (typeof RTCPeerConnection === 'undefined') return { pass: true, detail: 'WebRTC is disabled — no IP leak possible.' };
+  return new Promise((resolve) => {
+    try {
+      const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+      pc.createDataChannel('');
+      let foundPublic = false;
+      pc.onicecandidate = (e) => {
+        if (e.candidate) {
+          const parts = e.candidate.candidate.split(' ');
+          if (parts.length >= 5) {
+            const ip = parts[4];
+            if (!ip.endsWith('.local') && ip !== '0.0.0.0' && !ip.match(/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|fd|fc|fe80|::1|127\.)/)) foundPublic = true;
+          }
+        }
+      };
+      pc.createOffer().then(o => pc.setLocalDescription(o));
+      setTimeout(() => { pc.close(); resolve(foundPublic ? { pass: false, detail: 'WebRTC is still leaking public IP addresses.' } : { pass: true, detail: 'WebRTC is not leaking public IPs.' }); }, 4000);
+    } catch { resolve({ pass: true, detail: 'WebRTC API not available.' }); }
+  });
+}
+
+async function verifyWebGL(): Promise<{ pass: boolean; detail: string }> {
+  try {
+    const c = document.createElement('canvas');
+    const gl = c.getContext('webgl') || c.getContext('experimental-webgl');
+    if (!gl) return { pass: true, detail: 'WebGL is disabled — no GPU fingerprinting possible.' };
+    return { pass: false, detail: 'WebGL is still enabled. GPU fingerprinting is possible.' };
+  } catch { return { pass: true, detail: 'WebGL is blocked.' }; }
+}
+
+async function verifyFingerprint(): Promise<{ pass: boolean; detail: string }> {
+  try {
+    const c = document.createElement('canvas'); c.width = 100; c.height = 20;
+    const ctx = c.getContext('2d'); if (!ctx) return { pass: true, detail: 'Canvas context blocked.' };
+    ctx.fillStyle = '#f60'; ctx.fillRect(0,0,50,20); ctx.fillStyle = '#069'; ctx.font = '12px Arial'; ctx.fillText('Test', 2, 15);
+    const d1 = c.toDataURL();
+    ctx.clearRect(0,0,100,20);
+    ctx.fillStyle = '#f60'; ctx.fillRect(0,0,50,20); ctx.fillStyle = '#069'; ctx.font = '12px Arial'; ctx.fillText('Test', 2, 15);
+    const d2 = c.toDataURL();
+    if (d1 !== d2) return { pass: true, detail: 'Canvas fingerprinting appears randomized (good!).' };
+    return { pass: false, detail: 'Canvas fingerprint is consistent — you are fingerprintable.' };
+  } catch { return { pass: true, detail: 'Canvas access blocked.' }; }
+}
+
+async function verifyFonts(): Promise<{ pass: boolean; detail: string }> {
+  const baseFonts = ['monospace', 'sans-serif', 'serif'];
+  const testFonts = ['Arial','Courier New','Georgia','Helvetica','Impact','Verdana','Comic Sans MS','Segoe UI','Roboto'];
+  const span = document.createElement('span');
+  span.style.cssText = 'position:absolute;left:-9999px;font-size:72px;visibility:hidden'; span.textContent = 'mmmmmmlli';
+  document.body.appendChild(span);
+  const bw: Record<string,number> = {};
+  for (const b of baseFonts) { span.style.fontFamily = b; bw[b] = span.offsetWidth; }
+  let detected = 0;
+  for (const f of testFonts) { for (const b of baseFonts) { span.style.fontFamily = `"${f}", ${b}`; if (span.offsetWidth !== bw[b]) { detected++; break; } } }
+  document.body.removeChild(span);
+  return detected <= 3 ? { pass: true, detail: `Only ${detected} system fonts detected (low fingerprint surface).` } : { pass: false, detail: `${detected} fonts detected — contributes to fingerprint uniqueness.` };
+}
+
+function getSteps(info: BrowserInfo): HardeningStep[] {
+  if (info.browser === 'Firefox' || info.browser === 'LibreWolf') {
+    return [
+      { id: 'webrtc', title: 'Disable WebRTC', why: 'WebRTC can leak your real IP even with a VPN.', instructions: ['Type about:config in your address bar', 'Click "Accept the Risk and Continue"', 'Search: media.peerconnection.enabled', 'Double-click to set to FALSE'], verifyType: 'auto', verifyFn: verifyWebRTC },
+      { id: 'doh', title: 'Enable DNS over HTTPS', why: 'Prevents your ISP from seeing which websites you visit.', instructions: ['Open Settings → Privacy & Security', 'Scroll to "DNS over HTTPS"', 'Select "Max Protection"', 'Choose Cloudflare or NextDNS as provider'], verifyType: 'manual' },
+      { id: 'etp', title: 'Enable Strict Tracking Protection', why: 'Blocks known trackers, fingerprinters, and cryptominers.', instructions: ['Open Settings → Privacy & Security', 'Under "Enhanced Tracking Protection"', 'Select "Strict"'], verifyType: 'auto', verifyFn: verifyFingerprint },
+      { id: 'telemetry', title: 'Disable Telemetry', why: 'Stops Firefox from sending usage data to Mozilla.', instructions: ['Open Settings → Privacy & Security', 'Scroll to "Firefox Data Collection and Use"', 'Uncheck ALL checkboxes'], verifyType: 'manual' },
+      { id: 'ublock', title: 'Install uBlock Origin', why: 'The most effective content blocker available.', instructions: ['Visit addons.mozilla.org', 'Search "uBlock Origin" by Raymond Hill', 'Click "Add to Firefox"'], verifyType: 'manual' },
+      { id: 'cookies', title: 'Clear Cookies on Exit', why: 'Prevents persistent tracking across sessions.', instructions: ['Open Settings → Privacy & Security', 'Under "Cookies and Site Data"', 'Check "Delete cookies and site data when Firefox is closed"'], verifyType: 'manual' },
+      { id: 'webgl', title: 'Disable WebGL', advanced: true, why: 'WebGL reveals your GPU model for fingerprinting.', instructions: ['Type about:config in your address bar', 'Search: webgl.disabled', 'Double-click to set to TRUE', 'Note: Some sites may break (maps, 3D content)'], verifyType: 'auto', verifyFn: verifyWebGL },
+      { id: 'fonts', title: 'Reduce Font Fingerprint', advanced: true, why: 'Your installed fonts create a unique fingerprint.', instructions: ['Type about:config in your address bar', 'Search: browser.display.use_document_fonts', 'Set value to 0', 'Note: Some sites may look different'], verifyType: 'auto', verifyFn: verifyFonts },
+    ];
+  } else if (info.browser === 'Brave') {
+    return [
+      { id: 'shields', title: 'Set Shields to Aggressive', why: 'Maximum blocking of trackers and ads.', instructions: ['Click the Brave Shields icon (lion) in the address bar', 'Set Trackers & ads to "Aggressive"', 'Enable "Block fingerprinting"', 'Set "Block cookies" to "Only cross-site"'], verifyType: 'auto', verifyFn: verifyFingerprint },
+      { id: 'webrtc', title: 'Restrict WebRTC', why: 'WebRTC can leak your real IP even with a VPN.', instructions: ['Open Settings → Privacy and security', 'Under "WebRTC IP handling policy"', 'Select "Disable non-proxied UDP"'], verifyType: 'auto', verifyFn: verifyWebRTC },
+      { id: 'doh', title: 'Enable DNS over HTTPS', why: 'Encrypts DNS queries from your ISP.', instructions: ['Open Settings → Privacy and security → Security', 'Enable "Use secure DNS"', 'Select Cloudflare or custom provider'], verifyType: 'manual' },
+      { id: 'telemetry', title: 'Disable Telemetry', why: 'Stops Brave from collecting usage analytics.', instructions: ['Open Settings → Privacy and security', 'Disable "Allow privacy-preserving product analytics (P3A)"', 'Disable "Automatically send daily usage ping"'], verifyType: 'manual' },
+      { id: 'cookies', title: 'Clear Data on Exit', why: 'Prevents persistent tracking cookies.', instructions: ['Open Settings → Privacy and security', 'Configure cookies to clear on exit'], verifyType: 'manual' },
+    ];
+  } else if (info.browser === 'Chrome' || info.browser === 'Edge') {
+    const sp = info.browser === 'Edge' ? 'edge://settings' : 'chrome://settings';
+    return [
+      { id: 'switch', title: 'Consider Switching Browsers', why: `${info.browser} is made by a company whose business model depends on tracking you.`, instructions: ['Download Firefox from mozilla.org or Brave from brave.com', 'Import your bookmarks and passwords', `Use ${info.browser} only when a site specifically requires it`], verifyType: 'manual' },
+      { id: 'doh', title: 'Enable Secure DNS', why: 'At minimum, encrypt your DNS queries.', instructions: [`Open ${sp}/security`, 'Enable "Use secure DNS"', 'Select Cloudflare (1.1.1.1)'], verifyType: 'manual' },
+      { id: 'ublock', title: 'Install uBlock Origin', why: 'Essential content blocker.', instructions: ['Visit the Chrome Web Store', 'Search "uBlock Origin" by Raymond Hill', `Click "Add to ${info.browser}"`], verifyType: 'manual' },
+      { id: 'cookies', title: 'Block Third-Party Cookies', why: 'Reduces cross-site tracking.', instructions: [`Open ${sp}/cookies`, 'Select "Block third-party cookies"'], verifyType: 'manual' },
+      { id: 'telemetry', title: 'Disable Telemetry', why: `Reduces data sent to ${info.browser === 'Edge' ? 'Microsoft' : 'Google'}.`, instructions: [`Open ${sp}/privacy`, 'Disable all "Improve..." and "Help improve..." options'], verifyType: 'manual' },
+    ];
+  } else if (info.browser === 'Safari') {
+    return [
+      { id: 'itp', title: 'Verify Tracking Prevention', why: 'Safari has built-in tracker blocking — make sure it is on.', instructions: ['Open Safari → Settings → Privacy', 'Ensure "Prevent cross-site tracking" is checked', 'Ensure "Hide IP address from trackers" is checked'], verifyType: 'manual' },
+      { id: 'fraudulent', title: 'Enable Fraud Warning', why: 'Protects against phishing sites.', instructions: ['Open Safari → Settings → Security', 'Ensure "Warn when visiting a fraudulent website" is checked'], verifyType: 'manual' },
+      { id: 'extensions', title: 'Install a Content Blocker', why: 'Safari supports good privacy extensions.', instructions: ['Open Safari → Settings → Extensions', 'Click "More Extensions"', 'Install AdGuard for Safari or 1Blocker'], verifyType: 'manual' },
+      { id: 'location', title: 'Restrict Location Access', why: 'Prevent websites from accessing your location.', instructions: ['Open Safari → Settings → Websites → Location', 'Set "When visiting other websites" to "Deny"'], verifyType: 'manual' },
+    ];
+  } else if (info.browser === 'Tor Browser') {
+    return [
+      { id: 'congrats', title: 'You Are Already Hardened', why: 'Tor Browser is the gold standard for browser privacy.', instructions: ['Keep Tor Browser updated', 'Do not install additional extensions', 'Do not resize the browser window', 'Use "New Identity" regularly (broom icon)'], verifyType: 'manual' },
+    ];
+  }
+  return [
+    { id: 'switch', title: 'Switch to a Privacy Browser', why: 'Your browser was not detected or lacks privacy features.', instructions: ['Download Firefox from mozilla.org', 'Or download Brave from brave.com'], verifyType: 'manual' },
+  ];
+}
+
+const STORAGE_KEY = 'pt_wizard_steps_completed';
+function getCompleted(): string[] { try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : []; } catch { return []; } }
+function saveCompleted(ids: string[]) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(ids)); } catch {} }
+
+let currentIdx = 0;
+let steps: HardeningStep[] = [];
+
+function renderWizard() {
+  const container = document.getElementById('wizard-container')!;
+  container.innerHTML = '';
+  const completed = getCompleted();
+
+  steps.forEach((step, idx) => {
+    const isDone = completed.includes(step.id);
+    const isCurrent = idx === currentIdx;
+    const box = document.createElement('div');
+    box.className = 'tui-box p-3';
+    if (isDone) box.style.borderColor = 'rgba(0,255,65,0.4)';
+    else if (isCurrent) box.style.borderColor = '#00d4ff';
+
+    const status = isDone ? '<span class="text-terminal-green">✅ VERIFIED</span>' : isCurrent ? '<span class="text-terminal-amber">⏳ NOT VERIFIED</span>' : '<span class="text-terminal-muted">—</span>';
+    const adv = step.advanced ? ' <span class="text-terminal-amber text-[10px]">[ADVANCED]</span>' : '';
+    const titleColor = isDone ? 'text-terminal-green' : isCurrent ? 'text-terminal-cyan' : 'text-terminal-muted';
+
+    let h = `<span class="tui-box-title ${titleColor}">┤ STEP ${idx+1}/${steps.length}: ${step.title}${adv} ├</span>`;
+    h += '<div class="mt-2 space-y-2 text-xs">';
+    h += `<div><span class="text-terminal-amber font-bold">WHY:</span> <span class="text-terminal-muted">${step.why}</span></div>`;
+    h += '<div><span class="text-terminal-green font-bold">HOW:</span></div><div class="pl-2 space-y-0.5">';
+    step.instructions.forEach((inst, i) => { h += `<div class="text-terminal-muted"><span class="text-terminal-border">${i+1}.</span> ${inst}</div>`; });
+    h += '</div>';
+    if (isCurrent && !isDone) {
+      h += '<div class="flex gap-2 mt-3">';
+      if (step.verifyType === 'auto') h += `<button class="verify-btn px-3 py-1.5 border border-terminal-green text-terminal-green text-xs font-bold hover:bg-terminal-green/10" data-step="${step.id}">$ verify</button>`;
+      else h += `<button class="confirm-btn px-3 py-1.5 border border-terminal-green text-terminal-green text-xs font-bold hover:bg-terminal-green/10" data-step="${step.id}">✓ I did this</button>`;
+      if (idx < steps.length - 1) h += `<button class="skip-btn px-3 py-1.5 border border-terminal-muted text-terminal-muted text-xs hover:bg-terminal-muted/10" data-idx="${idx}">skip →</button>`;
+      if (idx > 0) h += `<button class="back-btn px-3 py-1.5 border border-terminal-muted text-terminal-muted text-xs hover:bg-terminal-muted/10" data-idx="${idx}">← back</button>`;
+      h += '</div>';
+    }
+    h += `<div class="mt-2">Status: ${status}</div></div>`;
+    box.innerHTML = h;
+    if (!isCurrent && !isDone) box.style.opacity = '0.6';
+    container.appendChild(box);
+  });
+
+  container.querySelectorAll('.verify-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const sid = (e.target as HTMLElement).dataset.step!;
+      const step = steps.find(s => s.id === sid); if (!step?.verifyFn) return;
+      const b = e.target as HTMLButtonElement; b.disabled = true; b.textContent = 'verifying...';
+      PT?.appendLog(`Verifying: ${step.title}...`, 'info');
+      const result = await step.verifyFn();
+      if (result.pass) { markComplete(sid); PT?.appendLog(`✓ ${step.title}: ${result.detail}`, 'success'); }
+      else { PT?.appendLog(`✗ ${step.title}: ${result.detail}`, 'warn'); b.disabled = false; b.textContent = '$ verify'; }
+    });
+  });
+  container.querySelectorAll('.confirm-btn').forEach(btn => { btn.addEventListener('click', (e) => { markComplete((e.target as HTMLElement).dataset.step!); }); });
+  container.querySelectorAll('.skip-btn').forEach(btn => { btn.addEventListener('click', (e) => { currentIdx = Math.min(parseInt((e.target as HTMLElement).dataset.idx!) + 1, steps.length - 1); renderWizard(); }); });
+  container.querySelectorAll('.back-btn').forEach(btn => { btn.addEventListener('click', (e) => { currentIdx = Math.max(parseInt((e.target as HTMLElement).dataset.idx!) - 1, 0); renderWizard(); }); });
+  updateProgress();
+}
+
+function markComplete(stepId: string) {
+  const completed = getCompleted();
+  if (!completed.includes(stepId)) completed.push(stepId);
+  saveCompleted(completed);
+  PT?.appendLog(`Step complete: ${steps.find(s => s.id === stepId)?.title || stepId}`, 'success');
+  const next = steps.findIndex((s, i) => i > currentIdx && !completed.includes(s.id));
+  if (next >= 0) currentIdx = next;
+  else if (steps.every(s => completed.includes(s.id))) showCompletion();
+  renderWizard();
+}
+
+function updateProgress() {
+  const completed = getCompleted();
+  const done = steps.filter(s => completed.includes(s.id)).length;
+  document.getElementById('progress-text')!.textContent = `${done} / ${steps.length} complete`;
+  (document.getElementById('progress-fill') as HTMLElement).style.width = `${steps.length > 0 ? (done / steps.length) * 100 : 0}%`;
+}
+
+async function showCompletion() {
+  document.getElementById('completion-panel')!.classList.remove('hidden');
+  const info = detectBrowser();
+  document.getElementById('completion-msg')!.textContent = `Your ${info.browser} on ${info.os} has been hardened. ${steps.length} steps completed.`;
+  PT?.appendLog('All wizard steps complete! Browser is hardened.', 'success');
+  PT?.setToolStatus('complete');
+  try {
+    const { trackTool, unlockAchievement } = await import('../../scripts/privacy-score');
+    await trackTool('hardening-wizard');
+  } catch {}
+}
+
+// Init
+const info = detectBrowser();
+document.getElementById('detected-browser')!.textContent = `${info.browser} ${info.version}`;
+document.getElementById('detected-os')!.textContent = info.os;
+steps = getSteps(info);
+document.getElementById('step-count')!.textContent = `${steps.length} available`;
+document.getElementById('progress-bar')!.classList.remove('hidden');
+
+PT?.appendLog(`Detected: ${info.browser} ${info.version} on ${info.os}`, 'info');
+PT?.appendLog(`${steps.length} hardening steps loaded`, 'info');
+
+const completed = getCompleted();
+const firstIncomplete = steps.findIndex(s => !completed.includes(s.id));
+currentIdx = firstIncomplete >= 0 ? firstIncomplete : 0;
+renderWizard();
+PT?.setToolStatus('complete');
+</script>

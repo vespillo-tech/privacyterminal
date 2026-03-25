@@ -1,0 +1,4 @@
+title: "Browser Hardening Wizard"
+description: "Detects your browser and walks you through hardening it step by step with verify-as-you-go tests."
+status: ready
+order: 9
