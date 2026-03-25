@@ -1,0 +1,156 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+export const prerender = true;
+
+const allNews = await getCollection('news');
+const newsSorted = allNews.sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+
+const categories = ['all', 'legislation', 'breach', 'tool-release', 'research', 'corporate'];
+const categoryIcons: Record<string, string> = {
+  legislation: '📜',
+  breach: '🔓',
+  'tool-release': '🔧',
+  research: '🔬',
+  corporate: '🏢',
+};
+const categoryLabels: Record<string, string> = {
+  legislation: 'Legislation',
+  breach: 'Data Breach',
+  'tool-release': 'Tool Release',
+  research: 'Research',
+  corporate: 'Corporate',
+};
+
+const lastUpdated = newsSorted.length > 0 ? newsSorted[0].data.date : 'N/A';
+---
+
+<BaseLayout
+  title="Privacy News Feed — Latest Privacy Developments | Privacy Terminal"
+  description="Curated privacy news in terminal style. Track legislation, data breaches, tool releases, and corporate surveillance developments."
+  statusLeft="news feed"
+  statusRight={`${newsSorted.length} items`}
+>
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Privacy News Feed",
+    "description": "Curated privacy news covering legislation, breaches, tool releases, and corporate surveillance.",
+    "url": "https://privacyterminal.com/news",
+    "publisher": { "@type": "Organization", "name": "Privacy Terminal", "url": "https://privacyterminal.com" },
+    "mainEntity": {
+      "@type": "ItemList",
+      "numberOfItems": newsSorted.length,
+      "itemListElement": newsSorted.slice(0, 10).map((item, idx) => ({
+        "@type": "ListItem",
+        "position": idx + 1,
+        "item": {
+          "@type": "NewsArticle",
+          "headline": item.data.title,
+          "datePublished": item.data.date,
+          "description": item.data.tldr,
+          "publisher": { "@type": "Organization", "name": item.data.source },
+        }
+      }))
+    }
+  })} />
+
+  <div class="mb-4">
+    <h1 class="text-terminal-green text-glow-green font-bold mb-1 text-base">~/news</h1>
+    <div class="text-terminal-muted text-xs">Curated privacy news. Last updated: <span class="text-terminal-cyan">{lastUpdated}</span></div>
+  </div>
+
+  <!-- Category filter -->
+  <div class="flex flex-wrap gap-1 mb-4" id="category-filters">
+    {categories.map((cat) => (
+      <button
+        class:list={[
+          'filter-btn px-2 py-1 text-[10px] border transition-colors',
+          cat === 'all'
+            ? 'border-terminal-green text-terminal-green bg-terminal-green/10'
+            : 'border-terminal-border text-terminal-muted hover:border-terminal-cyan hover:text-terminal-cyan',
+        ]}
+        data-category={cat}
+      >
+        {cat === 'all' ? 'ALL' : `${categoryIcons[cat] || ''} ${(categoryLabels[cat] || cat).toUpperCase()}`}
+      </button>
+    ))}
+  </div>
+
+  <!-- News items -->
+  <div id="news-feed" class="space-y-0">
+    {newsSorted.map((item) => (
+      <div class="news-item tui-box p-3" data-category={item.data.category}>
+        <span class="tui-box-title text-terminal-muted">┤ {item.data.date} ├</span>
+        <div class="mt-2">
+          <div class="flex items-start gap-2">
+            <span class="text-base shrink-0">{categoryIcons[item.data.category] || '📰'}</span>
+            <div class="flex-1">
+              <div class="text-terminal-green font-bold text-sm">{item.data.title}</div>
+              <div class="text-terminal-muted text-[10px] mt-0.5">
+                Source: <span class="text-terminal-cyan">{item.data.source}</span>
+                <span class="text-terminal-border mx-1">|</span>
+                <span class="text-terminal-muted">{categoryLabels[item.data.category] || item.data.category}</span>
+              </div>
+              <p class="text-gray-400 text-xs mt-1.5 leading-relaxed">{item.data.tldr}</p>
+              <div class="flex items-center gap-3 mt-2">
+                <a href={item.data.sourceUrl} target="_blank" rel="noopener noreferrer" class="text-terminal-cyan text-[10px] hover:text-terminal-green">
+                  read source →
+                </a>
+                <div class="flex gap-1">
+                  {item.data.tags.slice(0, 3).map((tag: string) => (
+                    <span class="text-[9px] text-terminal-muted border border-terminal-border/50 px-1">{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <div id="no-results" class="hidden tui-box p-4 text-center">
+    <span class="text-terminal-muted text-xs">No news items match this filter.</span>
+  </div>
+
+  <hr class="tui-hr" />
+  <div class="text-xs text-terminal-muted py-2">
+    <span class="text-terminal-green">[NOTE]</span> News is manually curated for accuracy. We do not use automated feeds. All sources are verified.
+  </div>
+</BaseLayout>
+
+<script>
+  // Category filtering
+  const buttons = document.querySelectorAll('.filter-btn');
+  const items = document.querySelectorAll('.news-item');
+  const noResults = document.getElementById('no-results')!;
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cat = (btn as HTMLElement).dataset.category!;
+
+      // Update active button
+      buttons.forEach(b => {
+        b.classList.remove('border-terminal-green', 'text-terminal-green', 'bg-terminal-green/10');
+        b.classList.add('border-terminal-border', 'text-terminal-muted');
+      });
+      btn.classList.remove('border-terminal-border', 'text-terminal-muted');
+      btn.classList.add('border-terminal-green', 'text-terminal-green', 'bg-terminal-green/10');
+
+      // Filter items
+      let visible = 0;
+      items.forEach(item => {
+        const el = item as HTMLElement;
+        if (cat === 'all' || el.dataset.category === cat) {
+          el.classList.remove('hidden');
+          visible++;
+        } else {
+          el.classList.add('hidden');
+        }
+      });
+
+      noResults.classList.toggle('hidden', visible > 0);
+    });
+  });
+</script>

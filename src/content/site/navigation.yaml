@@ -14,9 +14,12 @@ items:
   - label: dossier
     href: /dossier
     key: "4"
+  - label: news
+    href: /news
+    key: "5"
   - label: resources
     href: /terminal
-    key: "5"
+    key: "6"
   - label: about
     href: /about
-    key: "6"
+    key: "7"

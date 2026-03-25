@@ -70,4 +70,17 @@ const challenges = defineCollection({
   })
 });
 
-export const collections = { guides, achievements, tools, site, challenges };
+const news = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/news' }),
+  schema: z.object({
+    title: z.string(),
+    source: z.string(),
+    sourceUrl: z.string(),
+    date: z.string(),
+    category: z.enum(['legislation', 'breach', 'tool-release', 'research', 'corporate']),
+    tags: z.array(z.string()).default([]),
+    tldr: z.string(),
+  }),
+});
+
+export const collections = { guides, achievements, tools, site, challenges, news };
