@@ -1,0 +1,270 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+export const prerender = true;
+---
+
+<ToolLayout
+  title="Tracker Map Visualizer — See Who's Watching | Privacy Terminal"
+  toolName="tracker-map"
+  toolVersion="1.0.0"
+  description="Paste any URL and see every third-party tracker, analytics script, ad pixel, and cookie domain embedded on that page. Reveals the surveillance infrastructure behind any website."
+>
+  <Fragment slot="controls">
+    <div class="space-y-3">
+      <div class="flex gap-2">
+        <div class="flex-1 relative">
+          <span class="absolute left-2 top-1/2 -translate-y-1/2 text-terminal-green text-xs">URL:</span>
+          <input
+            id="url-input"
+            type="text"
+            placeholder="example.com"
+            class="w-full bg-transparent border border-terminal-border text-gray-200 text-xs px-2 py-2 pl-10 font-mono focus:border-terminal-green focus:outline-none placeholder:text-terminal-muted/50"
+            spellcheck="false"
+            autocomplete="off"
+          />
+        </div>
+        <button id="btn-scan" class="px-4 py-2 border border-terminal-green text-terminal-green text-xs font-bold hover:bg-terminal-green/10 transition-colors whitespace-nowrap">
+          $ scan
+        </button>
+      </div>
+      <div id="error-msg" class="hidden text-terminal-red text-xs"></div>
+    </div>
+  </Fragment>
+
+  <Fragment slot="results">
+    <div id="results-container" class="hidden space-y-0">
+      <!-- Summary -->
+      <div id="summary-panel" class="tui-box p-4">
+        <span class="tui-box-title text-terminal-green">&#9508; SCAN SUMMARY &#9500;</span>
+        <div class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+          <div>
+            <div id="total-trackers" class="text-terminal-red text-xl font-bold">0</div>
+            <div class="text-terminal-muted text-[10px]">TRACKERS FOUND</div>
+          </div>
+          <div>
+            <div id="total-companies" class="text-terminal-amber text-xl font-bold">0</div>
+            <div class="text-terminal-muted text-[10px]">UNIQUE COMPANIES</div>
+          </div>
+          <div>
+            <div id="total-categories" class="text-terminal-cyan text-xl font-bold">0</div>
+            <div class="text-terminal-muted text-[10px]">CATEGORIES</div>
+          </div>
+          <div>
+            <div id="surveillance-score" class="text-terminal-red text-xl font-bold">0</div>
+            <div class="text-terminal-muted text-[10px]">SURVEILLANCE SCORE</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category results -->
+      <div id="categories-container" class="space-y-0"></div>
+
+      <!-- Score assessment -->
+      <div id="assessment-panel" class="tui-box p-3">
+        <span class="tui-box-title text-terminal-amber">&#9508; ASSESSMENT &#9500;</span>
+        <div id="assessment-content" class="mt-2 text-xs"></div>
+      </div>
+
+      <!-- Self-comparison -->
+      <div class="tui-box p-3">
+        <span class="tui-box-title text-terminal-green">&#9508; COMPARISON &#9500;</span>
+        <div class="mt-2 text-xs text-terminal-muted">
+          <span class="text-terminal-green font-bold">privacyterminal.com</span> has
+          <span class="text-terminal-green font-bold text-glow-green">0 trackers</span>.
+          Zero analytics. Zero cookies. Zero tracking.
+          <a href="/about" class="text-terminal-cyan hover:text-terminal-green ml-1">Learn why &#8594;</a>
+        </div>
+      </div>
+    </div>
+  </Fragment>
+
+  <!-- Educational section -->
+  <div class="mt-6">
+    <hr class="tui-hr" />
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-terminal-muted py-3">
+      <div>
+        <span class="text-terminal-green font-bold">What are third-party trackers?</span>
+        <p class="mt-1">When you visit a website, it often loads resources from dozens of other companies &#8212; analytics scripts, advertising pixels, social media widgets. Each one can track your browsing behavior, build a profile of your interests, and sell that data to advertisers.</p>
+      </div>
+      <div>
+        <span class="text-terminal-green font-bold">What does the surveillance score mean?</span>
+        <p class="mt-1">We calculate a score from 0&#8211;100 based on the number and type of trackers found. Advertising and tracking pixels score highest because they exist solely to monitor you. CDN resources are marked benign &#8212; they serve functional content, not surveillance.</p>
+        <p class="mt-1"><a href="/guides/how-youre-being-tracked" class="text-terminal-cyan hover:text-terminal-green">Read: How You're Being Tracked &#8594;</a></p>
+      </div>
+    </div>
+  </div>
+</ToolLayout>
+
+<script>
+const PT = (window as any).privacyTerminal;
+const API_BASE = 'https://privacyterminal-api.terinmain.workers.dev';
+
+const CATEGORY_META: Record<string, { icon: string; label: string; benign?: boolean }> = {
+  analytics:   { icon: '\ud83d\udcca', label: 'ANALYTICS' },
+  advertising: { icon: '\ud83c\udfaf', label: 'ADVERTISING' },
+  pixel:       { icon: '\ud83d\udc41\ufe0f', label: 'TRACKING PIXELS' },
+  ab_testing:  { icon: '\ud83e\uddea', label: 'A/B TESTING' },
+  social:      { icon: '\ud83d\udcf1', label: 'SOCIAL' },
+  cdn:         { icon: '\ud83d\udd27', label: 'CDN/UTILITY', benign: true },
+  unknown:     { icon: '\u2753', label: 'UNKNOWN THIRD-PARTY' },
+};
+
+const CATEGORY_ORDER = ['advertising', 'pixel', 'analytics', 'ab_testing', 'social', 'unknown', 'cdn'];
+
+let lastScanTime = 0;
+
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+async function runScan() {
+  const now = Date.now();
+  if (now - lastScanTime < 5000) {
+    showError('Rate limit: please wait 5 seconds between scans.');
+    return;
+  }
+  lastScanTime = now;
+
+  const input = (document.getElementById('url-input') as HTMLInputElement).value.trim();
+  if (!input) {
+    showError('Please enter a URL to scan.');
+    return;
+  }
+
+  hideError();
+  PT?.setToolStatus('running');
+  PT?.appendLog(`Scanning ${input}...`, 'info');
+  PT?.appendLog('Fetching page via Privacy Terminal API...', 'info');
+
+  document.getElementById('results-container')!.classList.add('hidden');
+  const btn = document.getElementById('btn-scan') as HTMLButtonElement;
+  btn.disabled = true;
+  btn.textContent = 'scanning...';
+
+  try {
+    const resp = await fetch(`${API_BASE}/tracker-map`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: input }),
+    });
+
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      throw new Error(data.error || `HTTP ${resp.status}`);
+    }
+
+    PT?.appendLog(`Page fetched: ${data.hostname}`, 'info');
+    PT?.appendLog(`Found ${data.totalTrackers} third-party resources from ${data.uniqueCompanies} companies`, 'info');
+
+    renderResults(data);
+
+    PT?.appendLog(`Surveillance score: ${data.surveillanceScore}/100 (${data.severity})`, data.surveillanceScore >= 45 ? 'warn' : 'success');
+    PT?.appendLog('Scan complete', 'success');
+    PT?.setToolStatus('complete');
+
+    // Track tool usage for gamification
+    try {
+      const { trackTool } = await import('../../scripts/privacy-score');
+      await trackTool('tracker-map');
+    } catch { /* gamification optional */ }
+
+  } catch (err: any) {
+    PT?.appendLog(`Error: ${err.message}`, 'error');
+    showError(err.message);
+    PT?.setToolStatus('error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '$ scan';
+  }
+}
+
+function renderResults(data: any) {
+  document.getElementById('results-container')!.classList.remove('hidden');
+
+  // Summary
+  document.getElementById('total-trackers')!.textContent = String(data.totalTrackers);
+  document.getElementById('total-companies')!.textContent = String(data.uniqueCompanies);
+  const catCount = Object.keys(data.categories).length;
+  document.getElementById('total-categories')!.textContent = String(catCount);
+
+  const scoreEl = document.getElementById('surveillance-score')!;
+  scoreEl.textContent = `${data.surveillanceScore}/100`;
+  if (data.surveillanceScore >= 70) {
+    scoreEl.className = 'text-terminal-red text-xl font-bold';
+  } else if (data.surveillanceScore >= 45) {
+    scoreEl.className = 'text-terminal-amber text-xl font-bold';
+  } else if (data.surveillanceScore >= 20) {
+    scoreEl.className = 'text-terminal-cyan text-xl font-bold';
+  } else {
+    scoreEl.className = 'text-terminal-green text-xl font-bold';
+  }
+
+  // Categories
+  const container = document.getElementById('categories-container')!;
+  container.innerHTML = '';
+
+  for (const catKey of CATEGORY_ORDER) {
+    const items = data.categories[catKey];
+    if (!items || items.length === 0) continue;
+
+    const meta = CATEGORY_META[catKey] || CATEGORY_META.unknown;
+    const box = document.createElement('div');
+    box.className = 'tui-box p-3';
+
+    const benignNote = meta.benign ? ' <span class="text-terminal-muted">\u2014 not tracking</span>' : '';
+    const titleColor = meta.benign ? 'text-terminal-muted' : catKey === 'advertising' || catKey === 'pixel' ? 'text-terminal-red' : 'text-terminal-amber';
+
+    let html = `<span class="tui-box-title ${titleColor}">\u2524 ${meta.icon} ${meta.label} (${items.length})${benignNote} \u251c</span>`;
+    html += '<div class="mt-2 space-y-0.5">';
+
+    items.forEach((item: any, i: number) => {
+      const isLast = i === items.length - 1;
+      const prefix = isLast ? '\u2514\u2500\u2500' : '\u251c\u2500\u2500';
+      const domainColor = meta.benign ? 'text-terminal-muted' : 'text-gray-300';
+      html += `<div class="flex items-center justify-between gap-2 text-xs">`;
+      html += `<span class="${domainColor} font-mono"><span class="text-terminal-border">${prefix}</span> ${escapeHtml(item.domain)}</span>`;
+      html += `<span class="text-terminal-muted text-[10px] shrink-0">${escapeHtml(item.name)}</span>`;
+      html += `</div>`;
+    });
+
+    html += '</div>';
+    box.innerHTML = html;
+    container.appendChild(box);
+  }
+
+  // Assessment
+  const assessEl = document.getElementById('assessment-content')!;
+  let assessHtml = '';
+  if (data.surveillanceScore >= 70) {
+    assessHtml = `<span class="text-terminal-red font-bold">CRITICAL SURVEILLANCE (${data.surveillanceScore}/100)</span>
+      <p class="text-terminal-muted mt-1">\u26a0 This page loads ${data.totalTrackers} third-party resources from ${data.uniqueCompanies} different tracking companies. Your browsing behavior on this site is extensively monitored and shared with advertisers, data brokers, and analytics companies.</p>`;
+  } else if (data.surveillanceScore >= 45) {
+    assessHtml = `<span class="text-terminal-amber font-bold">HIGH SURVEILLANCE (${data.surveillanceScore}/100)</span>
+      <p class="text-terminal-muted mt-1">\u26a0 This page loads ${data.totalTrackers} third-party resources from ${data.uniqueCompanies} companies. Significant tracking activity detected. Consider using a content blocker like uBlock Origin.</p>`;
+  } else if (data.surveillanceScore >= 20) {
+    assessHtml = `<span class="text-terminal-cyan font-bold">MODERATE SURVEILLANCE (${data.surveillanceScore}/100)</span>
+      <p class="text-terminal-muted mt-1">This page includes ${data.totalTrackers} third-party resources. Some tracking is present but at moderate levels.</p>`;
+  } else {
+    assessHtml = `<span class="text-terminal-green font-bold">LOW SURVEILLANCE (${data.surveillanceScore}/100)</span>
+      <p class="text-terminal-muted mt-1">This page has minimal third-party tracking. ${data.totalTrackers === 0 ? 'No trackers detected \u2014 this is rare and commendable.' : 'Only basic resources detected.'}</p>`;
+  }
+  assessEl.innerHTML = assessHtml;
+}
+
+function showError(msg: string) {
+  const el = document.getElementById('error-msg')!;
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+function hideError() {
+  document.getElementById('error-msg')!.classList.add('hidden');
+}
+
+// Event listeners
+document.getElementById('btn-scan')!.addEventListener('click', runScan);
+document.getElementById('url-input')!.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') runScan();
+});
+</script>
